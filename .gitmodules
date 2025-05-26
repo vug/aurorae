@@ -1,0 +1,3 @@
+[submodule "dependencies/vk-bootstrap"]
+	path = dependencies/vk-bootstrap
+	url = https://github.com/charles-lunarg/vk-bootstrap.git
