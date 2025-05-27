@@ -17,8 +17,6 @@ if(NOT AURORAE_DEPENDENCIES_DIR)
                         "(e.g., -DAURORAE_DEPENDENCIES_DIR:PATH=/path/to/aurorae/build/dependencies-install).")
 endif()
 
-# --- Configure CMAKE_PREFIX_PATH ---
-# This helps find_package locate the dependencies.
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 message(STATUS "Generator is multi-config: ${is_multi_config}")
 
@@ -47,35 +45,32 @@ list(APPEND CMAKE_PREFIX_PATH "${AURORAE_DEPENDENCIES_DIR}/${CMAKE_BUILD_TYPE}")
 # Find Vulkan (usually provided by the SDK)
 find_package(Vulkan REQUIRED)
 message(STATUS "Found Vulkan: ${Vulkan_LIBRARIES}")
+get_target_property(VULKAN_LIBRARY Vulkan::Vulkan LOCATION)
+message(STATUS "Vulkan target location: ${VULKAN_LIBRARY}")
 
-# Find Volk (installed by your superbuild)
-# Volk installs VolkConfig.cmake which provides the Volk::volk target.
 find_package(Volk REQUIRED)
-message(STATUS "Found Volk: ${Volk_LIBRARIES}") # Volk_LIBRARIES might not be set, target is key
+get_target_property(VOLK_LIBRARY volk::volk LOCATION)
+message(STATUS "Volk target location: ${VOLK_LIBRARY}")
+get_target_property(VOLK_INCLUDE_DIR volk::volk INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "Volk include dirs: ${VOLK_INCLUDE_DIR}")
 
-# Find VKBootstrap (installed by your superbuild)
-# vk-bootstrap installs unofficial-vk-bootstrapConfig.cmake
-# which provides the unofficial::vk-bootstrap::vk-bootstrap target.
 find_package(vk-bootstrap REQUIRED)
-message(STATUS "Found vk-bootstrap: ${vk-bootstrap_LIBRARIES}")
+get_target_property(VK_BOOTSTRAP_LIBRARY vk-bootstrap::vk-bootstrap LOCATION)
+message(STATUS "vk-bootstrap target location: ${VK_BOOTSTRAP_LIBRARY}")
+get_target_property(VK_BOOTSTRAP_INCLUDE_DIR vk-bootstrap::vk-bootstrap INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "vk-bootstrap include dirs: ${VK_BOOTSTRAP_INCLUDE_DIR}")
+
+# TODO(vug): add a function that takes package name and target name.
+# target name can be found in the *Config.cmake file.
 
 
-# --- Your Application Target ---
 add_executable(Aurorae main.cpp)
 
-# --- Link Dependencies ---
 target_link_libraries(Aurorae PRIVATE
-    Vulkan::Vulkan                      # From find_package(Vulkan)
-    volk::volk                          # From find_package(Volk)
-    vk-bootstrap::vk-bootstrap # From find_package(unofficial-vk-bootstrap)
+    Vulkan::Vulkan
+    volk::volk
+    vk-bootstrap::vk-bootstrap
 )
-
-# The find_package calls for Volk and unofficial-vk-bootstrap should correctly
-# set up include directories via their imported targets, thanks to how you
-# installed them with `CMAKE_INSTALL_INCLUDEDIR=include/${SOURCE_DIR}`.
-# So, you can directly use:
-# #include <volk/volk.h>
-# #include <vk-bootstrap/VkBootstrap.h>
 
 # --- Optional: Ensure PDBs are found by MSVC for easier debugging ---
 if(MSVC)
