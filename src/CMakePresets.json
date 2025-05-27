@@ -1,0 +1,56 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "app-common",
+      "description": "Common settings for the Aurorae application",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolset": "host=x64",
+      "binaryDir": "${sourceDirectory}/build/",
+      "cacheVariables": {
+        "AURORAE_DEPENDENCIES_DIR": "${sourceDirectory}/../superbuild/build/dependencies-install"
+      }
+    },
+    {
+      "name": "app-debug",
+      "displayName": "Aurorae App (Debug)",
+      "description": "Configure Aurorae application for Debug build.",
+      "inherits": "app-common",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "app-release",
+      "displayName": "Aurorae App (Release)",
+      "description": "Configure Aurorae application for Release build.",
+      "inherits": "app-common",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-app-debug",
+      "displayName": "Build Aurorae App (Debug)",
+      "configurePreset": "app-debug",
+      "targets": ["Aurorae"],
+      "configuration": "Debug"
+    },
+    {
+      "name": "build-app-release",
+      "displayName": "Build Aurorae App (Release)",
+      "configurePreset": "app-release",
+      "targets": ["Aurorae"],
+      "configuration": "Release"
+    }
+  ]
+}
