@@ -39,11 +39,14 @@ function(add_external_dependency NAME SOURCE_DIR EXTRA_CMAKE_ARGS)
 
     if(CONFIG STREQUAL "Debug" OR CONFIG STREQUAL "RelWithDebInfo")
       ExternalProject_Add_Step(${NAME}_${CONFIG} copy_pdb
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different <BINARY_DIR>/${CONFIG}/${SOURCE_DIR}.pdb ${INSTALL_DIR}/lib/${SOURCE_DIR}.pdb
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/copy_pdb.cmake
+          "<BINARY_DIR>/${CONFIG}"
+          "${SOURCE_DIR}"
+          "${INSTALL_DIR}/lib"
         DEPENDEES install
         COMMENT "Copying PDB for ${SOURCE_DIR} (${CONFIG}) to ${INSTALL_DIR}/lib/"
       )
-    endif()  
+    endif()
 
     # ExternalProject_Get_Property(${NAME}_${CONFIG} BINARY_DIR)
     # message("${NAME}_${CONFIG} BINARY_DIR: ${BINARY_DIR}")
