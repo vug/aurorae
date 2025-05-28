@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(Aurorae LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # --- Dependency Location ---
 # This variable should point to the root directory where your superbuild
@@ -63,8 +61,11 @@ message(STATUS "vk-bootstrap include dirs: ${VK_BOOTSTRAP_INCLUDE_DIR}")
 # TODO(vug): add a function that takes package name and target name.
 # target name can be found in the *Config.cmake file.
 
-
 add_executable(Aurorae main.cpp)
+
+target_compile_features(Aurorae PRIVATE cxx_std_23)
+message(STATUS "EXTERNAL: ${PROJECT_SOURCE_DIR}/../superbuild")
+target_compile_options(Aurorae PRIVATE /W4 /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0)
 
 target_link_libraries(Aurorae PRIVATE
     Vulkan::Vulkan
