@@ -3,8 +3,8 @@
 
 // Includes from dependencies
 #define VOLK_IMPLEMENTATION
-#include <vk-bootstrap/VkBootstrap.h>  // Main header for vk-bootstrap
 #include <volk/volk.h>
+#include <vk-bootstrap/VkBootstrap.h>  // Main header for vk-bootstrap
 
 int main() {
   std::println("Hi!");
