@@ -43,7 +43,7 @@ function(add_external_dependency NAME SOURCE_DIR EXTRA_CMAKE_ARGS)
         DEPENDEES install
         COMMENT "Copying PDB for ${SOURCE_DIR} (${CONFIG}) to ${INSTALL_DIR}/lib/"
       )
-    endif()    
+    endif()  
 
     # ExternalProject_Get_Property(${NAME}_${CONFIG} BINARY_DIR)
     # message("${NAME}_${CONFIG} BINARY_DIR: ${BINARY_DIR}")
@@ -57,8 +57,10 @@ find_package(Vulkan REQUIRED)
 message("Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
 add_external_dependency(Volk "volk" "-DVOLK_INSTALL=ON")
 add_external_dependency(VKBootstrap "vk-bootstrap" "-DVK_BOOTSTRAP_TEST=OFF;-DVK_BOOTSTRAP_INSTALL=ON")
+# git submodule add https://github.com/gabime/spdlog.git
+add_external_dependency(SpdLog "spdlog" "-DSPDLOG_MASTER_PROJECT=OFF;-DSPDLOG_INSTALL=ON;-DSPDLOG_USE_STD_FORMAT=ON;-DCMAKE_INSTALL_INCLUDEDIR=include")
 
-# TODO(vug): add GLFW and spdlog
+# TODO(vug): add GLFW
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
 # TODO(vug): assimp, imgui, glm, stb, xatlas, embree
 
@@ -69,9 +71,9 @@ foreach(CONFIG ${SUPERBUILD_CONFIGS})
         # GLFW_${CONFIG}
         Volk_${CONFIG}
         VKBootstrap_${CONFIG}
+        SpdLog_${CONFIG}
         # VMA_${CONFIG}
         # ImGui_${CONFIG}
-        # Spdlog_${CONFIG}
         # STB_${CONFIG}
     )
 endforeach()

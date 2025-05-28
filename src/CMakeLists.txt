@@ -58,6 +58,12 @@ message(STATUS "vk-bootstrap target location: ${VK_BOOTSTRAP_LIBRARY}")
 get_target_property(VK_BOOTSTRAP_INCLUDE_DIR vk-bootstrap::vk-bootstrap INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "vk-bootstrap include dirs: ${VK_BOOTSTRAP_INCLUDE_DIR}")
 
+find_package(spdlog REQUIRED)
+get_target_property(SPDLOG_LIBRARY spdlog::spdlog LOCATION)
+message(STATUS "spdlog target location: ${SPDLOG_LIBRARY}")
+get_target_property(VK_BOOTSTRAP_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "spdlog include dirs: ${SPDLOG_INCLUDE_DIR}")
+
 # TODO(vug): add a function that takes package name and target name.
 # target name can be found in the *Config.cmake file.
 
@@ -66,11 +72,14 @@ add_executable(Aurorae main.cpp)
 target_compile_features(Aurorae PRIVATE cxx_std_23)
 message(STATUS "EXTERNAL: ${PROJECT_SOURCE_DIR}/../superbuild")
 target_compile_options(Aurorae PRIVATE /W4 /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0)
+target_compile_definitions(Aurorae PRIVATE SPDLOG_USE_STD_FORMAT)
 
 target_link_libraries(Aurorae PRIVATE
     Vulkan::Vulkan
     volk::volk
     vk-bootstrap::vk-bootstrap
+    spdlog::spdlog
+    # spdlog$<$<CONFIG:Debug>:d>
 )
 
 # --- Optional: Ensure PDBs are found by MSVC for easier debugging ---
