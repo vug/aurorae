@@ -5,9 +5,10 @@
 #define VOLK_IMPLEMENTATION
 #include <volk/volk.h>
 #include <vk-bootstrap/VkBootstrap.h>  // Main header for vk-bootstrap
+#include <spdlog/spdlog.h>
 
 int main() {
-  std::println("Hi!");
+  spdlog::info("Hi!");
 
   // Make sure Vulkan SDK is installed
   VkResult volkInitResult = volkInitialize();
@@ -45,6 +46,6 @@ int main() {
         "fully initialized.");
   }
 
-  std::println("Bye!");
+  spdlog::info("Bye!");
   return 0;
 }
