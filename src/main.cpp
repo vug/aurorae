@@ -46,6 +46,22 @@ int main() {
           systemInfo.validation_layers_available);  
   }
 
+  // Create Vulkan Instance
+  vkb::InstanceBuilder vkbInstanceBuilder;
+  vkbInstanceBuilder
+    .set_app_name("Aurorae")
+    .request_validation_layers()
+    .use_default_debug_messenger();    
+  vkb::Result<vkb::Instance> vkbInstanceResult = vkbInstanceBuilder.build();
+  if (!vkbInstanceResult) {
+    spdlog::critical("Failed to create Vulkan instance: {}", vkbInstanceResult.error().message());
+    return -1;
+  }
+  vkb::Instance vkbInstance = vkbInstanceResult.value();
+
+  // Load all global instance-level function pointers
+  volkLoadInstance(vkbInstance);  
+
   // Initialize GLFW
   if (!glfwInit()) {
     spdlog::critical("Failed to initialize GLFW");
@@ -61,22 +77,6 @@ int main() {
     return -1;
   }  
   
-  // Create Vulkan Instance
-  vkb::InstanceBuilder vkbInstanceBuilder;
-  vkbInstanceBuilder
-    .set_app_name("Aurorae")
-    .request_validation_layers()
-    .use_default_debug_messenger();    
-  vkb::Result<vkb::Instance> vkbInstanceResult = vkbInstanceBuilder.build();
-  if (!vkbInstanceResult) {
-    spdlog::critical("Failed to create Vulkan instance: {}", vkbInstanceResult.error().message());
-    return -1;
-  }
-  vkb::Instance vkbInstance = vkbInstanceResult.value();
-    
-  // Load all global instance-level function pointers
-  volkLoadInstance(vkbInstance);
-
   // Create Vulkan surface
   VkSurfaceKHR surface;
 #if defined(CROSS_PLATFORM_SURFACE_CREATION)
@@ -84,7 +84,11 @@ int main() {
   // also loads internally, or accesses via Volk if Volk initialized first)
   // to create the platform-specific VkSurfaceKHR.
   if (glfwCreateWindowSurface(vkbInstance.instance, window, nullptr, &surface) != VK_SUCCESS) {
-    spdlog::critical("Failed to create Vulkan surface.");
+    const char* errorMsg;
+    if(glfwGetError(&errorMsg))
+      spdlog::critical("Failed to create Vulkan surface: {}", errorMsg);
+    else
+      spdlog::critical("Failed to create Vulkan surface: Unknown error.");
     return -1;
   }
 #else
