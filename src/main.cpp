@@ -1,9 +1,20 @@
+#define CROSS_PLATFORM_SURFACE_CREATION
 // Includes from dependencies
+#if !defined(CROSS_PLATFORM_SURFACE_CREATION)
+  #define VK_USE_PLATFORM_WIN32_KHR
+#endif
 #define VOLK_IMPLEMENTATION
 #include <volk/volk.h>
 #include <vk-bootstrap/VkBootstrap.h>
 #include <spdlog/spdlog.h>
 #include <glfw/glfw3.h>
+#if !defined(CROSS_PLATFORM_SURFACE_CREATION)
+  #define GLFW_EXPOSE_NATIVE_WIN32
+  #define GLFW_NATIVE_INCLUDE_NONE
+  #include <glfw/glfw3native.h>
+  #define _AMD64_
+  #include <libloaderapi.h>
+#endif
 
 // TODO(vug): abstract Vulkan initialization and objects in VulkanContext class
 // See "Forward declaration of Swapchain class if it's separate"
@@ -66,15 +77,27 @@ int main() {
   // Load all global instance-level function pointers
   volkLoadInstance(vkbInstance);
 
-  // Create Vulkan surface using GLFW
+  // Create Vulkan surface
+  VkSurfaceKHR surface;
+#if defined(CROSS_PLATFORM_SURFACE_CREATION)
   // GLFW's internal logic will use the necessary instance functions (which it
   // also loads internally, or accesses via Volk if Volk initialized first)
   // to create the platform-specific VkSurfaceKHR.
-  VkSurfaceKHR surface;
   if (glfwCreateWindowSurface(vkbInstance.instance, window, nullptr, &surface) != VK_SUCCESS) {
     spdlog::critical("Failed to create Vulkan surface.");
     return -1;
   }
+#else
+  VkWin32SurfaceCreateInfoKHR sci{
+    .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+    .hinstance = GetModuleHandleA(nullptr),
+    .hwnd = glfwGetWin32Window(window),
+  };
+  if(vkCreateWin32SurfaceKHR(vkbInstance.instance, &sci, nullptr, &surface) != VK_SUCCESS) {
+    spdlog::critical("Failed to create Win32 Vulkan surface.");
+    return -1;
+  }
+#endif
   
   // Select physical device
   vkb::PhysicalDeviceSelector selector(vkbInstance);
