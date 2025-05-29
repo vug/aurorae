@@ -3,6 +3,7 @@
 #include <volk/volk.h>
 #include <vk-bootstrap/VkBootstrap.h>
 #include <spdlog/spdlog.h>
+#include <glfw/glfw3.h>
 
 int main() {
   spdlog::info("Hi!");
@@ -24,8 +25,21 @@ int main() {
                  VK_API_VERSION_PATCH(instance_version));              
   }  
 
-  // TODO(vug): Initialize GLFW
-
+  // Initialize GLFW
+  if (!glfwInit()) {
+    spdlog::critical("Failed to initialize GLFW");
+    return -1;
+  } 
+  // Tell GLFW not to create an OpenGL/ES context
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+  GLFWwindow* window = glfwCreateWindow(1024, 768, "Aurorae", nullptr, nullptr);
+  if (!window) {
+    glfwTerminate();
+    spdlog::critical("Failed to create GLFW window!");
+    return -1;
+  }  
+  
   // Create Vulkan Instance
   vkb::InstanceBuilder vkbInstanceBuilder;
   vkbInstanceBuilder
