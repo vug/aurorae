@@ -62,8 +62,9 @@ add_external_dependency(Volk "volk" "-DVOLK_INSTALL=ON")
 add_external_dependency(VKBootstrap "vk-bootstrap" "-DVK_BOOTSTRAP_TEST=OFF;-DVK_BOOTSTRAP_INSTALL=ON")
 # git submodule add https://github.com/gabime/spdlog.git
 add_external_dependency(SpdLog "spdlog" "-DSPDLOG_MASTER_PROJECT=OFF;-DSPDLOG_INSTALL=ON;-DSPDLOG_USE_STD_FORMAT=ON;-DCMAKE_INSTALL_INCLUDEDIR=include")
+# git submodule add https://github.com/glfw/glfw.git
+add_external_dependency(Glfw "glfw" "-DGLFW_BUILD_EXAMPLES=OFF;-DGLFW_BUILD_TESTS=OFF;-DGLFW_BUILD_DOCS=OFF;-DGLFW_INSTALL=ON")
 
-# TODO(vug): add GLFW
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
 # TODO(vug): assimp, imgui, glm, stb, xatlas, embree
 
@@ -71,10 +72,10 @@ add_custom_target(build_all_deps)
 foreach(CONFIG ${SUPERBUILD_CONFIGS})
     # Add a dependency for each named external project and its config
     add_dependencies(build_all_deps
-        # GLFW_${CONFIG}
         Volk_${CONFIG}
         VKBootstrap_${CONFIG}
         SpdLog_${CONFIG}
+        Glfw_${CONFIG}
         # VMA_${CONFIG}
         # ImGui_${CONFIG}
         # STB_${CONFIG}
