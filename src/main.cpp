@@ -1,29 +1,59 @@
 // Includes from dependencies
 #define VOLK_IMPLEMENTATION
 #include <volk/volk.h>
-#include <vk-bootstrap/VkBootstrap.h>  // Main header for vk-bootstrap
+#include <vk-bootstrap/VkBootstrap.h>
 #include <spdlog/spdlog.h>
 
 int main() {
   spdlog::info("Hi!");
+  spdlog::set_level(spdlog::level::debug);
 
-  // Make sure Vulkan SDK is installed
+  // Note: Make sure Vulkan SDK is installed
   VkResult volkInitResult = volkInitialize();
   if (volkInitResult != VK_SUCCESS) {
-    spdlog::error("Volk initialization failed! Error {}",
-                  static_cast<int>(volkInitResult));
-    return -1;  // Exit early if Vulkan is not initialized
+    spdlog::critical("Failed to initialize Volk: {}", static_cast<int>(volkInitResult));
+    return -1;
   }
-
   uint32_t instance_version = 0;
-  if (vkEnumerateInstanceVersion) {  // Check if the function pointer is
-                                     // loaded
+  // Check if the function pointer is loaded
+  if (vkEnumerateInstanceVersion) {
     vkEnumerateInstanceVersion(&instance_version);
     spdlog::debug("Vulkan Instance Version (via Volk): {}.{}.{}",
                  VK_API_VERSION_MAJOR(instance_version),
                  VK_API_VERSION_MINOR(instance_version),
                  VK_API_VERSION_PATCH(instance_version));              
+  }  
+
+  // TODO(vug): Initialize GLFW
+
+  // Create Vulkan Instance
+  vkb::InstanceBuilder vkbInstanceBuilder;
+  vkbInstanceBuilder
+    .set_app_name("Aurorae")
+    .request_validation_layers()
+    .use_default_debug_messenger();    
+  vkb::Result<vkb::Instance> vkbInstanceResult = vkbInstanceBuilder.build();
+  if (!vkbInstanceResult) {
+    spdlog::critical("Failed to create Vulkan instance: {}", vkbInstanceResult.error().message());
+    return -1;
   }
+  vkb::Instance vkbInstance = vkbInstanceResult.value();
+    
+  // Load all global instance-level function pointers
+  volkLoadInstance(vkbInstance);
+
+  // TODO(vug): Create Vulkan surface via GLFW
+
+  // TODO(vug): Select physical device (requires surface)
+
+  // TODO(vug): Create logical device (requires physical device and surface)
+
+  // TODO(vug): Load device-level function pointers
+
+  // TODO(vug): Create swapchain (requires logical device and surface)
+ 
+  // .enable_surface_extension();  
+  // .set_minimum_version(1, 3) // Explicitly target Vulkan 1.3
 
   auto systemInfoRes = vkb::SystemInfo::get_system_info();
   if (vkGetInstanceProcAddr != nullptr) {
