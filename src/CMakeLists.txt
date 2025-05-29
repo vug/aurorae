@@ -64,6 +64,12 @@ message(STATUS "spdlog target location: ${SPDLOG_LIBRARY}")
 get_target_property(VK_BOOTSTRAP_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "spdlog include dirs: ${SPDLOG_INCLUDE_DIR}")
 
+find_package(glfw3 REQUIRED)
+get_target_property(GLFW_LIBRARY glfw LOCATION)
+message(STATUS "glfw target location: ${GLFW_LIBRARY}")
+get_target_property(GLFW_INCLUDE_DIR glfw INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "glfw include dirs: ${GLFW_INCLUDE_DIR}")
+
 # TODO(vug): add a function that takes package name and target name.
 # target name can be found in the *Config.cmake file.
 
@@ -79,6 +85,7 @@ target_link_libraries(Aurorae PRIVATE
     volk::volk
     vk-bootstrap::vk-bootstrap
     spdlog::spdlog
+    glfw
     # spdlog$<$<CONFIG:Debug>:d>
 )
 
