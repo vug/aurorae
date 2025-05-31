@@ -73,7 +73,11 @@ message(STATUS "glfw include dirs: ${GLFW_INCLUDE_DIR}")
 # TODO(vug): add a function that takes package name and target name.
 # target name can be found in the *Config.cmake file.
 
-add_executable(Aurorae main.cpp)
+add_executable(Aurorae 
+    main.cpp
+    VulkanContext.h VulkanContext.cpp
+    Swapchain.h Swapchain.cpp
+)
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
 message(STATUS "EXTERNAL: ${PROJECT_SOURCE_DIR}/../superbuild")
