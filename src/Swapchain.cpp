@@ -40,13 +40,13 @@ void Swapchain::create(const VulkanContext& context, GLFWwindow* window,
   auto imageViewsResult = vkbSwapchain_.get_image_views();
   if (!imageViewsResult)
     fatal("Failed to get swapchain image views: {}", imageViewsResult.error().message());
-  m_imageViews = imageViewsResult.value();
+  imageViews_ = imageViewsResult.value();
 }
 
 void Swapchain::destroy() {
   if (vkbSwapchain_.device != VK_NULL_HANDLE)
-    vkbSwapchain_.destroy_image_views(m_imageViews);
-  m_imageViews.clear();
+    vkbSwapchain_.destroy_image_views(imageViews_);
+  imageViews_.clear();
   vkb::destroy_swapchain(vkbSwapchain_); // Destroys VkSwapchainKHR, VkImageViews, etc.
 }
 

@@ -26,7 +26,7 @@ class Swapchain {
   VkFormat getImageFormat() const { return vkbSwapchain_.image_format; }
   VkExtent2D getImageExtent() const { return vkbSwapchain_.extent; }
   const std::vector<VkImageView>& getImageViews() const {
-    return m_imageViews;
+    return imageViews_;
   }
   uint32_t getImageCount() const { return vkbSwapchain_.image_count; }
 
@@ -37,7 +37,7 @@ class Swapchain {
 
   vkb::Swapchain vkbSwapchain_;
   GLFWwindow* window_{};
-  std::vector<VkImageView> m_imageViews;
+  std::vector<VkImageView> imageViews_;
 };
 
 }  // namespace aur

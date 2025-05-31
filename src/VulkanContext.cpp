@@ -45,12 +45,11 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   volkLoadInstance(vkbInstance_); // loads Vulkan instance-level function pointers
 
   // Create Vulkan surface
-  VkSurfaceKHR surface;
 #if defined(CROSS_PLATFORM_SURFACE_CREATION)
   // GLFW's internal logic will use the necessary instance functions (which it
   // also loads internally, or accesses via Volk if Volk initialized first)
   // to create the platform-specific VkSurfaceKHR.
-  if (glfwCreateWindowSurface(vkbInstance_.instance, window, nullptr, &surface) != VK_SUCCESS) {
+  if (glfwCreateWindowSurface(vkbInstance_.instance, window, nullptr, &surface_) != VK_SUCCESS) {
     const char* errorMsg;
     if(glfwGetError(&errorMsg))
       fatal("Failed to create Vulkan surface: {}", errorMsg);
@@ -63,7 +62,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .hinstance = GetModuleHandle(nullptr),
     .hwnd = glfwGetWin32Window(window),
   };
-  if(vkCreateWin32SurfaceKHR(vkbInstance_.instance, &sci, nullptr, &surface) != VK_SUCCESS)
+  if(vkCreateWin32SurfaceKHR(vkbInstance_.instance, &sci, nullptr, &surface_) != VK_SUCCESS)
     fatal("Failed to create Win32 Vulkan surface.");
 #endif
 
@@ -71,7 +70,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   vkb::PhysicalDeviceSelector selector(vkbInstance_);
   vkb::Result<vkb::PhysicalDevice> vkbPhysicalDeviceResult = selector
     .set_minimum_version(1, 3) // Explicitly target Vulkan 1.3
-    .set_surface(surface)
+    .set_surface(surface_)
     .prefer_gpu_device_type(vkb::PreferredDeviceType::discrete)
     // vug: I guess it requires a graphics queue by default?
     .require_separate_compute_queue()
