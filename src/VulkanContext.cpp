@@ -17,12 +17,17 @@
 
 namespace aur {
 
+#ifndef NDEBUG
+    constexpr bool enableValidationLayers = true;
+#else
+    constexpr bool enableValidationLayers = false;
+#endif
+
 VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion, vkGetInstanceProcAddr etc.
   VkResult volkInitResult = volkInitialize();
   if (volkInitResult != VK_SUCCESS)
     fatal("Failed to initialize Volk: {}", static_cast<int>(volkInitResult));
-  
   {
     uint32_t instanceVersion{};
     vkEnumerateInstanceVersion(&instanceVersion);
@@ -36,8 +41,13 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   vkb::InstanceBuilder vkbInstanceBuilder;
   vkbInstanceBuilder
     .set_app_name(appName.data())
-    .request_validation_layers()
-    .use_default_debug_messenger();    
+    .enable_extension(VK_KHR_SURFACE_EXTENSION_NAME) // not necessary
+    .require_api_version(VK_MAKE_API_VERSION(0, 1, 3, 0));
+  if (enableValidationLayers) {
+    vkbInstanceBuilder
+      .enable_validation_layers()
+      .use_default_debug_messenger();
+  }
   vkb::Result<vkb::Instance> vkbInstanceResult = vkbInstanceBuilder.build();
   if (!vkbInstanceResult)
     fatal("Failed to create Vulkan instance: {}", vkbInstanceResult.error().message());

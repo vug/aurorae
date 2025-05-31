@@ -1,6 +1,7 @@
 // TODO(vug): enable validation layers for debug builds and bring debug callback messaging
 // TODO(vug): print one of each log severity level and observe colors
 // TODO(vug): setup logging function at app initialization
+// TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
 #define CROSS_PLATFORM_SURFACE_CREATION
 
 #include "VulkanContext.h"
