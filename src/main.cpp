@@ -29,12 +29,16 @@ int main() {
     aur::fatal("Failed to create GLFW window");
   }
 
-  aur::VulkanContext vulkanContext{window, kAppName};
-  aur::Swapchain swapchain{vulkanContext, window};
-
-  while (!glfwWindowShouldClose(window)) { 
-    glfwPollEvents(); 
-    // Draw calls using VulkanContext, and Swapchain can be made here
+  // TODO(vug): put these in runMainLoop() function so that RAII objects
+  // are destructed before GLFW destroys the window
+  {
+    aur::VulkanContext vulkanContext{window, kAppName};
+    aur::Swapchain swapchain{vulkanContext, window};
+  
+    while (!glfwWindowShouldClose(window)) { 
+      glfwPollEvents(); 
+      // Draw calls using VulkanContext, and Swapchain can be made here
+    }
   }
 
   glfwDestroyWindow(window);
