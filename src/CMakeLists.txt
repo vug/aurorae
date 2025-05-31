@@ -38,6 +38,7 @@ endif()
 # this adds ".../dependencies-install/Debug" to CMAKE_PREFIX_PATH.
 # find_package(Volk) will then search in paths like ".../dependencies-install/Debug/lib/cmake/volk".
 list(APPEND CMAKE_PREFIX_PATH "${AURORAE_DEPENDENCIES_DIR}/${CMAKE_BUILD_TYPE}")
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 # --- Find Dependencies ---
 # Find Vulkan (usually provided by the SDK)
