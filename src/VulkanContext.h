@@ -25,10 +25,10 @@ public:
     VkPhysicalDevice getPhysicalDevice() const { return vkbPhysicalDevice_.physical_device; }
     VkSurfaceKHR getSurface() const { return surface_; }
 
-    VkQueue getGraphicsQueue() const { return m_graphicsQueue; }
-    VkQueue getPresentQueue() const { return m_presentQueue; }
-    uint32_t getGraphicsQueueFamilyIndex() const { return m_graphicsQueueFamilyIndex; }
-    uint32_t getPresentQueueFamilyIndex() const { return m_presentQueueFamilyIndex; }
+    VkQueue getGraphicsQueue() const { return graphicsQueue_; }
+    VkQueue getPresentQueue() const { return presentQueue_; }
+    uint32_t getGraphicsQueueFamilyIndex() const { return graphicsQueueFamilyIndex_; }
+    uint32_t getPresentQueueFamilyIndex() const { return presentQueueFamilyIndex_; }
 
     const vkb::Instance& getVkbInstance() const { return vkbInstance_; }
     const vkb::PhysicalDevice& getVkbPhysicalDevice() const { return vkbPhysicalDevice_; }
@@ -40,10 +40,10 @@ private:
     vkb::Device vkbDevice_;
 
     VkSurfaceKHR surface_{VK_NULL_HANDLE};
-    VkQueue m_graphicsQueue = VK_NULL_HANDLE;
-    VkQueue m_presentQueue = VK_NULL_HANDLE;
-    uint32_t m_graphicsQueueFamilyIndex = 0;
-    uint32_t m_presentQueueFamilyIndex = 0;
+    VkQueue graphicsQueue_{VK_NULL_HANDLE};
+    VkQueue presentQueue_{VK_NULL_HANDLE};
+    uint32_t graphicsQueueFamilyIndex_{};
+    uint32_t presentQueueFamilyIndex_{};
 
     VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
 };

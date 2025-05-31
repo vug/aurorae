@@ -106,11 +106,11 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   if (!vkbDeviceResult)
     fatal("Failed to create Vulkan Logical Device: {}", vkbDeviceResult.error().message());
   vkbDevice_ = vkbDeviceResult.value();
-  uint32_t graphicsQueueFamilyIndex = vkbDevice_.get_queue_index(vkb::QueueType::graphics).value();
-  uint32_t presentQueueFamilyIndex = vkbDevice_.get_queue_index(vkb::QueueType::present).value(); // Often same as graphics
-  spdlog::trace("graphicsQueueFamilyIndex: {}, presentQueueFamilyIndex: {}", graphicsQueueFamilyIndex, presentQueueFamilyIndex);
-  [[maybe_unused]] VkQueue graphicsQueue = vkbDevice_.get_queue(vkb::QueueType::graphics).value();
-  [[maybe_unused]] VkQueue presentQueue = vkbDevice_.get_queue(vkb::QueueType::present).value();  
+  graphicsQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::graphics).value();
+  presentQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::present).value(); // Often same as graphics
+  spdlog::trace("graphicsQueueFamilyIndex: {}, presentQueueFamilyIndex: {}", graphicsQueueFamilyIndex_, presentQueueFamilyIndex_);
+  graphicsQueue_ = vkbDevice_.get_queue(vkb::QueueType::graphics).value();
+  presentQueue_ = vkbDevice_.get_queue(vkb::QueueType::present).value();  
 
   // Load Vulkan device-level function pointers
   volkLoadDevice(vkbDevice_.device); 
