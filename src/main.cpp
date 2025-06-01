@@ -8,8 +8,8 @@
 #include <glfw/glfw3.h>
 
 int main() {
-  aur::log::initialize(spdlog::level::trace);
-  aur::log::at().info("Hi!");
+  aur::log_initialize(spdlog::level::trace);
+  aur::log().info("Hi!");
 
   const uint32_t kWidth = 1024;
   const uint32_t kHeight = 768;
@@ -17,14 +17,14 @@ int main() {
 
   // Initialize GLFW and create a GLFWwindow
   if (!glfwInit())
-    aur::log::at().fatal("Failed to initialize GLFW");
+    aur::log().fatal("Failed to initialize GLFW");
   // Tell GLFW not to create an OpenGL/ES context
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
   GLFWwindow* window = glfwCreateWindow(kWidth, kHeight, kAppName.data(), nullptr, nullptr);
   if (!window) {
     glfwTerminate();
-    aur::log::at().fatal("Failed to create GLFW window");
+    aur::log().fatal("Failed to create GLFW window");
   }
 
   // TODO(vug): put these in runMainLoop() function so that RAII objects
@@ -41,6 +41,6 @@ int main() {
 
   glfwDestroyWindow(window);
   glfwTerminate();
-  aur::log::at().info("Bye!");
+  aur::log().info("Bye!");
   return 0;
 }

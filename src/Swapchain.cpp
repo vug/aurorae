@@ -33,13 +33,13 @@ void Swapchain::create(const VulkanContext& context, GLFWwindow* window,
         .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
         .build();
   if (!vkbSwapchainResult)
-    log::at().fatal("Failed to create Vulkan Swapchain: {}", vkbSwapchainResult.error().message());
+    log().fatal("Failed to create Vulkan Swapchain: {}", vkbSwapchainResult.error().message());
 
   vkbSwapchain_ = vkbSwapchainResult.value();
 
   auto imageViewsResult = vkbSwapchain_.get_image_views();
   if (!imageViewsResult)
-    log::at().fatal("Failed to get swapchain image views: {}", imageViewsResult.error().message());
+    log().fatal("Failed to get swapchain image views: {}", imageViewsResult.error().message());
   imageViews_ = imageViewsResult.value();
 }
 

@@ -6,73 +6,31 @@
 
 #include <spdlog/spdlog.h>
 
-namespace aur::log { // Changed namespace from app_logger
+namespace aur {
 
 // Call this once at the beginning of your application
-void initialize(spdlog::level::level_enum default_level = spdlog::level::info,
-                const std::string& pattern = "[%C%m%d %H:%M:%S.%e] [%^%l%$] [T%t] [%s:%# @ %!] %v", // Matched previous default
+void log_initialize(spdlog::level::level_enum default_level = spdlog::level::info,
+                const std::string& pattern = "[%C%m%d %H%M:%S.%e] [%^%l%$] %v @%s:%# on T%t [%!]", // Matched previous default
                 spdlog::level::level_enum flush_level = spdlog::level::warn);
 
-namespace detail { // Internal implementation details
+namespace detail { 
+    template <typename... Args>
+    inline void log_at_loc(
+        const std::source_location& loc,
+        spdlog::level::level_enum level,
+        std::format_string<Args...> fmt, Args &&...args) {
+        spdlog::source_loc spdlog_source_loc{loc.file_name(), static_cast<int>(loc.line()), loc.function_name()};
+        if (spdlog::default_logger_raw()->should_log(level)) {
+            spdlog::default_logger_raw()->log(spdlog_source_loc, level, fmt, std::forward<Args>(args)...);
+        }
+    }
 
-    inline spdlog::source_loc make_spdlog_source_loc(const std::source_location& loc) {
-        return {loc.file_name(), static_cast<int>(loc.line()), loc.function_name()};
-    }
-
-    // Renamed _impl to _log_at_loc for clarity with the proxy
-    template <typename... Args>
-    inline void log_trace_at_loc(
-        const std::source_location& loc,
-        spdlog::format_string_t<Args...> fmt, Args &&...args) {
-        if (spdlog::default_logger_raw()->should_log(spdlog::level::trace)) {
-            spdlog::default_logger_raw()->log(make_spdlog_source_loc(loc), spdlog::level::trace, fmt, std::forward<Args>(args)...);
-        }
-    }
-    template <typename... Args>
-    inline void log_debug_at_loc(
-        const std::source_location& loc,
-        spdlog::format_string_t<Args...> fmt, Args &&...args) {
-        if (spdlog::default_logger_raw()->should_log(spdlog::level::debug)) {
-            spdlog::default_logger_raw()->log(make_spdlog_source_loc(loc), spdlog::level::debug, fmt, std::forward<Args>(args)...);
-        }
-    }
-    template <typename... Args>
-    inline void log_info_at_loc(
-        const std::source_location& loc,
-        spdlog::format_string_t<Args...> fmt, Args &&...args) {
-        if (spdlog::default_logger_raw()->should_log(spdlog::level::info)) {
-            spdlog::default_logger_raw()->log(make_spdlog_source_loc(loc), spdlog::level::info, fmt, std::forward<Args>(args)...);
-        }
-    }
-    template <typename... Args>
-    inline void log_warn_at_loc(
-        const std::source_location& loc,
-        spdlog::format_string_t<Args...> fmt, Args &&...args) {
-        if (spdlog::default_logger_raw()->should_log(spdlog::level::warn)) {
-            spdlog::default_logger_raw()->log(make_spdlog_source_loc(loc), spdlog::level::warn, fmt, std::forward<Args>(args)...);
-        }
-    }
-    template <typename... Args>
-    inline void log_error_at_loc(
-        const std::source_location& loc,
-        spdlog::format_string_t<Args...> fmt, Args &&...args) {
-        if (spdlog::default_logger_raw()->should_log(spdlog::level::err)) {
-            spdlog::default_logger_raw()->log(make_spdlog_source_loc(loc), spdlog::level::err, fmt, std::forward<Args>(args)...);
-        }
-    }
-    template <typename... Args>
-    inline void log_critical_at_loc(
-        const std::source_location& loc,
-        spdlog::format_string_t<Args...> fmt, Args &&...args) {
-        if (spdlog::default_logger_raw()->should_log(spdlog::level::critical)) {
-            spdlog::default_logger_raw()->log(make_spdlog_source_loc(loc), spdlog::level::critical, fmt, std::forward<Args>(args)...);
-        }
-    }
     template<typename... Args>
     [[noreturn]] inline void log_fatal_at_loc(
         const std::source_location& loc,
-        spdlog::format_string_t<Args...> fmt, Args&&... args) {
-        spdlog::default_logger_raw()->log(make_spdlog_source_loc(loc), spdlog::level::critical, fmt, std::forward<Args>(args)...);
+        std::format_string<Args...> fmt, Args&&... args) {
+        spdlog::source_loc spdlog_source_loc{loc.file_name(), static_cast<int>(loc.line()), loc.function_name()};
+        spdlog::default_logger_raw()->log(spdlog_source_loc, spdlog::level::critical, fmt, std::forward<Args>(args)...);
         spdlog::default_logger_raw()->flush(); 
         std::exit(EXIT_FAILURE);
     }
@@ -84,37 +42,37 @@ namespace detail { // Internal implementation details
         explicit LoggerProxy(const std::source_location& loc) : loc_(loc) {}
 
         template <typename... Args>
-        void trace(spdlog::format_string_t<Args...> fmt, Args&&... args) const {
-            log_trace_at_loc(loc_, fmt, std::forward<Args>(args)...);
+        void trace(std::format_string<Args...> fmt, Args&&... args) const {
+            log_at_loc(loc_, spdlog::level::trace, fmt, std::forward<Args>(args)...);
         }
 
         template <typename... Args>
-        void debug(spdlog::format_string_t<Args...> fmt, Args&&... args) const {
-            log_debug_at_loc(loc_, fmt, std::forward<Args>(args)...);
+        void debug(std::format_string<Args...> fmt, Args&&... args) const {
+            log_at_loc(loc_, spdlog::level::debug, fmt, std::forward<Args>(args)...);
         }
 
         template <typename... Args>
-        void info(spdlog::format_string_t<Args...> fmt, Args&&... args) const {
-            log_info_at_loc(loc_, fmt, std::forward<Args>(args)...);
+        void info(std::format_string<Args...> fmt, Args&&... args) const {
+            log_at_loc(loc_, spdlog::level::info, fmt, std::forward<Args>(args)...);
         }
         
         template <typename... Args>
-        void warn(spdlog::format_string_t<Args...> fmt, Args&&... args) const {
-            log_warn_at_loc(loc_, fmt, std::forward<Args>(args)...);
+        void warn(std::format_string<Args...> fmt, Args&&... args) const {
+            log_at_loc(loc_, spdlog::level::warn, fmt, std::forward<Args>(args)...);
         }
 
         template <typename... Args>
-        void error(spdlog::format_string_t<Args...> fmt, Args&&... args) const {
-            log_error_at_loc(loc_, fmt, std::forward<Args>(args)...);
+        void error(std::format_string<Args...> fmt, Args&&... args) const {
+            log_at_loc(loc_, fmt, spdlog::level::err, std::forward<Args>(args)...);
         }
 
         template <typename... Args>
-        void critical(spdlog::format_string_t<Args...> fmt, Args&&... args) const {
-            log_critical_at_loc(loc_, fmt, std::forward<Args>(args)...);
+        void critical(std::format_string<Args...> fmt, Args&&... args) const {
+            log_at_loc(loc_, fmt, spdlog::level::critical, std::forward<Args>(args)...);
         }
         
         template<typename... Args>
-        [[noreturn]] void fatal(spdlog::format_string_t<Args...> fmt, Args&&... args) const {
+        [[noreturn]] void fatal(std::format_string<Args...> fmt, Args&&... args) const {
             log_fatal_at_loc(loc_, fmt, std::forward<Args>(args)...);
         }
 
@@ -124,11 +82,9 @@ namespace detail { // Internal implementation details
 
 } // namespace detail
 
-// Public-facing logging functions
-// Public API: a function that returns the proxy object.
-// [[nodiscard]] encourages the user to actually call a logging method on the returned proxy.
-[[nodiscard]] inline detail::LoggerProxy at(const std::source_location& loc = std::source_location::current()) {
+// Public-facing logging function that returns the proxy object.
+[[nodiscard]] inline detail::LoggerProxy log(const std::source_location& loc = std::source_location::current()) {
     return detail::LoggerProxy(loc);
 }
 
-} // namespace aur::log
+} // namespace aur

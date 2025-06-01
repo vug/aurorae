@@ -1,11 +1,11 @@
-#include "Logger.h" // Ensure this path is correct for your project structure
+#include "Logger.h"
 #include <spdlog/sinks/stdout_color_sinks.h> // For console logging
-#include <memory>     // For std::make_shared
-#include <string>     // For std::string in initialize
+#include <memory>
+#include <string>
 
-namespace aur::log {
+namespace aur {
 
-void initialize(spdlog::level::level_enum default_level,
+void log_initialize(spdlog::level::level_enum default_level,
                 const std::string& pattern,
                 spdlog::level::level_enum flush_level) {
     // Create a color console sink.
@@ -35,4 +35,4 @@ void initialize(spdlog::level::level_enum default_level,
     spdlog::flush_on(flush_level);
 }
 
-} // namespace aur::log
+} // namespace aur
