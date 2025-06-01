@@ -22,11 +22,14 @@ class Swapchain {
 
   void recreate(const VulkanContext& context, GLFWwindow* window);
 
-  VkSwapchainKHR getSwapchain() const { return vkbSwapchain_.swapchain; }
+  const VkSwapchainKHR& getSwapchain() const { return vkbSwapchain_.swapchain; }
   VkFormat getImageFormat() const { return vkbSwapchain_.image_format; }
   VkExtent2D getImageExtent() const { return vkbSwapchain_.extent; }
   const std::vector<VkImageView>& getImageViews() const {
     return imageViews_;
+  }
+  const std::vector<VkImage>& getImages() const {
+    return images_;
   }
   uint32_t getImageCount() const { return vkbSwapchain_.image_count; }
 
@@ -38,6 +41,7 @@ class Swapchain {
   vkb::Swapchain vkbSwapchain_;
   GLFWwindow* window_{};
   std::vector<VkImageView> imageViews_;
+  std::vector<VkImage> images_;
 };
 
 }  // namespace aur

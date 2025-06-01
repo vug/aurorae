@@ -41,6 +41,11 @@ void Swapchain::create(const VulkanContext& context, GLFWwindow* window,
   if (!imageViewsResult)
     log().fatal("Failed to get swapchain image views: {}", imageViewsResult.error().message());
   imageViews_ = imageViewsResult.value();
+
+  auto imagesResult = vkbSwapchain_.get_images();
+  if (!imagesResult)
+    log().fatal("Failed to get swapchain images: {}", imagesResult.error().message());
+  images_ = imagesResult.value();
 }
 
 void Swapchain::destroy() {
