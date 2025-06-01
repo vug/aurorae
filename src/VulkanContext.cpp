@@ -1,6 +1,6 @@
 #if defined(CROSS_PLATFORM_SURFACE_CREATION)
-  VkResult glfwCreateWindowSurface(VkInstance instance, GLFWwindow* window, const VkAllocationCallbacks* allocator, VkSurfaceKHR* surface);
-  int glfwGetError(const char** description);
+VkResult glfwCreateWindowSurface(VkInstance instance, GLFWwindow* window, const VkAllocationCallbacks* allocator, VkSurfaceKHR* surface);
+int glfwGetError(const char** description);
 #else
 #include <glfw/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -127,22 +127,23 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .select();
   if (!vkbPhysicalDeviceResult)
     log().fatal("Failed to select Vulkan Physical Device: {}", vkbPhysicalDeviceResult.error().message());    
-  vkb::PhysicalDevice vkbPhysicalDevice = vkbPhysicalDeviceResult.value();
+  vkbPhysicalDevice_ = vkbPhysicalDeviceResult.value();
 
   // Create logical device
-  vkb::DeviceBuilder deviceBuilder(vkbPhysicalDevice);
+  vkb::DeviceBuilder deviceBuilder(vkbPhysicalDevice_);
   auto vkbDeviceResult = deviceBuilder.build();
   if (!vkbDeviceResult)
     log().fatal("Failed to create Vulkan Logical Device: {}", vkbDeviceResult.error().message());
   vkbDevice_ = vkbDeviceResult.value();
+  // Load Vulkan device-level function pointers
+  volkLoadDevice(vkbDevice_.device); 
+  
   graphicsQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::graphics).value();
   presentQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::present).value(); // Often same as graphics
   log().trace("graphicsQueueFamilyIndex: {}, presentQueueFamilyIndex: {}", graphicsQueueFamilyIndex_, presentQueueFamilyIndex_);
   graphicsQueue_ = vkbDevice_.get_queue(vkb::QueueType::graphics).value();
   presentQueue_ = vkbDevice_.get_queue(vkb::QueueType::present).value();  
 
-  // Load Vulkan device-level function pointers
-  volkLoadDevice(vkbDevice_.device); 
 }
 
 VulkanContext::~VulkanContext() {
