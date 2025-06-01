@@ -44,9 +44,38 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .enable_extension(VK_KHR_SURFACE_EXTENSION_NAME) // not necessary
     .require_api_version(VK_MAKE_API_VERSION(0, 1, 3, 0));
   if (enableValidationLayers) {
+    PFN_vkDebugUtilsMessengerCallbackEXT debugCallback = [](VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    [[maybe_unused]] void* pUserData) -> VkBool32 {
+      const char* severity = vkb::to_string_message_severity(messageSeverity);
+      const char* type = vkb::to_string_message_type(messageType);      
+      switch(messageSeverity) {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+          log().trace("Vulkan [{}][{}]: {}", severity, type, pCallbackData->pMessage);
+          // can return VK_FALSE here to ignore verbose messages
+          break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+          log().info("Vulkan [{}][{}]: {}", severity, type, pCallbackData->pMessage);
+          break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+          log().warn("Vulkan [{}][{}]: {}", severity, type, pCallbackData->pMessage);
+          break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+          log().error("Vulkan [{}][{}]: {}", severity, type, pCallbackData->pMessage);
+          break;
+        default:
+          log().critical("Unknown Vulkan message severity: {}", static_cast<int>(messageSeverity));
+      }
+      return VK_FALSE;
+      // Return true for validation to skip passing down the call to the driver
+      // and return back VK_ERROR_VALIDATION_FAILED_EXT from VK function calls     
+      // return VK_TRUE;
+    };
     vkbInstanceBuilder
       .enable_validation_layers()
-      .use_default_debug_messenger();
+      // .set_debug_callback(vkb::default_debug_callback)
+      .set_debug_callback(debugCallback);
   }
   vkb::Result<vkb::Instance> vkbInstanceResult = vkbInstanceBuilder.build();
   if (!vkbInstanceResult)

@@ -63,12 +63,12 @@ namespace detail {
 
         template <typename... Args>
         void error(std::format_string<Args...> fmt, Args&&... args) const {
-            log_at_loc(loc_, fmt, spdlog::level::err, std::forward<Args>(args)...);
+            log_at_loc(loc_, spdlog::level::err, fmt, std::forward<Args>(args)...);
         }
 
         template <typename... Args>
         void critical(std::format_string<Args...> fmt, Args&&... args) const {
-            log_at_loc(loc_, fmt, spdlog::level::critical, std::forward<Args>(args)...);
+            log_at_loc(loc_, spdlog::level::critical, fmt, std::forward<Args>(args)...);
         }
         
         template<typename... Args>
