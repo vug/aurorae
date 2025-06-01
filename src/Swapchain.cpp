@@ -2,8 +2,8 @@
 
 #include <glfw/glfw3.h>
 
-#include "utils.h"
-#include "VulkanContext.h"
+#include "Logger.h"
+#include "VulkanContext.h" // Includes Logger.h transitively or directly
 
 namespace aur {
 
@@ -33,13 +33,13 @@ void Swapchain::create(const VulkanContext& context, GLFWwindow* window,
         .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
         .build();
   if (!vkbSwapchainResult)
-    fatal("Failed to create Vulkan Swapchain: {}", vkbSwapchainResult.error().message());        
+    log::at().fatal("Failed to create Vulkan Swapchain: {}", vkbSwapchainResult.error().message());
 
   vkbSwapchain_ = vkbSwapchainResult.value();
 
   auto imageViewsResult = vkbSwapchain_.get_image_views();
   if (!imageViewsResult)
-    fatal("Failed to get swapchain image views: {}", imageViewsResult.error().message());
+    log::at().fatal("Failed to get swapchain image views: {}", imageViewsResult.error().message());
   imageViews_ = imageViewsResult.value();
 }
 

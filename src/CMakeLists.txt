@@ -76,6 +76,7 @@ message(STATUS "glfw include dirs: ${GLFW_INCLUDE_DIR}")
 
 add_executable(Aurorae 
     main.cpp
+    Logger.h Logger.cpp
     VulkanContext.h VulkanContext.cpp
     Swapchain.h Swapchain.cpp
 )
@@ -83,7 +84,7 @@ add_executable(Aurorae
 target_compile_features(Aurorae PRIVATE cxx_std_23)
 message(STATUS "EXTERNAL: ${PROJECT_SOURCE_DIR}/../superbuild")
 target_compile_options(Aurorae PRIVATE /W4 /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0)
-target_compile_definitions(Aurorae PRIVATE SPDLOG_USE_STD_FORMAT)
+target_compile_definitions(Aurorae PRIVATE SPDLOG_USE_STD_FORMAT SPDLOG_USE_STD_SOURCE_LOCATION)
 
 target_link_libraries(Aurorae PRIVATE
     Vulkan::Vulkan

@@ -12,7 +12,7 @@
 #include <volk/volk.h>
 
 #include "VulkanContext.h"
-#include "utils.h"
+#include "Logger.h"
 
 
 namespace aur {
@@ -27,11 +27,11 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion, vkGetInstanceProcAddr etc.
   VkResult volkInitResult = volkInitialize();
   if (volkInitResult != VK_SUCCESS)
-    fatal("Failed to initialize Volk: {}", static_cast<int>(volkInitResult));
+    log::at().fatal("Failed to initialize Volk: {}", static_cast<int>(volkInitResult));
   {
     uint32_t instanceVersion{};
     vkEnumerateInstanceVersion(&instanceVersion);
-    spdlog::trace("Vulkan Instance Version (via Volk): {}.{}.{}",
+    log::at().trace("Vulkan Instance Version (via Volk): {}.{}.{}",
                   VK_API_VERSION_MAJOR(instanceVersion),
                   VK_API_VERSION_MINOR(instanceVersion),
                   VK_API_VERSION_PATCH(instanceVersion));   
@@ -50,7 +50,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   }
   vkb::Result<vkb::Instance> vkbInstanceResult = vkbInstanceBuilder.build();
   if (!vkbInstanceResult)
-    fatal("Failed to create Vulkan instance: {}", vkbInstanceResult.error().message());
+    log::at().fatal("Failed to create Vulkan instance: {}", vkbInstanceResult.error().message());
   vkbInstance_ = vkbInstanceResult.value();
   volkLoadInstance(vkbInstance_); // loads Vulkan instance-level function pointers
 
@@ -62,9 +62,9 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   if (glfwCreateWindowSurface(vkbInstance_.instance, window, nullptr, &surface_) != VK_SUCCESS) {
     const char* errorMsg;
     if(glfwGetError(&errorMsg))
-      fatal("Failed to create Vulkan surface: {}", errorMsg);
+      log::at().fatal("Failed to create Vulkan surface: {}", errorMsg);
     else
-      fatal("Failed to create Vulkan surface: Unknown error.");
+      log::at().fatal("Failed to create Vulkan surface: Unknown error.");
   }
 #else
   VkWin32SurfaceCreateInfoKHR sci{
@@ -73,7 +73,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .hwnd = glfwGetWin32Window(window),
   };
   if(vkCreateWin32SurfaceKHR(vkbInstance_.instance, &sci, nullptr, &surface_) != VK_SUCCESS)
-    fatal("Failed to create Win32 Vulkan surface.");
+    log::at().fatal("Failed to create Win32 Vulkan surface.");
 #endif
 
   // Select physical device
@@ -97,14 +97,14 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .add_required_extension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
     .select();
   if (!vkbPhysicalDeviceResult)
-    fatal("Failed to select Vulkan Physical Device: {}", vkbPhysicalDeviceResult.error().message());    
+    log::at().fatal("Failed to select Vulkan Physical Device: {}", vkbPhysicalDeviceResult.error().message());    
   vkb::PhysicalDevice vkbPhysicalDevice = vkbPhysicalDeviceResult.value();
 
   // Create logical device
   vkb::DeviceBuilder deviceBuilder(vkbPhysicalDevice);
   auto vkbDeviceResult = deviceBuilder.build();
   if (!vkbDeviceResult)
-    fatal("Failed to create Vulkan Logical Device: {}", vkbDeviceResult.error().message());
+    log::at().fatal("Failed to create Vulkan Logical Device: {}", vkbDeviceResult.error().message());
   vkbDevice_ = vkbDeviceResult.value();
   graphicsQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::graphics).value();
   presentQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::present).value(); // Often same as graphics
