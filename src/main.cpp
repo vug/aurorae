@@ -59,19 +59,34 @@ int main() {
     if (vkAllocateCommandBuffers(vulkanContext.getDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
       aur::log().fatal("Failed to allocate command buffers!");
 
+    // Synchronization objects
     const VkSemaphoreCreateInfo semaphoreInfo {
       .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
     };
     VkSemaphore imageAvailableSemaphore;
+    VkSemaphore renderFinishedSemaphore;
     if (vkCreateSemaphore(vulkanContext.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS)
-        aur::log().fatal("Failed to create image available semaphore!");        
+        aur::log().fatal("Failed to create image available semaphore!");
+    if (vkCreateSemaphore(vulkanContext.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
+        aur::log().fatal("Failed to create render finished semaphore!");
+    const VkFenceCreateInfo fenceInfo { 
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, 
+      .flags = VK_FENCE_CREATE_SIGNALED_BIT // Create signaled for first frame
+    }; 
+    VkFence inFlightFence;
+    if (vkCreateFence(vulkanContext.getDevice(), &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS)
+        aur::log().fatal("Failed to create in-flight fence!");
+
     while (!glfwWindowShouldClose(window)) {
       glfwPollEvents();
 
-      uint32_t imageIndex{};
+      // Wait for the previous frame to finish before starting to record commands for the new one
+      vkWaitForFences(vulkanContext.getDevice(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+      vkResetFences(vulkanContext.getDevice(), 1, &inFlightFence); // Reset fence for current frame's submission
+      // No explicit vkResetCommandBuffer needed if VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT is used
+      
       // Acquire an image from the swapchain.
-      // We use UINT64_MAX as the timeout to wait indefinitely until an image is available.
-      // VK_NULL_HANDLE for semaphore and fence simplifies synchronization, relying on vkQueueWaitIdle later.
+      uint32_t imageIndex{};
       VkResult result = vkAcquireNextImageKHR(vulkanContext.getDevice(), swapchain.getSwapchain(), UINT64_MAX, 
         imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
@@ -86,9 +101,8 @@ int main() {
 
       const VkCommandBufferBeginInfo beginInfo {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, // Implicitly resets the command buffer
       };
-
       if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
           aur::log().fatal("Failed to begin recording command buffer!");
 
@@ -166,6 +180,7 @@ int main() {
       // Submit the command buffer
       const std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphore};
       const std::array<VkPipelineStageFlags, 1> waitStages{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+      const std::array<VkSemaphore, 1> signalSemaphores{renderFinishedSemaphore};
       const VkSubmitInfo submitInfo {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
@@ -173,18 +188,19 @@ int main() {
         .pWaitDstStageMask = waitStages.data(),
         .commandBufferCount = 1,
         .pCommandBuffers = &commandBuffer,
+        .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
+        .pSignalSemaphores = signalSemaphores.data(),
       };
       // No semaphores or fences needed here due to vkQueueWaitIdle and blocking acquire
-      if (vkQueueSubmit(vulkanContext.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+      if (vkQueueSubmit(vulkanContext.getGraphicsQueue(), 1, &submitInfo, inFlightFence) != VK_SUCCESS) {
           aur::log().fatal("Failed to submit draw command buffer!");
       }
-
-      // Wait for the graphics queue to become idle. This ensures rendering is complete.
-      vkQueueWaitIdle(vulkanContext.getGraphicsQueue());
 
       // Present the image
       const VkPresentInfoKHR presentInfo {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()), // Wait for rendering to finish
+        .pWaitSemaphores = signalSemaphores.data(),
         .swapchainCount = 1,
         .pSwapchains = &swapchain.getSwapchain(),
         .pImageIndices = &imageIndex,
@@ -196,15 +212,12 @@ int main() {
       } else if (result != VK_SUCCESS) {
           aur::log().fatal("Failed to present swap chain image!");
       }
-
-      // Reset command buffer for the next frame. This is safe because we waited for GPU idle.
-      vkResetCommandBuffer(commandBuffer, 0);
     }
 
-    // Wait for the device to be idle before destroying resources to ensure
-    // the command buffer is no longer in use.
     vkDeviceWaitIdle(vulkanContext.getDevice());
     vkDestroySemaphore(vulkanContext.getDevice(), imageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(vulkanContext.getDevice(), renderFinishedSemaphore, nullptr);
+    vkDestroyFence(vulkanContext.getDevice(), inFlightFence, nullptr);
     vkDestroyCommandPool(vulkanContext.getDevice(), commandPool, nullptr);
     // Command buffer is implicitly freed with the pool
   }
