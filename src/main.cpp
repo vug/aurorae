@@ -1,6 +1,8 @@
 // TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
 #define CROSS_PLATFORM_SURFACE_CREATION
 
+#include <array>
+
 #include <volk/volk.h>
 // explicit inclusion of vulkan.h is not necessary but is a good practice
 #define VK_NO_PROTOTYPES
@@ -44,7 +46,7 @@ int main() {
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     VkCommandPool commandPool{};
     if (vkCreateCommandPool(vulkanContext.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
-        aur::log().fatal("Failed to create command pool!");
+      aur::log().fatal("Failed to create command pool!");
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -53,8 +55,15 @@ int main() {
     allocInfo.commandBufferCount = 1;
     VkCommandBuffer commandBuffer;
     if (vkAllocateCommandBuffers(vulkanContext.getDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
-        aur::log().fatal("Failed to allocate command buffers!");
+      aur::log().fatal("Failed to allocate command buffers!");
 
+    // Create a semaphore to signal when a swapchain image is available
+    VkSemaphoreCreateInfo semaphoreInfo{
+      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+    };
+    VkSemaphore imageAvailableSemaphore;
+    if (vkCreateSemaphore(vulkanContext.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS)
+        aur::log().fatal("Failed to create image available semaphore!");        
     while (!glfwWindowShouldClose(window)) {
       glfwPollEvents();
 
@@ -62,7 +71,7 @@ int main() {
       // Acquire an image from the swapchain.
       // We use UINT64_MAX as the timeout to wait indefinitely until an image is available.
       // VK_NULL_HANDLE for semaphore and fence simplifies synchronization, relying on vkQueueWaitIdle later.
-      VkResult result = vkAcquireNextImageKHR(vulkanContext.getDevice(), swapchain.getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &imageIndex);
+      VkResult result = vkAcquireNextImageKHR(vulkanContext.getDevice(), swapchain.getSwapchain(), UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
       if (result == VK_ERROR_OUT_OF_DATE_KHR) {
           aur::log().warn("Swapchain out of date. TODO: Implement swapchain recreation.");
@@ -151,10 +160,16 @@ int main() {
           aur::log().fatal("Failed to record command buffer!");
 
       // Submit the command buffer
-      VkSubmitInfo submitInfo{};
-      submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-      submitInfo.commandBufferCount = 1;
-      submitInfo.pCommandBuffers = &commandBuffer;
+      std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphore};
+      std::array<VkPipelineStageFlags, 1> waitStages{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+      VkSubmitInfo submitInfo{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
+        .pWaitSemaphores = waitSemaphores.data(),
+        .pWaitDstStageMask = waitStages.data(),
+        .commandBufferCount = 1,
+        .pCommandBuffers = &commandBuffer,
+      };
       // No semaphores or fences needed here due to vkQueueWaitIdle and blocking acquire
       if (vkQueueSubmit(vulkanContext.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
           aur::log().fatal("Failed to submit draw command buffer!");
@@ -184,6 +199,7 @@ int main() {
     // Wait for the device to be idle before destroying resources to ensure
     // the command buffer is no longer in use.
     vkDeviceWaitIdle(vulkanContext.getDevice());
+    vkDestroySemaphore(vulkanContext.getDevice(), imageAvailableSemaphore, nullptr);
     vkDestroyCommandPool(vulkanContext.getDevice(), commandPool, nullptr);
     // Command buffer is implicitly freed with the pool
   }
