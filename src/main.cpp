@@ -40,19 +40,22 @@ int main() {
     aur::VulkanContext vulkanContext{window, kAppName};
     aur::Swapchain swapchain{vulkanContext, window};
 
-    VkCommandPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = vulkanContext.getGraphicsQueueFamilyIndex();
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    VkCommandPoolCreateInfo poolInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+      .queueFamilyIndex = vulkanContext.getGraphicsQueueFamilyIndex(),
+    };
+
     VkCommandPool commandPool{};
     if (vkCreateCommandPool(vulkanContext.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
       aur::log().fatal("Failed to create command pool!");
 
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = commandPool;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = 1;
+    VkCommandBufferAllocateInfo allocInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = commandPool,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = 1,
+    };
     VkCommandBuffer commandBuffer;
     if (vkAllocateCommandBuffers(vulkanContext.getDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
       aur::log().fatal("Failed to allocate command buffers!");
@@ -82,31 +85,34 @@ int main() {
           aur::log().fatal("Failed to acquire swap chain image!");
       }
 
-      VkCommandBufferBeginInfo beginInfo{};
-      beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-      beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // We re-record this buffer each frame
+      VkCommandBufferBeginInfo beginInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+      };
+
       if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
           aur::log().fatal("Failed to begin recording command buffer!");
 
-      // Define subresource range once, as it's the same for both barriers
-      VkImageSubresourceRange subresourceRange{};
-      subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      subresourceRange.baseMipLevel = 0;
-      subresourceRange.levelCount = 1;
-      subresourceRange.baseArrayLayer = 0;
-      subresourceRange.layerCount = 1;
+      VkImageSubresourceRange subresourceRange{
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+      };
 
       // 1. Transition swapchain image from UNDEFINED to COLOR_ATTACHMENT_OPTIMAL
-      VkImageMemoryBarrier barrierToColorAttachment{};
-      barrierToColorAttachment.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-      barrierToColorAttachment.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-      barrierToColorAttachment.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-      barrierToColorAttachment.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-      barrierToColorAttachment.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-      barrierToColorAttachment.image = swapchain.getImages()[imageIndex];
-      barrierToColorAttachment.subresourceRange = subresourceRange;
-      barrierToColorAttachment.srcAccessMask = 0; // No prior operations on this image in this command buffer that need to be synchronized
-      barrierToColorAttachment.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // the clear via loadOp and any potential drawing) will write to the color attachment
+      VkImageMemoryBarrier barrierToColorAttachment{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .srcAccessMask = 0, // No prior operations on this image in this command buffer that need to be synchronized
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // the clear via loadOp and any potential drawing) will write to the color attachment
+        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = swapchain.getImages()[imageIndex],
+        .subresourceRange = subresourceRange,
+      };
 
       vkCmdPipelineBarrier(
           commandBuffer,
@@ -115,22 +121,22 @@ int main() {
           0, 0, nullptr, 0, nullptr, 1, &barrierToColorAttachment);
 
       // 2. Begin dynamic rendering (which includes the clear operation)
-      VkRenderingAttachmentInfoKHR colorAttachmentInfo{};
-      colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
-      colorAttachmentInfo.imageView = swapchain.getImageViews()[imageIndex];
-      colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-      colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-      colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Important to store the cleared result
-      colorAttachmentInfo.clearValue.color = {{0.1f, 0.1f, 0.4f, 1.0f}}; // A pleasant dark blue
+      VkRenderingAttachmentInfoKHR colorAttachmentInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
+        .imageView = swapchain.getImageViews()[imageIndex],
+        .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE, // Important to store the cleared result
+        .clearValue = {{0.1f, 0.1f, 0.4f, 1.0f}}, // A pleasant dark blue
+      };
 
-      VkRenderingInfoKHR renderingInfo{};
-      renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
-      renderingInfo.renderArea.offset = {0, 0};
-      renderingInfo.renderArea.extent = swapchain.getImageExtent();
-      renderingInfo.layerCount = 1;
-      renderingInfo.colorAttachmentCount = 1;
-      renderingInfo.pColorAttachments = &colorAttachmentInfo;
-      // No depth or stencil attachments for this simple clear
+      VkRenderingInfoKHR renderingInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
+        .renderArea = {{0, 0}, swapchain.getImageExtent()},
+        .layerCount = 1,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &colorAttachmentInfo,
+      };
 
       vkCmdBeginRenderingKHR(commandBuffer, &renderingInfo);
       // No drawing commands are needed if we only want to clear.
@@ -138,17 +144,18 @@ int main() {
       vkCmdEndRenderingKHR(commandBuffer);
 
       // 3. Transition swapchain image from COLOR_ATTACHMENT_OPTIMAL to PRESENT_SRC_KHR
-      VkImageMemoryBarrier barrierToPresent{};
-      barrierToPresent.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-      barrierToPresent.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-      barrierToPresent.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-      barrierToPresent.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-      barrierToPresent.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-      barrierToPresent.image = swapchain.getImages()[imageIndex];
-      barrierToPresent.subresourceRange = subresourceRange;
-      barrierToPresent.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // Ensure clear/store op is finished
-      barrierToPresent.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;    // Presentation engine will read it (safer)
+      VkImageMemoryBarrier barrierToPresent{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // Ensure clear/store op is finished
+        .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,    // Presentation engine will read it (safer)
                                                                     // Could be 0 if presentation engine access is implicitly handled
+        .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = swapchain.getImages()[imageIndex],
+        .subresourceRange = subresourceRange,
+      };
 
       vkCmdPipelineBarrier(
           commandBuffer,
@@ -179,11 +186,12 @@ int main() {
       vkQueueWaitIdle(vulkanContext.getGraphicsQueue());
 
       // Present the image
-      VkPresentInfoKHR presentInfo{};
-      presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-      presentInfo.swapchainCount = 1;
-      presentInfo.pSwapchains = &swapchain.getSwapchain();
-      presentInfo.pImageIndices = &imageIndex;
+      VkPresentInfoKHR presentInfo{
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .swapchainCount = 1,
+        .pSwapchains = &swapchain.getSwapchain(),
+        .pImageIndices = &imageIndex,
+      };
       result = vkQueuePresentKHR(vulkanContext.getGraphicsQueue(), &presentInfo);
       if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
           aur::log().warn("Swapchain out of date or suboptimal during present. TODO: Implement swapchain recreation.");
