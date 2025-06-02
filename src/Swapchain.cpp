@@ -30,6 +30,8 @@ void Swapchain::create(const VulkanContext& context, GLFWwindow* window,
           .format = VK_FORMAT_B8G8R8A8_SRGB,
           .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
         })
+        .set_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | // to display
+                               VK_IMAGE_USAGE_TRANSFER_DST_BIT) // to clear via vkCmdClearColorImage (or other transfers such as blit, copy etc)
         .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
         .build();
   if (!vkbSwapchainResult)
