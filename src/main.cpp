@@ -40,17 +40,16 @@ int main() {
     aur::VulkanContext vulkanContext{window, kAppName};
     aur::Swapchain swapchain{vulkanContext, window};
 
-    VkCommandPoolCreateInfo poolInfo{
+    const VkCommandPoolCreateInfo poolInfo {
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
       .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
       .queueFamilyIndex = vulkanContext.getGraphicsQueueFamilyIndex(),
     };
-
     VkCommandPool commandPool{};
     if (vkCreateCommandPool(vulkanContext.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
       aur::log().fatal("Failed to create command pool!");
 
-    VkCommandBufferAllocateInfo allocInfo{
+    const VkCommandBufferAllocateInfo allocInfo {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = commandPool,
       .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
@@ -60,8 +59,7 @@ int main() {
     if (vkAllocateCommandBuffers(vulkanContext.getDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
       aur::log().fatal("Failed to allocate command buffers!");
 
-    // Create a semaphore to signal when a swapchain image is available
-    VkSemaphoreCreateInfo semaphoreInfo{
+    const VkSemaphoreCreateInfo semaphoreInfo {
       .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
     };
     VkSemaphore imageAvailableSemaphore;
@@ -70,11 +68,12 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
       glfwPollEvents();
 
-      uint32_t imageIndex;
+      uint32_t imageIndex{};
       // Acquire an image from the swapchain.
       // We use UINT64_MAX as the timeout to wait indefinitely until an image is available.
       // VK_NULL_HANDLE for semaphore and fence simplifies synchronization, relying on vkQueueWaitIdle later.
-      VkResult result = vkAcquireNextImageKHR(vulkanContext.getDevice(), swapchain.getSwapchain(), UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+      VkResult result = vkAcquireNextImageKHR(vulkanContext.getDevice(), swapchain.getSwapchain(), UINT64_MAX, 
+        imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
       if (result == VK_ERROR_OUT_OF_DATE_KHR) {
           aur::log().warn("Swapchain out of date. TODO: Implement swapchain recreation.");
@@ -85,7 +84,7 @@ int main() {
           aur::log().fatal("Failed to acquire swap chain image!");
       }
 
-      VkCommandBufferBeginInfo beginInfo{
+      const VkCommandBufferBeginInfo beginInfo {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
       };
@@ -93,7 +92,7 @@ int main() {
       if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
           aur::log().fatal("Failed to begin recording command buffer!");
 
-      VkImageSubresourceRange subresourceRange{
+      const VkImageSubresourceRange subresourceRange {
         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
         .baseMipLevel = 0,
         .levelCount = 1,
@@ -102,7 +101,7 @@ int main() {
       };
 
       // 1. Transition swapchain image from UNDEFINED to COLOR_ATTACHMENT_OPTIMAL
-      VkImageMemoryBarrier barrierToColorAttachment{
+      const VkImageMemoryBarrier barrierToColorAttachment {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .srcAccessMask = 0, // No prior operations on this image in this command buffer that need to be synchronized
         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // the clear via loadOp and any potential drawing) will write to the color attachment
@@ -113,7 +112,6 @@ int main() {
         .image = swapchain.getImages()[imageIndex],
         .subresourceRange = subresourceRange,
       };
-
       vkCmdPipelineBarrier(
           commandBuffer,
           VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,            // Before any operations
@@ -121,7 +119,7 @@ int main() {
           0, 0, nullptr, 0, nullptr, 1, &barrierToColorAttachment);
 
       // 2. Begin dynamic rendering (which includes the clear operation)
-      VkRenderingAttachmentInfoKHR colorAttachmentInfo{
+      const VkRenderingAttachmentInfoKHR colorAttachmentInfo {
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
         .imageView = swapchain.getImageViews()[imageIndex],
         .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -130,7 +128,7 @@ int main() {
         .clearValue = {{0.1f, 0.1f, 0.4f, 1.0f}}, // A pleasant dark blue
       };
 
-      VkRenderingInfoKHR renderingInfo{
+      const VkRenderingInfoKHR renderingInfo {
         .sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
         .renderArea = {{0, 0}, swapchain.getImageExtent()},
         .layerCount = 1,
@@ -144,7 +142,7 @@ int main() {
       vkCmdEndRenderingKHR(commandBuffer);
 
       // 3. Transition swapchain image from COLOR_ATTACHMENT_OPTIMAL to PRESENT_SRC_KHR
-      VkImageMemoryBarrier barrierToPresent{
+      const VkImageMemoryBarrier barrierToPresent {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // Ensure clear/store op is finished
         .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,    // Presentation engine will read it (safer)
@@ -156,7 +154,6 @@ int main() {
         .image = swapchain.getImages()[imageIndex],
         .subresourceRange = subresourceRange,
       };
-
       vkCmdPipelineBarrier(
           commandBuffer,
           VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // After color attachment operations
@@ -167,9 +164,9 @@ int main() {
           aur::log().fatal("Failed to record command buffer!");
 
       // Submit the command buffer
-      std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphore};
-      std::array<VkPipelineStageFlags, 1> waitStages{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-      VkSubmitInfo submitInfo{
+      const std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphore};
+      const std::array<VkPipelineStageFlags, 1> waitStages{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+      const VkSubmitInfo submitInfo {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
         .pWaitSemaphores = waitSemaphores.data(),
@@ -186,7 +183,7 @@ int main() {
       vkQueueWaitIdle(vulkanContext.getGraphicsQueue());
 
       // Present the image
-      VkPresentInfoKHR presentInfo{
+      const VkPresentInfoKHR presentInfo {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .swapchainCount = 1,
         .pSwapchains = &swapchain.getSwapchain(),
