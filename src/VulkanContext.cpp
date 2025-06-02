@@ -123,7 +123,10 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .set_required_features_13(VkPhysicalDeviceVulkan13Features{
       .dynamicRendering = true
     })
-    .add_required_extension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+    .add_required_extensions({
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+      VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+    })
     .select();
   if (!vkbPhysicalDeviceResult)
     log().fatal("Failed to select Vulkan Physical Device: {}", vkbPhysicalDeviceResult.error().message());    

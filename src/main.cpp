@@ -79,44 +79,73 @@ int main() {
       if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
           aur::log().fatal("Failed to begin recording command buffer!");
 
-      // 1. Transition swapchain image from UNDEFINED to TRANSFER_DST_OPTIMAL
-      VkImageMemoryBarrier imageMemoryBarrier{};
-      imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-      imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Image is in undefined layout after vkAcquireNextImageKHR
-      imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-      imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-      imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-      imageMemoryBarrier.image = swapchain.getImages()[imageIndex]; // Assumes Swapchain exposes its images
-      imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-      imageMemoryBarrier.subresourceRange.levelCount = 1;
-      imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-      imageMemoryBarrier.subresourceRange.layerCount = 1;
-      imageMemoryBarrier.srcAccessMask = 0; // No access needed from undefined layout
-      imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; // We will write to it (clear)
+      // Define subresource range once, as it's the same for both barriers
+      VkImageSubresourceRange subresourceRange{};
+      subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      subresourceRange.baseMipLevel = 0;
+      subresourceRange.levelCount = 1;
+      subresourceRange.baseArrayLayer = 0;
+      subresourceRange.layerCount = 1;
+
+      // 1. Transition swapchain image from UNDEFINED to COLOR_ATTACHMENT_OPTIMAL
+      VkImageMemoryBarrier barrierToColorAttachment{};
+      barrierToColorAttachment.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+      barrierToColorAttachment.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      barrierToColorAttachment.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      barrierToColorAttachment.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrierToColorAttachment.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrierToColorAttachment.image = swapchain.getImages()[imageIndex];
+      barrierToColorAttachment.subresourceRange = subresourceRange;
+      barrierToColorAttachment.srcAccessMask = 0; // No prior operations on this image in this command buffer that need to be synchronized
+      barrierToColorAttachment.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // the clear via loadOp and any potential drawing) will write to the color attachment
 
       vkCmdPipelineBarrier(
           commandBuffer,
-          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,  // Stage before which operations occur
-          VK_PIPELINE_STAGE_TRANSFER_BIT,     // Stage at which transfer operations occur
-          0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,            // Before any operations
+          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // Before color attachment operations (like clear)
+          0, 0, nullptr, 0, nullptr, 1, &barrierToColorAttachment);
 
-      // 2. Clear the color image
-      VkClearColorValue clearColor = {{0.1f, 0.1f, 0.4f, 1.0f}}; // A pleasant dark blue
-      VkImageSubresourceRange clearRange = imageMemoryBarrier.subresourceRange; // Reuse the range
-      vkCmdClearColorImage(commandBuffer, swapchain.getImages()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &clearRange);
+      // 2. Begin dynamic rendering (which includes the clear operation)
+      VkRenderingAttachmentInfoKHR colorAttachmentInfo{};
+      colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+      colorAttachmentInfo.imageView = swapchain.getImageViews()[imageIndex];
+      colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Important to store the cleared result
+      colorAttachmentInfo.clearValue.color = {{0.1f, 0.1f, 0.4f, 1.0f}}; // A pleasant dark blue
 
-      // 3. Transition swapchain image from TRANSFER_DST_OPTIMAL to PRESENT_SRC_KHR
-      imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-      imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-      imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; // Wait for the clear to finish
-      imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;    // Presentation engine will read it
+      VkRenderingInfoKHR renderingInfo{};
+      renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+      renderingInfo.renderArea.offset = {0, 0};
+      renderingInfo.renderArea.extent = swapchain.getImageExtent();
+      renderingInfo.layerCount = 1;
+      renderingInfo.colorAttachmentCount = 1;
+      renderingInfo.pColorAttachments = &colorAttachmentInfo;
+      // No depth or stencil attachments for this simple clear
+
+      vkCmdBeginRenderingKHR(commandBuffer, &renderingInfo);
+      // No drawing commands are needed if we only want to clear.
+      // The clear happens as part of vkCmdBeginRenderingKHR due to loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR.
+      vkCmdEndRenderingKHR(commandBuffer);
+
+      // 3. Transition swapchain image from COLOR_ATTACHMENT_OPTIMAL to PRESENT_SRC_KHR
+      VkImageMemoryBarrier barrierToPresent{};
+      barrierToPresent.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+      barrierToPresent.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      barrierToPresent.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+      barrierToPresent.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrierToPresent.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrierToPresent.image = swapchain.getImages()[imageIndex];
+      barrierToPresent.subresourceRange = subresourceRange;
+      barrierToPresent.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // Ensure clear/store op is finished
+      barrierToPresent.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;    // Presentation engine will read it (safer)
+                                                                    // Could be 0 if presentation engine access is implicitly handled
 
       vkCmdPipelineBarrier(
           commandBuffer,
-          VK_PIPELINE_STAGE_TRANSFER_BIT,        // Stage after transfer operations
-          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,  // Stage before presentation
-          0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // After color attachment operations
+          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,          // Before subsequent operations / presentation
+          0, 0, nullptr, 0, nullptr, 1, &barrierToPresent);
 
       if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
           aur::log().fatal("Failed to record command buffer!");
