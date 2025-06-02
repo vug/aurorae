@@ -1,9 +1,12 @@
-#include "Swapchain.h"
 
-#include <glfw/glfw3.h>
+
+#include <volk/volk.h>
 
 #include "Logger.h"
 #include "VulkanContext.h" // Includes Logger.h transitively or directly
+#include "Swapchain.h"
+
+#include <glfw/glfw3.h>
 
 namespace aur {
 
@@ -58,7 +61,6 @@ void Swapchain::destroy() {
 }
 
 void Swapchain::recreate(const VulkanContext& context, GLFWwindow* window) {
-  // TODO(vug): move recreate logic to main app -> now we can decouple GLFW
   // Handle minimization: pause until window is restored
   int width = 0, height = 0;
   glfwGetFramebufferSize(window, &width, &height);
@@ -66,11 +68,14 @@ void Swapchain::recreate(const VulkanContext& context, GLFWwindow* window) {
     glfwGetFramebufferSize(window, &width, &height);
     glfwWaitEvents();
   }
-
+ 
   vkDeviceWaitIdle(context.getDevice());
-  VkSwapchainKHR oldSwapchain = vkbSwapchain_.swapchain;
-  destroy();
-  create(context, window, oldSwapchain);
+
+  vkb::Swapchain vkbSwapchainToDestroy = vkbSwapchain_; // Shallow copy of the vkb::Swapchain struct
+  std::vector<VkImageView> imageViewsToDestroy = imageViews_;
+  create(context, window, vkbSwapchainToDestroy.swapchain);
+  vkbSwapchainToDestroy.destroy_image_views(imageViewsToDestroy);
+  vkb::destroy_swapchain(vkbSwapchainToDestroy); // Destroys the old VkSwapchainKHR
 }
 
 }  // namespace aur

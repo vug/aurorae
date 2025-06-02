@@ -1,3 +1,8 @@
+
+#define VK_USE_PLATFORM_WIN32_KHR
+#define VOLK_IMPLEMENTATION
+#include <volk/volk.h>
+
 #if defined(CROSS_PLATFORM_SURFACE_CREATION)
 VkResult glfwCreateWindowSurface(VkInstance instance, GLFWwindow* window, const VkAllocationCallbacks* allocator, VkSurfaceKHR* surface);
 int glfwGetError(const char** description);
@@ -7,13 +12,8 @@ int glfwGetError(const char** description);
 #include <glfw/glfw3native.h>
 #endif
 
-#define VK_USE_PLATFORM_WIN32_KHR
-#define VOLK_IMPLEMENTATION
-#include <volk/volk.h>
-
 #include "VulkanContext.h"
 #include "Logger.h"
-
 
 namespace aur {
 
@@ -74,6 +74,9 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     };
     vkbInstanceBuilder
       .enable_validation_layers()
+      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
+      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)
+      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
       // .set_debug_callback(vkb::default_debug_callback)
       .set_debug_callback(debugCallback);
   }
@@ -138,8 +141,9 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   if (!vkbDeviceResult)
     log().fatal("Failed to create Vulkan Logical Device: {}", vkbDeviceResult.error().message());
   vkbDevice_ = vkbDeviceResult.value();
-  // Load Vulkan device-level function pointers
-  volkLoadDevice(vkbDevice_.device); 
+  // Load Vulkan device-level function pointers. Observed Vulkan device functions are loaded
+  // without explicit call to this function. But it won't hurt to call it.
+  volkLoadDevice(vkbDevice_.device);
   
   graphicsQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::graphics).value();
   presentQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::present).value(); // Often same as graphics

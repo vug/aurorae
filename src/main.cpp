@@ -1,18 +1,17 @@
 // TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
+// TODO(vug): do the swapchain recreation using GLFW callbacks on framebuffer change
 #define CROSS_PLATFORM_SURFACE_CREATION
 
 #include <array>
 
 #include <volk/volk.h>
-// explicit inclusion of vulkan.h is not necessary but is a good practice
-#define VK_NO_PROTOTYPES
-#include <vulkan/vulkan.h>
+// volk.h defines VK_NO_PROTOTYPES and includes necessary Vulkan core headers.
+#include <glfw/glfw3.h>
 
 #include "Logger.h"
 #include "VulkanContext.h"
 #include "Swapchain.h"
 
-#include <glfw/glfw3.h>
 
 int main() {
   aur::log_initialize(spdlog::level::trace);
@@ -91,10 +90,9 @@ int main() {
         imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
       if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-          aur::log().warn("Swapchain out of date. TODO: Implement swapchain recreation.");
-          // In a real application, you'd recreate the swapchain here.
-          // For this example, we'll skip rendering for this frame.
-          continue;
+          aur::log().debug("Swapchain out of date. TODO: Implement swapchain recreation.");
+          swapchain.recreate(vulkanContext, window);
+          continue; // Skip the rest of the loop to avoid using an invalid image index // ?
       } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
           aur::log().fatal("Failed to acquire swap chain image!");
       }
@@ -117,7 +115,7 @@ int main() {
       // 1. Transition swapchain image from UNDEFINED to COLOR_ATTACHMENT_OPTIMAL
       const VkImageMemoryBarrier barrierToColorAttachment {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .srcAccessMask = 0, // No prior operations on this image in this command buffer that need to be synchronized
+        .srcAccessMask = 0, // No prior app operations on this image in this CB, oldLayout is UNDEFINED
         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // the clear via loadOp and any potential drawing) will write to the color attachment
         .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -128,7 +126,7 @@ int main() {
       };
       vkCmdPipelineBarrier(
           commandBuffer,
-          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,            // Before any operations
+          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // Wait for acquire semaphore before this stage
           VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // Before color attachment operations (like clear)
           0, 0, nullptr, 0, nullptr, 1, &barrierToColorAttachment);
 
@@ -159,8 +157,7 @@ int main() {
       const VkImageMemoryBarrier barrierToPresent {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // Ensure clear/store op is finished
-        .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,    // Presentation engine will read it (safer)
-                                                                    // Could be 0 if presentation engine access is implicitly handled
+        .dstAccessMask = 0, // No explicit access needed by app for PRESENT_SRC_KHR
         .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -207,7 +204,8 @@ int main() {
       };
       result = vkQueuePresentKHR(vulkanContext.getGraphicsQueue(), &presentInfo);
       if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-          aur::log().warn("Swapchain out of date or suboptimal during present. TODO: Implement swapchain recreation.");
+          aur::log().debug("Swapchain out of date or suboptimal during present. TODO: Implement swapchain recreation.");
+          swapchain.recreate(vulkanContext, window);
           // Handle swapchain recreation
       } else if (result != VK_SUCCESS) {
           aur::log().fatal("Failed to present swap chain image!");

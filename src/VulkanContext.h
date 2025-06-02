@@ -44,8 +44,7 @@ private:
     VkQueue presentQueue_{VK_NULL_HANDLE};
     uint32_t graphicsQueueFamilyIndex_{};
     uint32_t presentQueueFamilyIndex_{};
-
-    VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
+    VkDebugUtilsMessengerEXT m_debugMessenger{VK_NULL_HANDLE};
 };
 
 } // namespace aur
