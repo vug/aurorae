@@ -38,48 +38,30 @@ int main() {
     aur::VulkanContext vulkanContext{window, kAppName};
     aur::Swapchain swapchain{vulkanContext, window};
 
-    // Create Command Pool
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    // Assumes VulkanContext has a method like getGraphicsQueueFamilyIndex()
     poolInfo.queueFamilyIndex = vulkanContext.getGraphicsQueueFamilyIndex();
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Allows resetting individual command buffers
-
-    // Add this check before creating the command pool
-    if (vulkanContext.getGraphicsQueueFamilyIndex() == UINT32_MAX) {
-        aur::log().fatal("Invalid graphics queue family index!");
-    }    
-    if (vulkanContext.getDevice() == VK_NULL_HANDLE) {
-        aur::log().fatal("Device handle is null before creating command pool!");
-    }
-    aur::log().info("Graphics Queue Family Index: {}", vulkanContext.getGraphicsQueueFamilyIndex());
-    aur::log().info("Device handle: {:#x}", reinterpret_cast<std::uintptr_t>(vulkanContext.getDevice()));
-    aur::log().info("vkCreateCommandPool function pointer: {:#x}", reinterpret_cast<std::uintptr_t>(vkCreateCommandPool));    
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     VkCommandPool commandPool{};
-    if (vkCreateCommandPool(vulkanContext.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(vulkanContext.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
         aur::log().fatal("Failed to create command pool!");
-    }
 
-    // Allocate Command Buffer
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = 1;
-
     VkCommandBuffer commandBuffer;
-    if (vkAllocateCommandBuffers(vulkanContext.getDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(vulkanContext.getDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
         aur::log().fatal("Failed to allocate command buffers!");
-    }
 
     while (!glfwWindowShouldClose(window)) {
       glfwPollEvents();
 
       uint32_t imageIndex;
-      // Acquire an image from the swap chain.
+      // Acquire an image from the swapchain.
       // We use UINT64_MAX as the timeout to wait indefinitely until an image is available.
-      // VK_NULL_HANDLE for semaphore and fence simplifies synchronization,
-      // relying on vkQueueWaitIdle later.
+      // VK_NULL_HANDLE for semaphore and fence simplifies synchronization, relying on vkQueueWaitIdle later.
       VkResult result = vkAcquireNextImageKHR(vulkanContext.getDevice(), swapchain.getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &imageIndex);
 
       if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -91,14 +73,11 @@ int main() {
           aur::log().fatal("Failed to acquire swap chain image!");
       }
 
-      // Begin recording the command buffer
       VkCommandBufferBeginInfo beginInfo{};
       beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
       beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // We re-record this buffer each frame
-
-      if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+      if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
           aur::log().fatal("Failed to begin recording command buffer!");
-      }
 
       // 1. Transition swapchain image from UNDEFINED to TRANSFER_DST_OPTIMAL
       VkImageMemoryBarrier imageMemoryBarrier{};
@@ -139,9 +118,8 @@ int main() {
           VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,  // Stage before presentation
           0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
-      if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+      if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
           aur::log().fatal("Failed to record command buffer!");
-      }
 
       // Submit the command buffer
       VkSubmitInfo submitInfo{};
@@ -160,11 +138,9 @@ int main() {
       VkPresentInfoKHR presentInfo{};
       presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
       presentInfo.swapchainCount = 1;
-      presentInfo.pSwapchains = &swapchain.getSwapchain(); // Assumes Swapchain exposes its VkSwapchainKHR
+      presentInfo.pSwapchains = &swapchain.getSwapchain();
       presentInfo.pImageIndices = &imageIndex;
-
-      result = vkQueuePresentKHR(vulkanContext.getGraphicsQueue(), &presentInfo); // Assumes graphics queue can present
-
+      result = vkQueuePresentKHR(vulkanContext.getGraphicsQueue(), &presentInfo);
       if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
           aur::log().warn("Swapchain out of date or suboptimal during present. TODO: Implement swapchain recreation.");
           // Handle swapchain recreation
@@ -174,14 +150,11 @@ int main() {
 
       // Reset command buffer for the next frame. This is safe because we waited for GPU idle.
       vkResetCommandBuffer(commandBuffer, 0);
-
-      // Draw calls using VulkanContext, and Swapchain can be made here
     }
 
     // Wait for the device to be idle before destroying resources to ensure
     // the command buffer is no longer in use.
     vkDeviceWaitIdle(vulkanContext.getDevice());
-
     vkDestroyCommandPool(vulkanContext.getDevice(), commandPool, nullptr);
     // Command buffer is implicitly freed with the pool
   }
