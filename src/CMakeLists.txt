@@ -79,6 +79,9 @@ add_executable(Aurorae
     Logger.h Logger.cpp
     VulkanContext.h VulkanContext.cpp
     Swapchain.h Swapchain.cpp
+    Application.h Application.cpp
+    Renderer.h Renderer.cpp
+    Window.h Window.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
