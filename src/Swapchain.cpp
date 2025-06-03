@@ -11,18 +11,15 @@
 namespace aur {
 
 // TODO(vug): don't give VulkanContext, just the device
-Swapchain::Swapchain(const VulkanContext& context, GLFWwindow* window)
-    : window_(window) {
-  create(context, window);
+Swapchain::Swapchain(const VulkanContext& context, uint32_t width, uint32_t height) {
+  create(context, width, height);
 }
 
 Swapchain::~Swapchain() { destroy(); }
 
-// TODO(vug): GLFWwindow is not needed just take size
-void Swapchain::create(const VulkanContext& context, GLFWwindow* window,
+// GLFWwindow is no longer needed here, width and height are passed directly.
+void Swapchain::create(const VulkanContext& context, uint32_t width, uint32_t height,
                        VkSwapchainKHR oldSwapchain) {
-  int width, height;
-  glfwGetFramebufferSize(window, &width, &height);
 
   vkb::SwapchainBuilder swapchainBuilder(context.getVkbDevice());
   auto vkbSwapchainResult =
@@ -60,22 +57,16 @@ void Swapchain::destroy() {
   vkb::destroy_swapchain(vkbSwapchain_); // Destroys VkSwapchainKHR, VkImageViews, etc.
 }
 
-void Swapchain::recreate(const VulkanContext& context, GLFWwindow* window) {
-  // Handle minimization: pause until window is restored
-  int width = 0, height = 0;
-  glfwGetFramebufferSize(window, &width, &height);
-  while (width == 0 || height == 0) {
-    glfwGetFramebufferSize(window, &width, &height);
-    glfwWaitEvents();
-  }
- 
+void Swapchain::recreate(const VulkanContext& context, uint32_t width, uint32_t height) {
+  // Minimization handling (waiting for non-zero width/height)
+  // is now expected to be done by the caller (e.g., in the main loop).
+
   vkDeviceWaitIdle(context.getDevice());
 
   vkb::Swapchain vkbSwapchainToDestroy = vkbSwapchain_; // Shallow copy of the vkb::Swapchain struct
   std::vector<VkImageView> imageViewsToDestroy = imageViews_;
-  create(context, window, vkbSwapchainToDestroy.swapchain);
+  create(context, width, height, vkbSwapchainToDestroy.swapchain);
   vkbSwapchainToDestroy.destroy_image_views(imageViewsToDestroy);
   vkb::destroy_swapchain(vkbSwapchainToDestroy); // Destroys the old VkSwapchainKHR
 }
-
 }  // namespace aur

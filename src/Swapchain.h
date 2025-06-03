@@ -4,23 +4,20 @@
 
 #include <vector>
 
-struct GLFWwindow;
-
 namespace aur {
 
 class VulkanContext;
 
 class Swapchain {
- public:
-  Swapchain(const VulkanContext& context, GLFWwindow* window);
+public:
+  Swapchain(const VulkanContext& context, uint32_t width, uint32_t height);
   ~Swapchain();
 
   Swapchain(const Swapchain&) = delete;
   Swapchain& operator=(const Swapchain&) = delete;
   Swapchain(Swapchain&&) = delete;
   Swapchain& operator=(Swapchain&&) = delete;
-
-  void recreate(const VulkanContext& context, GLFWwindow* window);
+  void recreate(const VulkanContext& context, uint32_t width, uint32_t height);
 
   const VkSwapchainKHR& getSwapchain() const { return vkbSwapchain_.swapchain; }
   VkFormat getImageFormat() const { return vkbSwapchain_.image_format; }
@@ -34,12 +31,11 @@ class Swapchain {
   uint32_t getImageCount() const { return vkbSwapchain_.image_count; }
 
  private:
-  void create(const VulkanContext& context, GLFWwindow* window,
+  void create(const VulkanContext& context, uint32_t width, uint32_t height,
               VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE);
   void destroy();
 
   vkb::Swapchain vkbSwapchain_;
-  GLFWwindow* window_{};
   std::vector<VkImageView> imageViews_;
   std::vector<VkImage> images_;
 };

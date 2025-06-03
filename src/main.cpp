@@ -1,5 +1,4 @@
 // TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
-// TODO(vug): do the swapchain recreation using GLFW callbacks on framebuffer change
 #define CROSS_PLATFORM_SURFACE_CREATION
 
 #include <array>
@@ -14,6 +13,16 @@
 #include "Swapchain.h"
 
 
+// GLFW framebuffer resize callback
+static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+
+struct ApplicationState {
+  // Flag for GLFW telling us the window has been resized  
+  bool framebufferResized{};
+  // Flag for Vulkan telling us the swapchain is out of date/suboptimal
+  bool swapchainStale{}; 
+};
+
 int main() {
   aur::log_initialize(spdlog::level::trace);
   aur::log().info("Hi! Build Type: {}", static_cast<uint8_t>(aur::kBuildType));
@@ -21,6 +30,8 @@ int main() {
   const uint32_t kWidth = 1024;
   const uint32_t kHeight = 768;
   const std::string_view kAppName = "Aurorae";
+
+  ApplicationState appState;
 
   // Initialize GLFW and create a GLFWwindow
   if (!glfwInit())
@@ -33,12 +44,14 @@ int main() {
     glfwTerminate();
     aur::log().fatal("Failed to create GLFW window");
   }
+  glfwSetWindowUserPointer(window, &appState);
+  glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);  
 
   // TODO(vug): put these in runMainLoop() function so that RAII objects
   // are destructed before GLFW destroys the window
   {
     aur::VulkanContext vulkanContext{window, kAppName};
-    aur::Swapchain swapchain{vulkanContext, window};
+    aur::Swapchain swapchain{vulkanContext, kWidth, kHeight};
 
     const VkCommandPoolCreateInfo poolInfo {
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -80,23 +93,42 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
       glfwPollEvents();
 
+      if (appState.framebufferResized || appState.swapchainStale) {
+        appState.framebufferResized = false;
+        appState.swapchainStale = false;
+
+        int32_t currentWidth{};
+        int32_t currentHeight{};
+        glfwGetFramebufferSize(window, &currentWidth, &currentHeight);
+
+        // Handle minimization: pause until window is restored
+        while (currentWidth == 0 || currentHeight == 0) {
+            aur::log().debug("Window is minimized (0x0), waiting for valid dimensions...");
+            glfwGetFramebufferSize(window, &currentWidth, &currentHeight);
+            glfwWaitEvents();
+        }
+        aur::log().info("Swapchain recreation triggered. Recreating with new dimensions: {}x{}", currentWidth, currentHeight);
+        swapchain.recreate(vulkanContext, static_cast<uint32_t>(currentWidth), static_cast<uint32_t>(currentHeight));
+
+        // After successful recreation, restart the frame acquisition process with the new swapchain.
+        continue;
+      }
+
       // Wait for the previous frame to finish before starting to record commands for the new one
       vkWaitForFences(vulkanContext.getDevice(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
       vkResetFences(vulkanContext.getDevice(), 1, &inFlightFence); // Reset fence for current frame's submission
-      // No explicit vkResetCommandBuffer needed if VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT is used
       
       // Acquire an image from the swapchain.
       uint32_t imageIndex{};
       VkResult result = vkAcquireNextImageKHR(vulkanContext.getDevice(), swapchain.getSwapchain(), UINT64_MAX, 
         imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
-      if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-          aur::log().debug("Swapchain out of date. TODO: Implement swapchain recreation.");
-          swapchain.recreate(vulkanContext, window);
-          continue; // Skip the rest of the loop to avoid using an invalid image index // ?
-      } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+      if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+          aur::log().debug("Swapchain out of date or suboptimal during acquire. Flagging recreation for next frame.");
+          appState.swapchainStale = true;
+          continue;
+      } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
           aur::log().fatal("Failed to acquire swap chain image!");
-      }
 
       const VkCommandBufferBeginInfo beginInfo {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -205,9 +237,8 @@ int main() {
       };
       result = vkQueuePresentKHR(vulkanContext.getGraphicsQueue(), &presentInfo);
       if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-          aur::log().debug("Swapchain out of date or suboptimal during present. TODO: Implement swapchain recreation.");
-          swapchain.recreate(vulkanContext, window);
-          // Handle swapchain recreation
+          aur::log().debug("Swapchain out of date or suboptimal during present. Flagging recreation for next frame.");
+          appState.swapchainStale = true;
       } else if (result != VK_SUCCESS) {
           aur::log().fatal("Failed to present swap chain image!");
       }
@@ -225,4 +256,12 @@ int main() {
   glfwTerminate();
   aur::log().info("Bye!");
   return 0;
+}
+
+static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+    (void)width; (void)height; // Parameters are not directly used, we query size in main loop
+    auto appState = static_cast<ApplicationState*>(glfwGetWindowUserPointer(window));
+    if (appState) {
+        appState->framebufferResized = true;
+    }
 }
