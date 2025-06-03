@@ -18,7 +18,12 @@ int glfwGetError(const char** description);
 
 namespace aur {
 
-constexpr bool enableValidationLayers = kBuildType != BuildType::Release;
+// Validation layers are automatically enabled in debug modes
+constexpr bool enableValidationLayers{kBuildType != BuildType::Release};
+// Manually enable/disable GPU-assisted validation layers
+constexpr bool enableGpuAssistedValidation{false};
+// For performance reasons, core validation layers are disabled in GPU-assisted validation mode 
+constexpr bool enableCoreValidationLayers{enableValidationLayers && !enableGpuAssistedValidation};
 
 VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion, vkGetInstanceProcAddr etc.
@@ -40,7 +45,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .set_app_name(appName.data())
     .enable_extension(VK_KHR_SURFACE_EXTENSION_NAME) // not necessary
     .require_api_version(VK_MAKE_API_VERSION(0, 1, 3, 0));
-  if (enableValidationLayers) {
+  if constexpr (enableValidationLayers) {
     PFN_vkDebugUtilsMessengerCallbackEXT debugCallback = [](VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -70,13 +75,25 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
       // return VK_TRUE;
     };
     vkbInstanceBuilder
+      .set_debug_callback(debugCallback); // vkb::default_debug_callback
+  }
+  if constexpr (enableCoreValidationLayers) {
+    vkbInstanceBuilder 
+      // The standard Khronos ("Normal Core Check") validation layer. CPU-side checks.
       .enable_validation_layers()
       .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
-      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)
-      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
-      // .set_debug_callback(vkb::default_debug_callback)
-      .set_debug_callback(debugCallback);
+      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
   }
+  else if constexpr (enableGpuAssistedValidation) {
+    // GPU-AV instruments shaders and GPU resources to detect issues that are difficult to find with CPU-only validation
+    vkbInstanceBuilder
+      .enable_validation_layers()
+      .add_validation_feature_disable(VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT)
+      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
+      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
+      .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
+  }
+
   vkb::Result<vkb::Instance> vkbInstanceResult = vkbInstanceBuilder.build();
   if (!vkbInstanceResult)
     log().fatal("Failed to create Vulkan instance: {}", vkbInstanceResult.error().message());

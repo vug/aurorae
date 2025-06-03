@@ -1,3 +1,5 @@
+// TODO(vug): fix remaining core validation issues
+// TODO(vug): fix remaining GPU-assisted validation issues
 // TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
 #define CROSS_PLATFORM_SURFACE_CREATION
 
