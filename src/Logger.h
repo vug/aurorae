@@ -6,6 +6,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include "Utils.h"
+
 namespace aur {
 
 // Call this once at the beginning of your application
@@ -31,8 +33,11 @@ namespace detail {
         std::format_string<Args...> fmt, Args&&... args) {
         spdlog::source_loc spdlog_source_loc{loc.file_name(), static_cast<int>(loc.line()), loc.function_name()};
         spdlog::default_logger_raw()->log(spdlog_source_loc, spdlog::level::critical, fmt, std::forward<Args>(args)...);
-        spdlog::default_logger_raw()->flush(); 
-        std::exit(EXIT_FAILURE);
+        spdlog::default_logger_raw()->flush();
+        if constexpr (kBuildType != BuildType::Release)
+            std::abort();
+        else 
+            std::exit(EXIT_FAILURE);
     }
 
     // This class will hold the captured source_location and provide logging methods
