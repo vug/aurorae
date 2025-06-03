@@ -12,16 +12,13 @@ int glfwGetError(const char** description);
 #include <glfw/glfw3native.h>
 #endif
 
+#include "Utils.h"
 #include "VulkanContext.h"
 #include "Logger.h"
 
 namespace aur {
 
-#ifndef NDEBUG
-    constexpr bool enableValidationLayers = true;
-#else
-    constexpr bool enableValidationLayers = false;
-#endif
+constexpr bool enableValidationLayers = kBuildType != BuildType::Release;
 
 VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion, vkGetInstanceProcAddr etc.

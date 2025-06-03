@@ -95,16 +95,15 @@ target_link_libraries(Aurorae PRIVATE
     # spdlog$<$<CONFIG:Debug>:d>
 )
 
-# --- Optional: Ensure PDBs are found by MSVC for easier debugging ---
-if(MSVC)
-    # For Debug and RelWithDebInfo builds, ensure the linker can find PDBs
-    # This is often handled automatically if PDBs are next to LIBs,
-    # but explicit flags can sometimes help certain setups or older VS versions.
-    # Modern VS usually handles this well if CMAKE_PREFIX_PATH is set correctly.
-    # target_link_options(Aurorae PRIVATE
-    #   $<$<CONFIG:Debug,RelWithDebInfo>:/DEBUG:FULL>
-    # )
+if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    target_compile_definitions(Aurorae PRIVATE REL_WITH_DEBUG_INFO_BUILD)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_definitions(Aurorae PRIVATE RELEASE_BUILD)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(Aurorae PRIVATE DEBUG_BUILD)
+else()
+    message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}. "
+                        "Add macro for this build type .")
 endif()
 
-message(STATUS "Aurorae configured. CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 

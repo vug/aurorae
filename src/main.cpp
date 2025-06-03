@@ -8,6 +8,7 @@
 // volk.h defines VK_NO_PROTOTYPES and includes necessary Vulkan core headers.
 #include <glfw/glfw3.h>
 
+#include "Utils.h"
 #include "Logger.h"
 #include "VulkanContext.h"
 #include "Swapchain.h"
@@ -15,7 +16,7 @@
 
 int main() {
   aur::log_initialize(spdlog::level::trace);
-  aur::log().info("Hi!");
+  aur::log().info("Hi! Build Type: {}", static_cast<uint8_t>(aur::kBuildType));
 
   const uint32_t kWidth = 1024;
   const uint32_t kHeight = 768;
