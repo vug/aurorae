@@ -3,25 +3,22 @@
 #include <volk/volk.h>
 
 #include "Logger.h"
-#include "VulkanContext.h" // Includes Logger.h transitively or directly
 #include "Swapchain.h"
 
 #include <glfw/glfw3.h>
 
 namespace aur {
 
-// TODO(vug): don't give VulkanContext, just the device
-Swapchain::Swapchain(const VulkanContext& context, uint32_t width, uint32_t height) {
-  create(context, width, height);
+Swapchain::Swapchain(const vkb::Device& vkb_device, uint32_t width, uint32_t height) {
+  create(vkb_device, width, height);
 }
 
 Swapchain::~Swapchain() { destroy(); }
 
 // GLFWwindow is no longer needed here, width and height are passed directly.
-void Swapchain::create(const VulkanContext& context, uint32_t width, uint32_t height,
+void Swapchain::create(const vkb::Device& vkb_device, uint32_t width, uint32_t height,
                        VkSwapchainKHR oldSwapchain) {
-
-  vkb::SwapchainBuilder swapchainBuilder(context.getVkbDevice());
+  vkb::SwapchainBuilder swapchainBuilder(vkb_device);
   auto vkbSwapchainResult =
       swapchainBuilder
         .set_old_swapchain(oldSwapchain)
@@ -57,15 +54,21 @@ void Swapchain::destroy() {
   vkb::destroy_swapchain(vkbSwapchain_); // Destroys VkSwapchainKHR, VkImageViews, etc.
 }
 
-void Swapchain::recreate(const VulkanContext& context, uint32_t width, uint32_t height) {
+void Swapchain::recreate(const vkb::Device& vkb_device, uint32_t width, uint32_t height) {
   // Minimization handling (waiting for non-zero width/height)
   // is now expected to be done by the caller (e.g., in the main loop).
 
-  vkDeviceWaitIdle(context.getDevice());
+  vkDeviceWaitIdle(vkb_device.device);
 
   vkb::Swapchain vkbSwapchainToDestroy = vkbSwapchain_; // Shallow copy of the vkb::Swapchain struct
   std::vector<VkImageView> imageViewsToDestroy = imageViews_;
-  create(context, width, height, vkbSwapchainToDestroy.swapchain);
+
+  // New swapchain created, oldSwapchain (vkbSwapchainToDestroy.swapchain) is retired.
+  // Its resources might be internally transitioned or marked for cleanup.  
+  create(vkb_device, width, height, vkbSwapchainToDestroy.swapchain);
+
+  // Now it's safe to destroy the retired swapchain handle and its views,
+  // as the GPU was idle and the new swapchain creation has handled the transition.  
   vkbSwapchainToDestroy.destroy_image_views(imageViewsToDestroy);
   vkb::destroy_swapchain(vkbSwapchainToDestroy); // Destroys the old VkSwapchainKHR
 }

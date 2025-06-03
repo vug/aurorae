@@ -51,7 +51,7 @@ int main() {
   // are destructed before GLFW destroys the window
   {
     aur::VulkanContext vulkanContext{window, kAppName};
-    aur::Swapchain swapchain{vulkanContext, kWidth, kHeight};
+    aur::Swapchain swapchain{vulkanContext.getVkbDevice(), kWidth, kHeight};
 
     const VkCommandPoolCreateInfo poolInfo {
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -108,7 +108,7 @@ int main() {
             glfwWaitEvents();
         }
         aur::log().info("Swapchain recreation triggered. Recreating with new dimensions: {}x{}", currentWidth, currentHeight);
-        swapchain.recreate(vulkanContext, static_cast<uint32_t>(currentWidth), static_cast<uint32_t>(currentHeight));
+        swapchain.recreate(vulkanContext.getVkbDevice(), static_cast<uint32_t>(currentWidth), static_cast<uint32_t>(currentHeight));
 
         // After successful recreation, restart the frame acquisition process with the new swapchain.
         continue;
