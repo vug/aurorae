@@ -55,7 +55,6 @@ int main() {
 
     const VkCommandPoolCreateInfo poolInfo {
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-      .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
       .queueFamilyIndex = vulkanContext.getGraphicsQueueFamilyIndex(),
     };
     VkCommandPool commandPool{};
@@ -115,8 +114,13 @@ int main() {
       }
 
       // Wait for the previous frame to finish before starting to record commands for the new one
+      // This ensures the command buffer is no longer in use by the GPU.
       vkWaitForFences(vulkanContext.getDevice(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
-      vkResetFences(vulkanContext.getDevice(), 1, &inFlightFence); // Reset fence for current frame's submission
+
+      // Reset the command pool (which resets all command buffers allocated from it)
+      if (vkResetCommandPool(vulkanContext.getDevice(), commandPool, 0) != VK_SUCCESS)
+          aur::log().fatal("Failed to reset command pool!");
+      vkResetFences(vulkanContext.getDevice(), 1, &inFlightFence);
       
       // Acquire an image from the swapchain.
       uint32_t imageIndex{};
@@ -130,9 +134,9 @@ int main() {
       } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
           aur::log().fatal("Failed to acquire swap chain image!");
 
+      // Command buffer is already reset by vkResetCommandPool
       const VkCommandBufferBeginInfo beginInfo {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, // Implicitly resets the command buffer
       };
       if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
           aur::log().fatal("Failed to begin recording command buffer!");
