@@ -32,11 +32,11 @@ Application::~Application() {
   // Members (renderer_, window_, glfwManager_) are automatically destructed in
   // reverse order of declaration. glfwManager_ destructor will call
   // glfwTerminate().
-  log().info("Application shut down.");
+  log().debug("Application shut down.");
 }
 
 void Application::run() {
-  log().info("Starting main loop...");
+  log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
     window_.pollEvents();
 
@@ -105,7 +105,7 @@ void Application::run() {
     // swapchain recreation, and the loop should just continue to the next
     // iteration.
   }
-  log().info("Main loop finished.");
+  log().debug("Main loop finished.");
   // vkDeviceWaitIdle is called in Renderer destructor
 }
 

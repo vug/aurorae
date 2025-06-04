@@ -1,4 +1,5 @@
 // TODO(vug): try to get rid of exceptions in favor of fatal()
+// TODO(vug): go over each file and see issues with design, inclusions, methods, members etc.
 // TODO(vug): fix remaining core validation issues
 // TODO(vug): fix remaining GPU-assisted validation issues
 // TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
@@ -18,9 +19,12 @@
 #include "Logger.h"
 
 int main() {
-  aur::log_initialize(spdlog::level::trace);  // Initialize logger first
-  if (!glfwInit()) aur::log().fatal("Failed to initialize GLFW");
-  aur::log().info("GLFW initialized in main.");
+  // We are initializing spdlog and glfw here to reduce the complexity of classes
+  // and to decouple glfw initialization/termination from the Window class.
+  aur::log_initialize(spdlog::level::debug);
+  if (!glfwInit())
+    aur::log().fatal("Failed to initialize GLFW");
+  aur::log().trace("GLFW initialized in main.");
 
   const uint32_t kWidth = 1024;
   const uint32_t kHeight = 768;
@@ -29,9 +33,6 @@ int main() {
     aur::Application app(kWidth, kHeight, kAppName);
     app.run();
   } catch (const std::exception& e) {
-    // Logger might not be initialized if exception is from very early
-    // Application constructor but Application constructor initializes logger
-    // first.
     aur::log().critical("Unhandled exception in main: {}", e.what());
     glfwTerminate();
     aur::log().info("GLFW terminated due to exception.");
@@ -39,6 +40,6 @@ int main() {
   }
 
   glfwTerminate();
-  aur::log().info("GLFW terminated in main.");
+  aur::log().trace("GLFW terminated in main.");
   return EXIT_SUCCESS;
 }

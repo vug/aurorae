@@ -1,3 +1,4 @@
+#include <array>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #define VOLK_IMPLEMENTATION
@@ -50,6 +51,14 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     [[maybe_unused]] void* pUserData) -> VkBool32 {
+      const std::array<int32_t, 1> ignoredMessageIds = {
+        0x675dc32e, // just warns about VK_EXT_debug_utils is intended to be used in debugging only. 
+      };
+      for (const auto& msgId : ignoredMessageIds) {
+        if (pCallbackData->messageIdNumber == msgId) {
+          return VK_FALSE; // Skip this message
+        }
+      }
       const char* severity = vkb::to_string_message_severity(messageSeverity);
       const char* type = vkb::to_string_message_type(messageType);      
       switch(messageSeverity) {
