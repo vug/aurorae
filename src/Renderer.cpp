@@ -227,15 +227,14 @@ void Renderer::clearScreen(VkCommandBuffer commandBuffer, uint32_t imageIndex,
       .colorAttachmentCount = 1,
       .pColorAttachments = &colorAttachmentInfo,
   };
-  vkCmdBeginRenderingKHR(commandBuffer, &renderingInfo);
+  vkCmdBeginRendering(commandBuffer, &renderingInfo);
   // No drawing commands needed if we only want to clear.
-  vkCmdEndRenderingKHR(
-      commandBuffer);  // End rendering pass immediately after clear
+  vkCmdEndRendering(commandBuffer);  // End rendering pass immediately after clear
 }
 
 void Renderer::endFrame() {
-  // Note: clearScreen already called vkCmdEndRenderingKHR.
-  // If user drawing was separate, vkCmdEndRenderingKHR would be here.
+  // Note: clearScreen already called vkCmdEndRendering.
+  // If user drawing was separate, vkCmdEndRendering would be here.
 
   // Transition swapchain image from COLOR_ATTACHMENT_OPTIMAL to PRESENT_SRC_KHR
   const VkImageSubresourceRange subresourceRange{

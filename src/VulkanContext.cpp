@@ -151,7 +151,6 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     })
     .add_required_extensions({
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-      VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     })
     .select();
   if (!vkbPhysicalDeviceResult)
