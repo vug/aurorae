@@ -15,19 +15,10 @@ Renderer::Renderer(GLFWwindow* window, std::string_view appName,
       swapchain_(vulkanContext_.getVkbDevice(), initialWidth, initialHeight),
       currentWidth_(initialWidth),
       currentHeight_(initialHeight) {
-  try {
-    createCommandPool();
-    allocateCommandBuffer();
-    createSyncObjects();
-    log().info("Renderer initialized.");
-  } catch (const std::exception& e) {
-    // Cleanup what might have been created before throwing
-    cleanupSyncObjects();
-    cleanupCommandPool();  // This will also free command buffers if allocated
-    // Swapchain and VulkanContext will be cleaned by their destructors
-    log().error("Renderer initialization failed: {}", e.what());
-    throw;  // Re-throw the exception
-  }
+  createCommandPool();
+  allocateCommandBuffer();
+  createSyncObjects();
+  log().debug("Renderer initialized.");
 }
 
 Renderer::~Renderer() {
@@ -49,9 +40,8 @@ void Renderer::createCommandPool() {
       .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
   };
   if (vkCreateCommandPool(vulkanContext_.getDevice(), &poolInfo, nullptr,
-                          &commandPool_) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to create command pool!");
-  }
+                          &commandPool_) != VK_SUCCESS)
+    log().fatal("Failed to create command pool!");
 }
 
 void Renderer::allocateCommandBuffer() {
@@ -62,9 +52,8 @@ void Renderer::allocateCommandBuffer() {
       .commandBufferCount = 1,
   };
   if (vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo,
-                               &commandBuffer_) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to allocate command buffer!");
-  }
+                               &commandBuffer_) != VK_SUCCESS)
+    log().fatal("Failed to allocate command buffer!");
 }
 
 void Renderer::createSyncObjects() {
@@ -79,9 +68,8 @@ void Renderer::createSyncObjects() {
       vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr,
                         &renderFinishedSemaphore_) != VK_SUCCESS ||
       vkCreateFence(vulkanContext_.getDevice(), &fenceInfo, nullptr,
-                    &inFlightFence_) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to create synchronization objects!");
-  }
+                    &inFlightFence_) != VK_SUCCESS)
+    log().fatal("Failed to create synchronization objects!");
 }
 
 void Renderer::cleanupCommandPool() {
@@ -257,11 +245,8 @@ void Renderer::endFrame() {
                        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,
                        nullptr, 1, &barrierToPresent);
 
-  if (vkEndCommandBuffer(commandBuffer_) != VK_SUCCESS) {
-    log().error("Failed to record command buffer!");
-    // Potentially throw or handle error, for now, just log
-    return;
-  }
+  if (vkEndCommandBuffer(commandBuffer_) != VK_SUCCESS)
+    log().fatal("Failed to record command buffer!");
 
   const std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphore_};
   const std::array<VkPipelineStageFlags, 1> waitStages{
@@ -279,11 +264,8 @@ void Renderer::endFrame() {
   };
 
   if (vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo,
-                    inFlightFence_) != VK_SUCCESS) {
-    log().error("Failed to submit draw command buffer!");
-    // Potentially throw or handle error
-    return;
-  }
+                    inFlightFence_) != VK_SUCCESS)
+    log().fatal("Failed to submit draw command buffer!");
 
   const VkPresentInfoKHR presentInfo{
       .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -302,11 +284,9 @@ void Renderer::endFrame() {
         "frame.");
     swapchainIsStale_ =
         true;  // Will be handled at the start of the next beginFrame
-  } else if (result != VK_SUCCESS) {
-    log().error("Failed to present swap chain image: {}",
+  } else if (result != VK_SUCCESS)
+    log().fatal("Failed to present swap chain image: {}",
                 static_cast<int>(result));
-    // Potentially throw or handle error
-  }
 }
 
 }  // namespace aur
