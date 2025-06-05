@@ -20,11 +20,11 @@ int glfwGetError(const char** description);
 namespace aur {
 
 // Validation layers are automatically enabled in debug modes
-constexpr bool enableValidationLayers{kBuildType != BuildType::Release};
+constexpr bool kEnableValidationLayers{kBuildType != BuildType::Release};
 // Manually enable/disable GPU-assisted validation layers
-constexpr bool enableGpuAssistedValidation{false};
+constexpr bool kEnableGpuAssistedValidation{false};
 // For performance reasons, core validation layers are disabled in GPU-assisted validation mode 
-constexpr bool enableCoreValidationLayers{enableValidationLayers && !enableGpuAssistedValidation};
+constexpr bool kEnableCoreValidationLayers{kEnableValidationLayers && !kEnableGpuAssistedValidation};
 
 VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion, vkGetInstanceProcAddr etc.
@@ -46,13 +46,14 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .set_app_name(appName.data())
     .enable_extension(VK_KHR_SURFACE_EXTENSION_NAME) // not necessary
     .require_api_version(VK_MAKE_API_VERSION(0, 1, 3, 0));
-  if constexpr (enableValidationLayers) {
+  if constexpr (kEnableValidationLayers) {
     PFN_vkDebugUtilsMessengerCallbackEXT debugCallback = [](VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     [[maybe_unused]] void* pUserData) -> VkBool32 {
-      const std::array<int32_t, 1> ignoredMessageIds = {
+      const std::array<int32_t, 2> ignoredMessageIds = {
         0x675dc32e, // just warns about VK_EXT_debug_utils is intended to be used in debugging only. 
+        0x24b5c69f, // GPU validation: 
       };
       for (const auto& msgId : ignoredMessageIds) {
         if (pCallbackData->messageIdNumber == msgId) {
@@ -86,14 +87,14 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     vkbInstanceBuilder
       .set_debug_callback(debugCallback); // vkb::default_debug_callback
   }
-  if constexpr (enableCoreValidationLayers) {
+  if constexpr (kEnableCoreValidationLayers) {
     vkbInstanceBuilder 
       // The standard Khronos ("Normal Core Check") validation layer. CPU-side checks.
       .enable_validation_layers()
       .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
       .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
   }
-  else if constexpr (enableGpuAssistedValidation) {
+  else if constexpr (kEnableGpuAssistedValidation) {
     // GPU-AV instruments shaders and GPU resources to detect issues that are difficult to find with CPU-only validation
     vkbInstanceBuilder
       .enable_validation_layers()
@@ -133,6 +134,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
 
   // Select physical device
   vkb::PhysicalDeviceSelector selector(vkbInstance_);
+  VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeaturesKHR{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR};
   vkb::Result<vkb::PhysicalDevice> vkbPhysicalDeviceResult = selector
     .set_minimum_version(1, 3) // Explicitly target Vulkan 1.3
     .set_surface(surface_)
@@ -142,16 +144,26 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
     .require_dedicated_transfer_queue()
     .require_present()
     .set_required_features(VkPhysicalDeviceFeatures{
-      .samplerAnisotropy = true
+      .samplerAnisotropy{true}, 
+      // automatically turns on when bufferDeviceAddress enabled, but my RTX4090 does not support it
+      .shaderInt64{!kEnableGpuAssistedValidation},
     })
     .set_required_features_11(VkPhysicalDeviceVulkan11Features{})
-    .set_required_features_12(VkPhysicalDeviceVulkan12Features{})
+    .set_required_features_12(VkPhysicalDeviceVulkan12Features{
+      .uniformAndStorageBuffer8BitAccess{kEnableGpuAssistedValidation},
+      .timelineSemaphore{kEnableGpuAssistedValidation},
+      .bufferDeviceAddress{kEnableGpuAssistedValidation},
+    })
     .set_required_features_13(VkPhysicalDeviceVulkan13Features{
-      .dynamicRendering = true
+      .pNext = kEnableGpuAssistedValidation ? &rayQueryFeaturesKHR : nullptr,
+      .dynamicRendering = true,
     })
     .add_required_extensions({
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     })
+    .add_required_extensions(kEnableGpuAssistedValidation ? 
+      std::initializer_list<const char*>{VK_KHR_RAY_QUERY_EXTENSION_NAME, VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME, VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME} : 
+      std::initializer_list<const char*>{})
     .select();
   if (!vkbPhysicalDeviceResult)
     log().fatal("Failed to select Vulkan Physical Device: {}", vkbPhysicalDeviceResult.error().message());    
