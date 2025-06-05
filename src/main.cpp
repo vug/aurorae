@@ -1,10 +1,9 @@
 // TODO(vug): try to get rid of exceptions in favor of fatal()
 // TODO(vug): go over each file and see issues with design, inclusions, methods, members etc.
-// TODO(vug): fix remaining core validation issues
 // TODO(vug): fix remaining GPU-assisted validation issues
 // TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
-// TODO(vug): smoother resize (current vkDeviceWaitIdle in recreate causes
-// stutter)
+// TODO(vug): smoother resize (current vkDeviceWaitIdle in recreate causes stutter
+// TODO(vug): use slang as the shader language
 #define CROSS_PLATFORM_SURFACE_CREATION
 
 #include <glfw/glfw3.h>     // For glfwInit/Terminate

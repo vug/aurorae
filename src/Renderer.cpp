@@ -46,10 +46,6 @@ Renderer::~Renderer() {
 void Renderer::createCommandPool() {
   const VkCommandPoolCreateInfo poolInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-      .flags =
-          VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,  // Allow individual
-                                                            // command buffer
-                                                            // reset
       .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
   };
   if (vkCreateCommandPool(vulkanContext_.getDevice(), &poolInfo, nullptr,
@@ -161,8 +157,9 @@ bool Renderer::beginFrame() {
   // Only reset the fence if we are sure we will submit work that signals it
   vkResetFences(vulkanContext_.getDevice(), 1, &inFlightFence_);
 
-  // Reset command buffer (or pool if preferred)
-  vkResetCommandBuffer(commandBuffer_, 0);
+  // Reset the command pool (which resets all command buffers allocated from it)
+  // more performant than to reset each command buffer individually
+  vkResetCommandPool(vulkanContext_.getDevice(), commandPool_, 0);
 
   const VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
