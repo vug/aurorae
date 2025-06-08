@@ -44,6 +44,7 @@ void Application::run() {
     }
 
     if (renderer_.beginFrame()) {
+      renderer_.setClearColor(0.25f, 0.25f, 0.25f);
       renderer_.draw(renderer_.getCommandBuffer());
       renderer_.endFrame();
     }

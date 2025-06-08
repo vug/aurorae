@@ -1,9 +1,9 @@
-// TODO(vug): Renderer::setClearColor function
 // TODO(vug): move readFile out of Utils and put it into FileIO.h
 //            Consider it returning a fixed sized, simple buffer class, instead
 //            of std::vector Also instead of const string& use string_view? and
 //            forward declare it?
 // TODO(vug): define my own numeric types (i32 etc), put it in Utils.h
+// TODO(vug): script to compile shaders. Make shaders reachable by built executables
 // TODO(vug): add STL includes to a precompiled header pch_stl.h
 //            Also add headers such as utils and logger that are included in
 //            every file into pch_aur.h
@@ -16,7 +16,8 @@
 //            not include the headers or forward declare them?
 // TODO(vug): go over each file and see issues with design, inclusions, methods,
 // members etc.
-// TODO(vug): create depth/stencil image of the swapchain (if needed) via VMA.
+// TODO(vug): do cube
+//            create depth/stencil image of the swapchain (if needed) via VMA.
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer
 // creation via VMA methods
 // TODO(vug): add Renderer Texture, Depth/Stencil Image, Offscreen Render Target

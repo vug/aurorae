@@ -25,10 +25,17 @@ class Renderer {
   uint32_t getCurrentImageIndex() const { return currentImageIndex_; }
 
   // Returns true if frame rendering can proceed.
-  // Returns false if swapchain was recreated (or other non-fatal issue) and
-  // caller should skip drawing and try next frame.
+  // Returns false if swapchain was recreated (or other non-fatal issue) and caller should skip drawing and try next frame.
+  // Must be called before any other draw commands
   bool beginFrame();
+
+  inline void setClearColor(float r, float g, float b, float a = 1.0f ) {
+    clearColor_ = {r, g, b, a};
+  }
+
   void draw(VkCommandBuffer commandBuffer);
+
+  // Must be called after draw commands
   void endFrame();
 
   // Call this when the window framebuffer size has changed.
@@ -39,6 +46,7 @@ class Renderer {
   void createCommandPool();
   void allocateCommandBuffer();
   void createSyncObjects();
+  void internalRecreateSwapchain();
 
   VkShaderModule createShaderModule(const std::vector<char>& code);
   void createGraphicsPipeline();
@@ -47,7 +55,6 @@ class Renderer {
   void cleanupCommandPool();  // Also frees command buffers
   void cleanupGraphicsPipeline();
 
-  void internalRecreateSwapchain();
   // Context -> Allocator -> Swapchain needs to be created in that order.
   VulkanContext vulkanContext_;
   VmaAllocator vmaAllocator_{VK_NULL_HANDLE};
