@@ -78,12 +78,13 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 
 add_executable(Aurorae 
     main.cpp
+    Utils.h Utils.cpp
     Logger.h Logger.cpp
+    Application.h Application.cpp
+    Window.h Window.cpp
     VulkanContext.h VulkanContext.cpp
     Swapchain.h Swapchain.cpp
-    Application.h Application.cpp
     Renderer.h Renderer.cpp
-    Window.h Window.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
