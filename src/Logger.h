@@ -30,8 +30,10 @@ void logInitialize(
 
 namespace detail {
 
-void logWithSpd(const std::source_location& loc, LogLevel level, std::string_view msg);
-void logWithSpdFatal(const std::source_location& loc, std::string_view msg);;
+void logWithSpd(const std::source_location& loc, LogLevel level,
+                std::string_view msg);
+void logWithSpdFatal(const std::source_location& loc, std::string_view msg);
+;
 
 template <typename... Args>
 inline void log_at_loc(const std::source_location& loc, LogLevel level,

@@ -7,7 +7,7 @@
 namespace aur {
 
 class Swapchain {
-public: // vkb::Device is defined in vk-bootstrap/VkBootstrap.h
+ public:  // vkb::Device is defined in vk-bootstrap/VkBootstrap.h
   Swapchain(const vkb::Device& vkb_device, uint32_t width, uint32_t height);
   ~Swapchain();
 
@@ -20,12 +20,8 @@ public: // vkb::Device is defined in vk-bootstrap/VkBootstrap.h
   const VkSwapchainKHR& getSwapchain() const { return vkbSwapchain_.swapchain; }
   VkFormat getImageFormat() const { return vkbSwapchain_.image_format; }
   VkExtent2D getImageExtent() const { return vkbSwapchain_.extent; }
-  const std::vector<VkImageView>& getImageViews() const {
-    return imageViews_;
-  }
-  const std::vector<VkImage>& getImages() const {
-    return images_;
-  }
+  const std::vector<VkImageView>& getImageViews() const { return imageViews_; }
+  const std::vector<VkImage>& getImages() const { return images_; }
   uint32_t getImageCount() const { return vkbSwapchain_.image_count; }
 
  private:

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string_view>
 #include <vector>
 
 #include "Swapchain.h"
@@ -13,7 +12,7 @@ namespace aur {
 
 class Renderer {
  public:
-  Renderer(GLFWwindow* window, std::string_view appName, uint32_t initialWidth,
+  Renderer(GLFWwindow* window, const char* appName, uint32_t initialWidth,
            uint32_t initialHeight);
   ~Renderer();
 
@@ -72,8 +71,9 @@ class Renderer {
   uint32_t currentHeight_;
 
   // Clear color, can be set from Application or be fixed
-  VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f}; // Default dark gray
-  VkClearDepthStencilValue clearDepthStencil_{1.0f, 0}; // Default depth is 1.0 (far plane), stencil is 0
+  VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};  // Default dark gray
+  VkClearDepthStencilValue clearDepthStencil_{
+      1.0f, 0};  // Default depth is 1.0 (far plane), stencil is 0
 };
 
 }  // namespace aur

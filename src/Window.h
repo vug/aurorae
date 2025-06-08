@@ -8,7 +8,7 @@ typedef unsigned int uint32_t;
 namespace aur {
 
 class Window {
-public:
+ public:
   // Has to be called before any other functions in Window
   static void initGLFW();
   // Call when GLFW is not needed anymore

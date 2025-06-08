@@ -1,7 +1,7 @@
 #include "Utils.h"
 
-#include <string>
 #include <cstdio>
+#include <string>
 
 #include "Logger.h"
 
@@ -17,8 +17,7 @@ class FileHandle {
  private:
   struct Deleter {
     void operator()(FILE* f) const {
-      if (f)
-        fclose(f);
+      if (f) fclose(f);
     }
   };
   std::unique_ptr<FILE, Deleter> file_;
@@ -39,7 +38,8 @@ std::vector<char> readFile(const std::string& filename, const char* mode) {
   std::fseek(file, 0, SEEK_END);
   long fileSizeLong = std::ftell(file);
   if (fileSizeLong < 0)
-    log().fatal("Failed to determine size of file (ftell failed): {}", filename);
+    log().fatal("Failed to determine size of file (ftell failed): {}",
+                filename);
   size_t fileSize = static_cast<size_t>(fileSizeLong);
 
   // Seek back to the beginning of the file

@@ -6,14 +6,14 @@ typedef unsigned char uint8_t;
 
 // Forward declare std::string. Lol.
 namespace std {
-  template<typename T1, typename T2, typename T3>
-  class basic_string;
-  template<typename T>
-  struct char_traits;
-  template<typename T>
-  class allocator;
-  using string  = basic_string<char, char_traits<char>, allocator<char>>;
-}
+template <typename T1, typename T2, typename T3>
+class basic_string;
+template <typename T>
+struct char_traits;
+template <typename T>
+class allocator;
+using string = basic_string<char, char_traits<char>, allocator<char>>;
+}  // namespace std
 
 namespace aur {
 

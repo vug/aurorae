@@ -6,7 +6,7 @@
 namespace aur {
 
 Application::Application(uint32_t initialWidth, uint32_t initialHeight,
-                         std::string_view appName)
+                         const char* appName)
     : appName_(appName),
       window_(initialWidth, initialHeight, appName_),  // Creates window
       renderer_(window_.getGLFWwindow(), appName_, initialWidth,
@@ -15,10 +15,8 @@ Application::Application(uint32_t initialWidth, uint32_t initialHeight,
   // constructed.
   log().info("Application starting... Build Type: {}",
              static_cast<uint8_t>(kBuildType));
-  log().info("App Name: {}, Initial Dimensions: {}x{}", appName_.c_str(),
-             initialWidth, initialHeight);
-
-  // Volk is initialized by VulkanContext constructor
+  log().info("App Name: {}, Initial Dimensions: {}x{}", appName_, initialWidth,
+             initialHeight);
 
   // Construction of members is done in the initializer list.
   log().info("Application constructed successfully.");
@@ -50,9 +48,6 @@ void Application::run() {
     }
 
     if (renderer_.beginFrame()) {
-      // beginFrame now handles clearing and starting the render pass.
-      // We can set a clear color if needed, e.g., renderer_.setClearColor(...)
-      // For now, it uses a default dark gray defined in Renderer.h
       renderer_.draw(renderer_.getCommandBuffer());
       renderer_.endFrame();
     }
@@ -61,7 +56,6 @@ void Application::run() {
     // iteration.
   }
   log().debug("Main loop finished.");
-  // vkDeviceWaitIdle is called in Renderer destructor
 }
 
 }  // namespace aur

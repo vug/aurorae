@@ -2,17 +2,15 @@
 #define VMA_IMPLEMENTATION
 #include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
-#include "Renderer.h"
-
-#include <array>      // For std::array
-#include <stdexcept>  // For std::runtime_error
+#include <array>
 
 #include "Logger.h"
+#include "Renderer.h"
 #include "Utils.h"
 
 namespace aur {
 
-Renderer::Renderer(GLFWwindow* window, std::string_view appName,
+Renderer::Renderer(GLFWwindow* window, const char* appName,
                    uint32_t initialWidth, uint32_t initialHeight)
     : vulkanContext_(window, appName),
       vmaAllocator_{makeVmaAllocator()},
@@ -22,7 +20,7 @@ Renderer::Renderer(GLFWwindow* window, std::string_view appName,
   createCommandPool();
   allocateCommandBuffer();
   createSyncObjects();
-  createGraphicsPipeline(); // Create the pipeline
+  createGraphicsPipeline();  // Create the pipeline
   log().debug("Renderer initialized.");
 }
 
@@ -33,7 +31,7 @@ Renderer::~Renderer() {
     vkDeviceWaitIdle(vulkanContext_.getDevice());
   }
 
-  cleanupGraphicsPipeline(); // Destroy the pipeline
+  cleanupGraphicsPipeline();  // Destroy the pipeline
   cleanupSyncObjects();
   cleanupCommandPool();  // Frees command buffers too
   // Swapchain and VulkanContext are destroyed automatically by their
@@ -99,13 +97,13 @@ void Renderer::createGraphicsPipeline() {
   VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
   VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
-  const VkPipelineShaderStageCreateInfo vertShaderStageInfo {
+  const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_VERTEX_BIT,
       .module = vertShaderModule,
       .pName = "main",
   };
-  const VkPipelineShaderStageCreateInfo fragShaderStageInfo {
+  const VkPipelineShaderStageCreateInfo fragShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
       .module = fragShaderModule,
@@ -115,48 +113,48 @@ void Renderer::createGraphicsPipeline() {
       vertShaderStageInfo, fragShaderStageInfo};
 
   // For hardcoded vertices, vertex input state is empty
-  const VkPipelineVertexInputStateCreateInfo vertexInputInfo {
+  const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
       // No vertex bindings or attributes
   };
 
-  const VkPipelineInputAssemblyStateCreateInfo inputAssembly {
+  const VkPipelineInputAssemblyStateCreateInfo inputAssembly{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
       .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
       .primitiveRestartEnable = VK_FALSE,
   };
 
   // Viewport and scissor will be dynamic
-  const VkPipelineViewportStateCreateInfo viewportState {
+  const VkPipelineViewportStateCreateInfo viewportState{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-      .viewportCount = 1, // Dynamic state will set this
-      .scissorCount = 1,  // Dynamic state will set this
+      .viewportCount = 1,  // Dynamic state will set this
+      .scissorCount = 1,   // Dynamic state will set this
   };
 
-  const VkPipelineRasterizationStateCreateInfo rasterizer {
+  const VkPipelineRasterizationStateCreateInfo rasterizer{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
       .depthClampEnable = VK_FALSE,
       .rasterizerDiscardEnable = VK_FALSE,
       .polygonMode = VK_POLYGON_MODE_FILL,
-      .cullMode = VK_CULL_MODE_NONE, // No culling for a 2D triangle
+      .cullMode = VK_CULL_MODE_NONE,  // No culling for a 2D triangle
       .frontFace = VK_FRONT_FACE_CLOCKWISE,
       .depthBiasEnable = VK_FALSE,
       .lineWidth = 1.0f,
   };
 
-  const VkPipelineMultisampleStateCreateInfo multisampling {
+  const VkPipelineMultisampleStateCreateInfo multisampling{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
       .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
       .sampleShadingEnable = VK_FALSE,
   };
 
-  const VkPipelineColorBlendAttachmentState colorBlendAttachment {
-      .blendEnable = VK_FALSE, // No blending for opaque triangle
+  const VkPipelineColorBlendAttachmentState colorBlendAttachment{
+      .blendEnable = VK_FALSE,  // No blending for opaque triangle
       .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
   };
 
-  const VkPipelineColorBlendStateCreateInfo colorBlending {
+  const VkPipelineColorBlendStateCreateInfo colorBlending{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
       .logicOpEnable = VK_FALSE,
       .attachmentCount = 1,
@@ -164,7 +162,7 @@ void Renderer::createGraphicsPipeline() {
   };
 
   // Empty pipeline layout for now (no uniforms, push constants)
-  const VkPipelineLayoutCreateInfo pipelineLayoutInfo {
+  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
   };
   if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo,
@@ -172,13 +170,11 @@ void Renderer::createGraphicsPipeline() {
     log().fatal("Failed to create pipeline layout!");
 
   const std::array<VkDynamicState, 2> dynamicStates = {
-    VK_DYNAMIC_STATE_VIEWPORT,
-    VK_DYNAMIC_STATE_SCISSOR
-  };
-  const VkPipelineDynamicStateCreateInfo dynamicStateInfo {
-    .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-    .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
-    .pDynamicStates = dynamicStates.data(),
+      VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+  const VkPipelineDynamicStateCreateInfo dynamicStateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+      .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+      .pDynamicStates = dynamicStates.data(),
   };
 
   // Dynamic Rendering Info
@@ -193,7 +189,7 @@ void Renderer::createGraphicsPipeline() {
 
   const VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .pNext = &pipelineRenderingCreateInfo, // Link dynamic rendering info
+      .pNext = &pipelineRenderingCreateInfo,  // Link dynamic rendering info
       .stageCount = static_cast<uint32_t>(shaderStages.size()),
       .pStages = shaderStages.data(),
       .pVertexInputState = &vertexInputInfo,
@@ -201,11 +197,11 @@ void Renderer::createGraphicsPipeline() {
       .pViewportState = &viewportState,
       .pRasterizationState = &rasterizer,
       .pMultisampleState = &multisampling,
-      .pDepthStencilState = nullptr, // No depth/stencil for 2D triangle
+      .pDepthStencilState = nullptr,  // No depth/stencil for 2D triangle
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
       .layout = pipelineLayout_,
-      .renderPass = VK_NULL_HANDLE, // Must be null for dynamic rendering
+      .renderPass = VK_NULL_HANDLE,  // Must be null for dynamic rendering
       .subpass = 0,
   };
 
@@ -249,7 +245,8 @@ void Renderer::cleanupGraphicsPipeline() {
     graphicsPipeline_ = VK_NULL_HANDLE;
   }
   if (pipelineLayout_ != VK_NULL_HANDLE) {
-    vkDestroyPipelineLayout(vulkanContext_.getDevice(), pipelineLayout_, nullptr);
+    vkDestroyPipelineLayout(vulkanContext_.getDevice(), pipelineLayout_,
+                            nullptr);
     pipelineLayout_ = VK_NULL_HANDLE;
   }
 }
@@ -367,7 +364,7 @@ bool Renderer::beginFrame() {
 }
 
 void Renderer::endFrame() {
-  vkCmdEndRendering(commandBuffer_); // End the dynamic rendering pass
+  vkCmdEndRendering(commandBuffer_);  // End the dynamic rendering pass
 
   // Transition swapchain image from COLOR_ATTACHMENT_OPTIMAL to PRESENT_SRC_KHR
   const VkImageSubresourceRange subresourceRange{
@@ -438,9 +435,10 @@ void Renderer::endFrame() {
 }
 
 void Renderer::draw(VkCommandBuffer commandBuffer) {
-  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    graphicsPipeline_);
 
-  const VkViewport viewport {
+  const VkViewport viewport{
       .x = 0.0f,
       .y = 0.0f,
       .width = static_cast<float>(swapchain_.getImageExtent().width),
@@ -453,20 +451,20 @@ void Renderer::draw(VkCommandBuffer commandBuffer) {
   const VkRect2D scissor{{0, 0}, swapchain_.getImageExtent()};
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-  vkCmdDraw(commandBuffer, 3, 1, 0, 0); // Draw 3 vertices, 1 instance
+  vkCmdDraw(commandBuffer, 3, 1, 0, 0);  // Draw 3 vertices, 1 instance
 }
 
 VmaAllocator Renderer::makeVmaAllocator() {
   VmaVulkanFunctions vmaVulkanFunctions = {
-    .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
-    .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
+      .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+      .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
   };
   VmaAllocatorCreateInfo allocatorInfo = {
-    .physicalDevice = vulkanContext_.getPhysicalDevice(),
-    .device = vulkanContext_.getDevice(),
-    .pVulkanFunctions = &vmaVulkanFunctions,
-    .instance = vulkanContext_.getInstance(),
-    .vulkanApiVersion = VK_API_VERSION_1_3,
+      .physicalDevice = vulkanContext_.getPhysicalDevice(),
+      .device = vulkanContext_.getDevice(),
+      .pVulkanFunctions = &vmaVulkanFunctions,
+      .instance = vulkanContext_.getInstance(),
+      .vulkanApiVersion = VK_API_VERSION_1_3,
   };
   VmaAllocator vmaAllocator;
   if (vmaCreateAllocator(&allocatorInfo, &vmaAllocator) != VK_SUCCESS)

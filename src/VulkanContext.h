@@ -2,15 +2,13 @@
 
 #include <vk-bootstrap/VkBootstrap.h>
 
-#include <string_view>
-
 struct GLFWwindow;
 
 namespace aur {
 
 class VulkanContext {
  public:
-  VulkanContext(GLFWwindow* window, std::string_view appName);
+  VulkanContext(GLFWwindow* window, const char* appName);
   ~VulkanContext();
 
   // Delete copy/move constructors to prevent accidental duplication

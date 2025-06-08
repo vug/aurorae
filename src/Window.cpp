@@ -2,15 +2,12 @@
 
 #include <glfw/glfw3.h>
 
-#include <stdexcept>  // For std::runtime_error
-
 #include "Logger.h"
 
 namespace aur {
 
 void Window::initGLFW() {
-  if (!glfwInit())
-    log().fatal("Failed to initialize GLFW!");
+  if (!glfwInit()) log().fatal("Failed to initialize GLFW!");
   log().trace("GLFW initialized.");
 }
 
