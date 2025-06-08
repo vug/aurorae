@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cstdint>  // For uint32_t
-#include <memory>   // For std::unique_ptr
 #include <string_view>
 
-#include "Renderer.h"  // Needs full definition for unique_ptr
-#include "Window.h"    // Needs full definition for unique_ptr
+#include "Renderer.h"
+#include "Window.h"
+
+typedef unsigned int uint32_t;
 
 namespace aur {
 
