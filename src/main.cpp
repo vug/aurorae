@@ -1,7 +1,3 @@
-// TODO(vug): move readFile out of Utils and put it into FileIO.h
-//            Consider it returning a fixed sized, simple buffer class, instead
-//            of std::vector Also instead of const string& use string_view? and
-//            forward declare it?
 // TODO(vug): define my own numeric types (i32 etc), put it in Utils.h
 // TODO(vug): script to compile shaders. Make shaders reachable by built executables
 // TODO(vug): add STL includes to a precompiled header pch_stl.h

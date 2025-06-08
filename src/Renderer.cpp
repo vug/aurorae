@@ -2,10 +2,11 @@
 #define VMA_IMPLEMENTATION
 #include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
+#include "Renderer.h"
+
 #include <array>
 
 #include "Logger.h"
-#include "Renderer.h"
 #include "Utils.h"
 
 namespace aur {
@@ -77,11 +78,11 @@ void Renderer::createSyncObjects() {
     log().fatal("Failed to create synchronization objects!");
 }
 
-VkShaderModule Renderer::createShaderModule(const std::vector<char>& code) {
+VkShaderModule Renderer::createShaderModule(BinaryBlob code) {
   const VkShaderModuleCreateInfo createInfo{
-      .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = code.size(),
-      .pCode = reinterpret_cast<const uint32_t*>(code.data()),
+    .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+    .codeSize = code.size(),
+    .pCode = reinterpret_cast<const uint32_t*>(code.data()),
   };
   VkShaderModule shaderModule;
   if (vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr,
@@ -91,11 +92,11 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char>& code) {
 }
 
 void Renderer::createGraphicsPipeline() {
-  auto vertShaderCode = readFile("shaders/triangle.vert.spv", "rb");
-  auto fragShaderCode = readFile("shaders/triangle.frag.spv", "rb");
+  BinaryBlob vertShaderCode = readBinaryFile("shaders/triangle.vert.spv");
+  BinaryBlob fragShaderCode = readBinaryFile("shaders/triangle.frag.spv");
 
-  VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-  VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+  VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
+  VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,

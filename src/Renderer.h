@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vector>
-
+#include "FileIO.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
 
@@ -48,7 +47,7 @@ class Renderer {
   void createSyncObjects();
   void internalRecreateSwapchain();
 
-  VkShaderModule createShaderModule(const std::vector<char>& code);
+  VkShaderModule createShaderModule(BinaryBlob code);
   void createGraphicsPipeline();
 
   void cleanupSyncObjects();

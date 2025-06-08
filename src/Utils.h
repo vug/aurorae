@@ -1,19 +1,6 @@
 #pragma once
 
-#include <vector>
-
 typedef unsigned char uint8_t;
-
-// Forward declare std::string. Lol.
-namespace std {
-template <typename T1, typename T2, typename T3>
-class basic_string;
-template <typename T>
-struct char_traits;
-template <typename T>
-class allocator;
-using string = basic_string<char, char_traits<char>, allocator<char>>;
-}  // namespace std
 
 namespace aur {
 
@@ -33,8 +20,5 @@ constexpr BuildType kBuildType =
 #else
     BuildType::Release;
 #endif
-
-// Utility function to read a binary file
-std::vector<char> readFile(const std::string& filename, const char* mode);
 
 }  // namespace aur

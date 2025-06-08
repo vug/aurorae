@@ -80,6 +80,7 @@ add_executable(Aurorae
     main.cpp
     Utils.h Utils.cpp
     Logger.h Logger.cpp
+    FileIO.h FileIO.cpp
     Application.h Application.cpp
     Window.h Window.cpp
     VulkanContext.h VulkanContext.cpp
