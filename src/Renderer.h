@@ -11,8 +11,8 @@ namespace aur {
 
 class Renderer {
  public:
-  Renderer(GLFWwindow* window, const char* appName, uint32_t initialWidth,
-           uint32_t initialHeight);
+  Renderer(GLFWwindow* window, const char* appName, u32 initialWidth,
+           u32 initialHeight);
   ~Renderer();
 
   Renderer(const Renderer&) = delete;
@@ -21,7 +21,7 @@ class Renderer {
   Renderer& operator=(Renderer&&) = delete;
 
   VkCommandBuffer getCommandBuffer() const { return commandBuffer_; }
-  uint32_t getCurrentImageIndex() const { return currentImageIndex_; }
+  u32 getCurrentImageIndex() const { return currentImageIndex_; }
 
   // Returns true if frame rendering can proceed.
   // Returns false if swapchain was recreated (or other non-fatal issue) and caller should skip drawing and try next frame.
@@ -38,7 +38,7 @@ class Renderer {
   void endFrame();
 
   // Call this when the window framebuffer size has changed.
-  void notifyResize(uint32_t newWidth, uint32_t newHeight);
+  void notifyResize(u32 newWidth, u32 newHeight);
 
  private:
   VmaAllocator makeVmaAllocator();
@@ -69,12 +69,12 @@ class Renderer {
   VkSemaphore renderFinishedSemaphore_{VK_NULL_HANDLE};
   VkFence inFlightFence_{VK_NULL_HANDLE};
 
-  uint32_t currentImageIndex_{};
+  u32 currentImageIndex_{};
   bool framebufferWasResized_{false};
   bool swapchainIsStale_{false};  // Combines suboptimal/out-of-date flags
 
-  uint32_t currentWidth_;
-  uint32_t currentHeight_;
+  u32 currentWidth_;
+  u32 currentHeight_;
 
   // Clear color, can be set from Application or be fixed, default dark gray
   VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};

@@ -6,19 +6,19 @@
 
 namespace aur {
 
-Swapchain::Swapchain(const vkb::Device& vkb_device, uint32_t width,
-                     uint32_t height) {
+Swapchain::Swapchain(const vkb::Device& vkb_device, u32 width,
+                     u32 height) {
   create(vkb_device, width, height);
 }
 
 Swapchain::~Swapchain() { destroy(); }
 
-void Swapchain::create(const vkb::Device& vkb_device, uint32_t width,
-                       uint32_t height, VkSwapchainKHR oldSwapchain) {
+void Swapchain::create(const vkb::Device& vkb_device, u32 width,
+                       u32 height, VkSwapchainKHR oldSwapchain) {
   vkb::SwapchainBuilder swapchainBuilder(vkb_device);
   auto vkbSwapchainResult =
       swapchainBuilder.set_old_swapchain(oldSwapchain)
-          .set_desired_extent((uint32_t)width, (uint32_t)height)
+          .set_desired_extent(width, height)
           .set_desired_format(VkSurfaceFormatKHR{
               .format = VK_FORMAT_B8G8R8A8_SRGB,
               .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR})
@@ -57,8 +57,8 @@ void Swapchain::destroy() {
       vkbSwapchain_);  // Destroys VkSwapchainKHR, VkImageViews, etc.
 }
 
-void Swapchain::recreate(const vkb::Device& vkb_device, uint32_t width,
-                         uint32_t height) {
+void Swapchain::recreate(const vkb::Device& vkb_device, u32 width,
+                         u32 height) {
   // Minimization handling (waiting for non-zero width/height)
   // is now expected to be done by the caller (e.g., in the main loop).
 

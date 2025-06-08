@@ -27,10 +27,10 @@ class VulkanContext {
 
   VkQueue getGraphicsQueue() const { return graphicsQueue_; }
   VkQueue getPresentQueue() const { return presentQueue_; }
-  uint32_t getGraphicsQueueFamilyIndex() const {
+  u32 getGraphicsQueueFamilyIndex() const {
     return graphicsQueueFamilyIndex_;
   }
-  uint32_t getPresentQueueFamilyIndex() const {
+  u32 getPresentQueueFamilyIndex() const {
     return presentQueueFamilyIndex_;
   }
 
@@ -48,8 +48,8 @@ class VulkanContext {
   VkSurfaceKHR surface_{VK_NULL_HANDLE};
   VkQueue graphicsQueue_{VK_NULL_HANDLE};
   VkQueue presentQueue_{VK_NULL_HANDLE};
-  uint32_t graphicsQueueFamilyIndex_{};
-  uint32_t presentQueueFamilyIndex_{};
+  u32 graphicsQueueFamilyIndex_{};
+  u32 presentQueueFamilyIndex_{};
 };
 
 }  // namespace aur

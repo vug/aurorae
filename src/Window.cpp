@@ -1,5 +1,7 @@
 #include "Window.h"
 
+#include <string_view>
+
 #include <glfw/glfw3.h>
 
 #include "Logger.h"
@@ -48,17 +50,17 @@ void Window::pollEvents() const { glfwPollEvents(); }
 
 void Window::waitEvents() const { glfwWaitEvents(); }
 
-void Window::getFramebufferSize(int32_t& width, int32_t& height) const {
+void Window::getFramebufferSize(i32& width, i32& height) const {
   glfwGetFramebufferSize(glfwWindow_, &width, &height);
 }
 
-void Window::framebufferResizeCallback(GLFWwindow* glfwWin, int32_t width,
-                                       int32_t height) {
+void Window::framebufferResizeCallback(GLFWwindow* glfwWin, i32 width,
+                                       i32 height) {
   auto windowInstance = static_cast<Window*>(glfwGetWindowUserPointer(glfwWin));
   if (windowInstance) {
     windowInstance->framebufferResized_ = true;
-    windowInstance->currentWidth_ = static_cast<uint32_t>(width);
-    windowInstance->currentHeight_ = static_cast<uint32_t>(height);
+    windowInstance->currentWidth_ = static_cast<u32>(width);
+    windowInstance->currentHeight_ = static_cast<u32>(height);
     log().trace("Framebuffer resized event: {}x{}", width, height);
   }
 }

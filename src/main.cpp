@@ -1,4 +1,3 @@
-// TODO(vug): define my own numeric types (i32 etc), put it in Utils.h
 // TODO(vug): script to compile shaders. Make shaders reachable by built executables
 // TODO(vug): add STL includes to a precompiled header pch_stl.h
 //            Also add headers such as utils and logger that are included in

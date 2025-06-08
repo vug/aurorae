@@ -9,7 +9,7 @@
 
 namespace aur {
 
-enum class LogLevel : int32_t {
+enum class LogLevel : i32 {
   Trace = 0,
   Debug = 1,
   Info = 2,

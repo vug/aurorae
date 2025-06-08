@@ -1,11 +1,10 @@
 #include "Application.h"
 
 #include "Logger.h"
-#include "Utils.h"
 
 namespace aur {
 
-Application::Application(uint32_t initialWidth, uint32_t initialHeight,
+Application::Application(u32 initialWidth, u32 initialHeight,
                          const char* appName)
     : appName_(appName),
       window_(initialWidth, initialHeight, appName_),  // Creates window

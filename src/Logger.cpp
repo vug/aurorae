@@ -14,7 +14,7 @@ namespace detail {
 //   return spdlog::default_logger_raw()->should_log(level);
 // }
 inline spdlog::level::level_enum toSpdLogLevel(LogLevel level) {
-  return static_cast<spdlog::level::level_enum>(static_cast<int32_t>(level));
+  return static_cast<spdlog::level::level_enum>(static_cast<i32>(level));
 }
 
 void logWithSpd(const std::source_location& loc, LogLevel level,

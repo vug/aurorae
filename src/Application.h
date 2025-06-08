@@ -1,15 +1,14 @@
 #pragma once
 
+#include "Utils.h"
 #include "Renderer.h"
 #include "Window.h"
-
-typedef unsigned int uint32_t;
 
 namespace aur {
 
 class Application {
  public:
-  Application(uint32_t initialWidth, uint32_t initialHeight,
+  Application(u32 initialWidth, u32 initialHeight,
               const char* appName);
   ~Application();
 

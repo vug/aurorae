@@ -12,7 +12,7 @@
 namespace aur {
 
 Renderer::Renderer(GLFWwindow* window, const char* appName,
-                   uint32_t initialWidth, uint32_t initialHeight)
+                   u32 initialWidth, u32 initialHeight)
     : vulkanContext_(window, appName),
       vmaAllocator_{makeVmaAllocator()},
       swapchain_(vulkanContext_.getVkbDevice(), initialWidth, initialHeight),
@@ -82,7 +82,7 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) {
   const VkShaderModuleCreateInfo createInfo{
     .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
     .codeSize = code.size(),
-    .pCode = reinterpret_cast<const uint32_t*>(code.data()),
+    .pCode = reinterpret_cast<const u32*>(code.data()),
   };
   VkShaderModule shaderModule;
   if (vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr,
@@ -174,7 +174,7 @@ void Renderer::createGraphicsPipeline() {
       VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
   const VkPipelineDynamicStateCreateInfo dynamicStateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-      .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+      .dynamicStateCount = static_cast<u32>(dynamicStates.size()),
       .pDynamicStates = dynamicStates.data(),
   };
 
@@ -191,7 +191,7 @@ void Renderer::createGraphicsPipeline() {
   const VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
       .pNext = &pipelineRenderingCreateInfo,  // Link dynamic rendering info
-      .stageCount = static_cast<uint32_t>(shaderStages.size()),
+      .stageCount = static_cast<u32>(shaderStages.size()),
       .pStages = shaderStages.data(),
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &inputAssembly,
@@ -252,7 +252,7 @@ void Renderer::cleanupGraphicsPipeline() {
   }
 }
 
-void Renderer::notifyResize(uint32_t newWidth, uint32_t newHeight) {
+void Renderer::notifyResize(u32 newWidth, u32 newHeight) {
   framebufferWasResized_ = true;
   currentWidth_ = newWidth;
   currentHeight_ = newHeight;
@@ -400,12 +400,12 @@ void Renderer::endFrame() {
   const std::array<VkSemaphore, 1> signalSemaphores{renderFinishedSemaphore_};
   const VkSubmitInfo submitInfo{
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-      .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
+      .waitSemaphoreCount = static_cast<u32>(waitSemaphores.size()),
       .pWaitSemaphores = waitSemaphores.data(),
       .pWaitDstStageMask = waitStages.data(),
       .commandBufferCount = 1,
       .pCommandBuffers = &commandBuffer_,
-      .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
+      .signalSemaphoreCount = static_cast<u32>(signalSemaphores.size()),
       .pSignalSemaphores = signalSemaphores.data(),
   };
 
@@ -415,7 +415,7 @@ void Renderer::endFrame() {
 
   const VkPresentInfoKHR presentInfo{
       .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      .waitSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
+      .waitSemaphoreCount = static_cast<u32>(signalSemaphores.size()),
       .pWaitSemaphores = signalSemaphores.data(),
       .swapchainCount = 1,
       .pSwapchains = &swapchain_.getSwapchain(),

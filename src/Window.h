@@ -1,10 +1,19 @@
 #pragma once
 
-#include <string_view>
+namespace std {
+// Forward declare std::string. Lol.
+template <typename T>
+struct char_traits;
+template<class CharT, class Traits>
+class basic_string_view;
+using string_view = basic_string_view<char, std::char_traits<char>>;
+
+enum class byte : unsigned char;
+}  // namespace std
+
+#include "Utils.h"
 
 struct GLFWwindow;
-typedef int int32_t;
-typedef unsigned int uint32_t;
 
 namespace aur {
 
@@ -15,7 +24,7 @@ class Window {
   // Call when GLFW is not needed anymore
   static void shutdownGLFW();
 
-  Window(uint32_t width, uint32_t height, std::string_view title);
+  Window(u32 width, u32 height, std::string_view title);
   ~Window();
 
   Window(const Window&) = delete;
@@ -30,17 +39,17 @@ class Window {
   GLFWwindow* getGLFWwindow() const { return glfwWindow_; }
   bool wasResized() const { return framebufferResized_; }
   void clearResizedFlag() { framebufferResized_ = false; }
-  void getFramebufferSize(int32_t& width, int32_t& height) const;
+  void getFramebufferSize(i32& width, i32& height) const;
 
  private:
-  static void framebufferResizeCallback(GLFWwindow* window, int32_t width,
-                                        int32_t height);
+  static void framebufferResizeCallback(GLFWwindow* window, i32 width,
+                                        i32 height);
 
   GLFWwindow* glfwWindow_{nullptr};
   bool framebufferResized_{false};
   // Store current dimensions, updated by resize callback and constructor
-  uint32_t currentWidth_;
-  uint32_t currentHeight_;
+  u32 currentWidth_;
+  u32 currentHeight_;
 };
 
 }  // namespace aur

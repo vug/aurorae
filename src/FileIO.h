@@ -4,10 +4,8 @@ namespace std {
 // Forward declare std::string. Lol.
 template <typename T>
 struct char_traits;
-template<
-    class CharT,
-    class Traits
-> class basic_string_view;
+template<class CharT, class Traits>
+class basic_string_view;
 using string_view = basic_string_view<char, std::char_traits<char>>;
 
 enum class byte : unsigned char;
