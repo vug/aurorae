@@ -1,10 +1,7 @@
 #include "Application.h"
 
-#include <array>      // For std::array (clear color)
-#include <stdexcept>  // For std::runtime_error, std::exception
-
 #include "Logger.h"
-#include "Utils.h"  // For kBuildType
+#include "Utils.h"
 
 namespace aur {
 
@@ -16,7 +13,7 @@ Application::Application(uint32_t initialWidth, uint32_t initialHeight,
                 initialHeight) /* Creates renderer */ {
   // Logger is expected to be initialized by main() before Application is
   // constructed.
-  log().info("Application starting. Build Type: {}",
+  log().info("Application starting... Build Type: {}",
              static_cast<uint8_t>(kBuildType));
   log().info("App Name: {}, Initial Dimensions: {}x{}", appName_.c_str(),
              initialWidth, initialHeight);
@@ -24,7 +21,6 @@ Application::Application(uint32_t initialWidth, uint32_t initialHeight,
   // Volk is initialized by VulkanContext constructor
 
   // Construction of members is done in the initializer list.
-  // If any constructor throws, it will be caught by the try-catch in main().
   log().info("Application constructed successfully.");
 }
 
@@ -32,7 +28,7 @@ Application::~Application() {
   // Members (renderer_, window_, glfwManager_) are automatically destructed in
   // reverse order of declaration. glfwManager_ destructor will call
   // glfwTerminate().
-  log().debug("Application shut down.");
+  log().trace("Application shut down.");
 }
 
 void Application::run() {

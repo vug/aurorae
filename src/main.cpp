@@ -1,5 +1,7 @@
 // TODO(vug): move readFile out of Utils and put it into FileIO.h
+// TODO(vug): define my own numeric types (i32 etc), put it in Utils.h
 // TODO(vug): add STL includes to a precompiled header pch_stl.h
+// TODO(vug): consider adding init() and deinit()/shutdown() methods to many objects/resources so that we can keep them in stack as members without needing to put them into pointers
 // TODO(vug): go over each file and see issues with design, inclusions, methods, members etc.
 // TODO(vug): create depth/stencil image of the swapchain (if needed) via VMA.
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
@@ -7,22 +9,17 @@
 // TODO(vug): smoother resize (current vkDeviceWaitIdle in recreate causes stutter
 // TODO(vug): use slang as the shader language
 // TODO(vug): config for stopping the debugger at validation issues (via std::abort() or similar)
+// TODO(vug): is there a way to move Window::init/shutdownGLFW() into Application. Window is the second member and initGLFW has to be called before it's constructed
 #define CROSS_PLATFORM_SURFACE_CREATION
 
-#include <glfw/glfw3.h>     // For glfwInit/Terminate
-
-#include "Application.h"  // New Application class
 #include "Logger.h"
+#include "Application.h"
 
 int main() {
   // We are initializing spdlog and glfw here to reduce the complexity of classes
   // and to decouple glfw initialization/termination from the Window class.
-  aur::logInitialize(aur::LogLevel::Debug);
-  aur::log().trace("Logging initialized in main.");
-
-  if (!glfwInit())
-    aur::log().fatal("Failed to initialize GLFW");
-  aur::log().trace("GLFW initialized in main.");
+  aur::logInitialize(aur::LogLevel::Trace);
+  aur::Window::initGLFW();
 
   const uint32_t kWidth = 1024;
   const uint32_t kHeight = 768;
@@ -31,7 +28,6 @@ int main() {
   aur::Application app(kWidth, kHeight, kAppName);
   app.run();
 
-  glfwTerminate();
-  aur::log().trace("GLFW terminated in main.");
+  aur::Window::shutdownGLFW();
   return 0;
 }

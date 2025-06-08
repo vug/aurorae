@@ -60,6 +60,8 @@ void logInitialize(LogLevel defaultLevel, const std::string& pattern,
 
   // Set the flush level
   spdlog::flush_on(detail::toSpdLogLevel(flushLevel));
+
+  log().trace("Logging initialized.");
 }
 
 }  // namespace aur

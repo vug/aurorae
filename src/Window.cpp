@@ -8,6 +8,17 @@
 
 namespace aur {
 
+void Window::initGLFW() {
+  if (!glfwInit())
+    log().fatal("Failed to initialize GLFW!");
+  log().trace("GLFW initialized.");
+}
+
+void Window::shutdownGLFW() {
+  glfwTerminate();
+  log().trace("GLFW terminated.");
+}
+
 Window::Window(uint32_t width, uint32_t height, std::string_view title)
     : currentWidth_(width), currentHeight_(height) {
   // GLFW initialization is expected to be done by the Application class
