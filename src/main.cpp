@@ -1,3 +1,5 @@
+// TODO(vug): move readFile out of Utils and put it into FileIO.h
+// TODO(vug): add STL includes to a precompiled header pch_stl.h
 // TODO(vug): go over each file and see issues with design, inclusions, methods, members etc.
 // TODO(vug): create depth/stencil image of the swapchain (if needed) via VMA.
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods

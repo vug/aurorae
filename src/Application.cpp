@@ -54,51 +54,10 @@ void Application::run() {
     }
 
     if (renderer_.beginFrame()) {
-      // Example: clear the screen. In a real app, you'd record various draw
-      // commands here. The command buffer to use is internal to the renderer
-      // for this simple example. For more complex scenarios, beginFrame might
-      // return the command buffer. For now, Renderer::clearScreen takes the
-      // command buffer and image index it needs. This clearScreen is a
-      // placeholder for where your actual scene rendering would go. The current
-      // Renderer::beginFrame already starts command buffer recording. The
-      // current Renderer::clearScreen does the full begin/end rendering pass
-      // for clearing. This needs to be adjusted if we want to insert commands
-      // between begin/end rendering. For this refactor, let's assume
-      // clearScreen is the *only* thing happening. The Renderer::beginFrame
-      // prepares the command buffer. The Renderer::clearScreen uses that
-      // command buffer. The Renderer::endFrame submits it.
-
-      // Let's make clearScreen use the member commandBuffer_ and
-      // currentImageIndex_ And it should not call vkCmdBegin/EndRendering
-      // itself if beginFrame/endFrame do. For now, the provided
-      // Renderer::clearScreen is self-contained for a clear. To integrate
-      // properly:
-      // 1. Renderer::beginFrame would do initial transition and
-      // vkCmdBeginRendering.
-      // 2. Application calls drawing functions (which get command buffer from
-      // Renderer).
-      // 3. Renderer::endFrame would do vkCmdEndRendering, final transition,
-      // submit.
-
-      // Simplified for this example: Renderer::clearScreen is a self-contained
-      // operation that uses the command buffer prepared by beginFrame. Let's
-      // assume beginFrame gives us a command buffer and image index. For now,
-      // the current Renderer::beginFrame doesn't return them, but it sets them
-      // as members. And Renderer::clearScreen is a standalone function. The
-      // current structure of Renderer::beginFrame and Renderer::clearScreen
-      // means clearScreen will record its own begin/end rendering.
-      // This is slightly off from the typical beginFrame/draw/endFrame.
-      // Let's adjust Renderer to fit the pattern better in a follow-up if
-      // needed. For now, this demonstrates the loop.
-
-      // The current Renderer::clearScreen is a full render pass.
-      // Let's assume beginFrame sets up the command buffer, and clearScreen
-      // uses it. The current Renderer::beginFrame already starts the command
-      // buffer. The current Renderer::clearScreen does the image transitions
-      // and the rendering pass.
-      renderer_.clearScreen(renderer_.getCommandBuffer(),
-                            renderer_.getCurrentImageIndex(),
-                            {0.1f, 0.1f, 0.4f, 1.0f});
+      // beginFrame now handles clearing and starting the render pass.
+      // We can set a clear color if needed, e.g., renderer_.setClearColor(...)
+      // For now, it uses a default dark gray defined in Renderer.h
+      renderer_.draw(renderer_.getCommandBuffer());
       renderer_.endFrame();
     }
     // If beginFrame() returns false, it means it handled a situation like
