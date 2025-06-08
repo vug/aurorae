@@ -10,22 +10,18 @@ Application::Application(uint32_t initialWidth, uint32_t initialHeight,
     : appName_(appName),
       window_(initialWidth, initialHeight, appName_),  // Creates window
       renderer_(window_.getGLFWwindow(), appName_, initialWidth,
-                initialHeight) /* Creates renderer */ {
-  // Logger is expected to be initialized by main() before Application is
-  // constructed.
+                initialHeight) {
   log().info("Application starting... Build Type: {}",
              static_cast<uint8_t>(kBuildType));
   log().info("App Name: {}, Initial Dimensions: {}x{}", appName_, initialWidth,
              initialHeight);
 
-  // Construction of members is done in the initializer list.
   log().info("Application constructed successfully.");
 }
 
 Application::~Application() {
-  // Members (renderer_, window_, glfwManager_) are automatically destructed in
-  // reverse order of declaration. glfwManager_ destructor will call
-  // glfwTerminate().
+  // Members (renderer_, window_) are automatically destructed in
+  // reverse order of declaration.
   log().trace("Application shut down.");
 }
 

@@ -29,25 +29,29 @@
 // TODO(vug): is there a way to move Window::init/shutdownGLFW() into
 // Application. Window is the second member and initGLFW has to be called before
 // it's constructed
+// TODO(vug): looks like at app start, longest duration is spent on graphics pipeline creation.
+//            Add a timer to measure important perf durations (cold start etc)
+//            Investigate what can be done to make pipeline creation faster. Can we cache them?
 #define CROSS_PLATFORM_SURFACE_CREATION
 
 #include "Application.h"
 #include "Logger.h"
 
-int main() {
+namespace aur {
+void main() {
   // We are initializing spdlog and glfw here to reduce the complexity of
-  // classes and to decouple glfw initialization/termination from the Window
-  // class.
-  aur::logInitialize(aur::LogLevel::Trace);
-  aur::Window::initGLFW();
+  // classes and to decouple glfw init/termination from the Window class.
+  logInitialize(aur::LogLevel::Debug);
+  Window::initGLFW();
 
-  const uint32_t kWidth = 1024;
-  const uint32_t kHeight = 768;
-  const char* kAppName = "Aurorae";
-
-  aur::Application app(kWidth, kHeight, kAppName);
+  Application app(1024, 768, "Aurorae");
   app.run();
 
-  aur::Window::shutdownGLFW();
+  Window::shutdownGLFW();  
+}
+} // namespace aur
+
+int main() {
+  aur::main();
   return 0;
 }

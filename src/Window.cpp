@@ -26,10 +26,8 @@ Window::Window(uint32_t width, uint32_t height, std::string_view title)
   glfwWindow_ =
       glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
                        title.data(), nullptr, nullptr);
-  if (!glfwWindow_) {
-    // glfwTerminate() will be called by Application
-    throw std::runtime_error("Failed to create GLFW window");
-  }
+  if (!glfwWindow_)
+    log().fatal("Failed to create GLFW window");
 
   glfwSetWindowUserPointer(glfwWindow_, this);
   glfwSetFramebufferSizeCallback(glfwWindow_, framebufferResizeCallback);
@@ -50,19 +48,18 @@ void Window::pollEvents() const { glfwPollEvents(); }
 
 void Window::waitEvents() const { glfwWaitEvents(); }
 
-void Window::getFramebufferSize(int& width, int& height) const {
+void Window::getFramebufferSize(int32_t& width, int32_t& height) const {
   glfwGetFramebufferSize(glfwWindow_, &width, &height);
 }
 
-void Window::framebufferResizeCallback(GLFWwindow* glfwWin, int width,
-                                       int height) {
+void Window::framebufferResizeCallback(GLFWwindow* glfwWin, int32_t width,
+                                       int32_t height) {
   auto windowInstance = static_cast<Window*>(glfwGetWindowUserPointer(glfwWin));
   if (windowInstance) {
     windowInstance->framebufferResized_ = true;
     windowInstance->currentWidth_ = static_cast<uint32_t>(width);
     windowInstance->currentHeight_ = static_cast<uint32_t>(height);
-    // log().trace("Framebuffer resized event: {}x{}", width, height); //
-    // Optional: for debugging
+    log().trace("Framebuffer resized event: {}x{}", width, height);
   }
 }
 

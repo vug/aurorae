@@ -5,7 +5,7 @@
 #include "Swapchain.h"
 #include "VulkanContext.h"
 
-struct GLFWwindow;  // Forward declaration
+struct GLFWwindow;
 VK_DEFINE_HANDLE(VmaAllocator)
 
 namespace aur {
@@ -70,10 +70,10 @@ class Renderer {
   uint32_t currentWidth_;
   uint32_t currentHeight_;
 
-  // Clear color, can be set from Application or be fixed
-  VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};  // Default dark gray
-  VkClearDepthStencilValue clearDepthStencil_{
-      1.0f, 0};  // Default depth is 1.0 (far plane), stencil is 0
+  // Clear color, can be set from Application or be fixed, default dark gray
+  VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};
+  // Default depth is 1.0 (far plane), stencil is 0
+  VkClearDepthStencilValue clearDepthStencil_{1.0f, 0}; 
 };
 
 }  // namespace aur

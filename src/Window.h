@@ -3,6 +3,7 @@
 #include <string_view>
 
 struct GLFWwindow;
+typedef int int32_t;
 typedef unsigned int uint32_t;
 
 namespace aur {
@@ -29,11 +30,11 @@ class Window {
   GLFWwindow* getGLFWwindow() const { return glfwWindow_; }
   bool wasResized() const { return framebufferResized_; }
   void clearResizedFlag() { framebufferResized_ = false; }
-  void getFramebufferSize(int& width, int& height) const;
+  void getFramebufferSize(int32_t& width, int32_t& height) const;
 
  private:
-  static void framebufferResizeCallback(GLFWwindow* window, int width,
-                                        int height);
+  static void framebufferResizeCallback(GLFWwindow* window, int32_t width,
+                                        int32_t height);
 
   GLFWwindow* glfwWindow_{nullptr};
   bool framebufferResized_{false};
