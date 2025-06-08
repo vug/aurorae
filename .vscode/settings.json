@@ -86,6 +86,12 @@
     "xstring": "cpp",
     "xtr1common": "cpp",
     "xtree": "cpp",
-    "xutility": "cpp"
+    "xutility": "cpp",
+    "cinttypes": "cpp",
+    "cstdarg": "cpp",
+    "shared_mutex": "cpp",
+    "unordered_set": "cpp",
+    "string_view": "cpp",
+    "*.rh": "cpp"
   }
 }
