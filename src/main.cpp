@@ -1,5 +1,7 @@
 // TODO(vug): go over each file and see issues with design, inclusions, methods, members etc.
-// TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
+// TODO(vug): create depth/stencil image of the swapchain (if needed) via VMA.
+// TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
+// TODO(vug): add Renderer Texture, Depth/Stencil Image, Offscreen Render Target creation via VMA methods
 // TODO(vug): smoother resize (current vkDeviceWaitIdle in recreate causes stutter
 // TODO(vug): use slang as the shader language
 // TODO(vug): config for stopping the debugger at validation issues (via std::abort() or similar)

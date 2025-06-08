@@ -9,6 +9,7 @@
 #include "VulkanContext.h"
 
 struct GLFWwindow;  // Forward declaration
+VK_DEFINE_HANDLE(VmaAllocator)
 
 namespace aur {
 
@@ -40,6 +41,7 @@ class Renderer {
                    const std::array<float, 4>& color);
 
  private:
+  VmaAllocator makeVmaAllocator();
   void createCommandPool();
   void allocateCommandBuffer();
   void createSyncObjects();
@@ -48,9 +50,9 @@ class Renderer {
   void cleanupCommandPool();  // Also frees command buffers
 
   void internalRecreateSwapchain();
-
-  VulkanContext vulkanContext_;  // Must be declared before swapchain if
-                                 // swapchain uses its device
+  // Context -> Allocator -> Swapchain needs to be created in that order.
+  VulkanContext vulkanContext_;
+  VmaAllocator vmaAllocator_{VK_NULL_HANDLE};
   Swapchain swapchain_;
 
   VkCommandPool commandPool_{VK_NULL_HANDLE};

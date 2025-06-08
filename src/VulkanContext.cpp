@@ -3,7 +3,6 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #define VOLK_IMPLEMENTATION
 #include <volk/volk.h>
-#include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
 #if defined(CROSS_PLATFORM_SURFACE_CREATION)
 VkResult glfwCreateWindowSurface(VkInstance instance, GLFWwindow* window, const VkAllocationCallbacks* allocator, VkSurfaceKHR* surface);
@@ -184,7 +183,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, std::string_view appName)  {
   presentQueueFamilyIndex_ = vkbDevice_.get_queue_index(vkb::QueueType::present).value(); // Often same as graphics
   log().trace("graphicsQueueFamilyIndex: {}, presentQueueFamilyIndex: {}", graphicsQueueFamilyIndex_, presentQueueFamilyIndex_);
   graphicsQueue_ = vkbDevice_.get_queue(vkb::QueueType::graphics).value();
-  presentQueue_ = vkbDevice_.get_queue(vkb::QueueType::present).value();  
+  presentQueue_ = vkbDevice_.get_queue(vkb::QueueType::present).value();
 
 }
 

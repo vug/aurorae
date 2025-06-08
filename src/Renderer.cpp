@@ -1,4 +1,6 @@
 #include <volk/volk.h>  // For Vulkan functions
+#define VMA_IMPLEMENTATION
+#include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
 #include "Renderer.h"
 
@@ -12,6 +14,7 @@ namespace aur {
 Renderer::Renderer(GLFWwindow* window, std::string_view appName,
                    uint32_t initialWidth, uint32_t initialHeight)
     : vulkanContext_(window, appName),
+      vmaAllocator_{makeVmaAllocator()},
       swapchain_(vulkanContext_.getVkbDevice(), initialWidth, initialHeight),
       currentWidth_(initialWidth),
       currentHeight_(initialHeight) {
@@ -22,6 +25,7 @@ Renderer::Renderer(GLFWwindow* window, std::string_view appName,
 }
 
 Renderer::~Renderer() {
+  vmaDestroyAllocator(vmaAllocator_);
   // Ensure GPU is idle before destroying resources
   if (vulkanContext_.getDevice() != VK_NULL_HANDLE) {
     vkDeviceWaitIdle(vulkanContext_.getDevice());
@@ -287,6 +291,24 @@ void Renderer::endFrame() {
   } else if (result != VK_SUCCESS)
     log().fatal("Failed to present swap chain image: {}",
                 static_cast<int>(result));
+}
+
+VmaAllocator Renderer::makeVmaAllocator() {
+  VmaVulkanFunctions vmaVulkanFunctions = {
+    .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+    .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
+  };
+  VmaAllocatorCreateInfo allocatorInfo = {
+    .physicalDevice = vulkanContext_.getPhysicalDevice(),
+    .device = vulkanContext_.getDevice(),
+    .pVulkanFunctions = &vmaVulkanFunctions,
+    .instance = vulkanContext_.getInstance(),
+    .vulkanApiVersion = VK_API_VERSION_1_3,
+  };
+  VmaAllocator vmaAllocator;
+  if (vmaCreateAllocator(&allocatorInfo, &vmaAllocator) != VK_SUCCESS)
+    log().fatal("Failed to create Vulkan Memory Allocator!");
+  return vmaAllocator;
 }
 
 }  // namespace aur
