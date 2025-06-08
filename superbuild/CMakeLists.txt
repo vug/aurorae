@@ -64,6 +64,8 @@ add_external_dependency(VKBootstrap "vk-bootstrap" "-DVK_BOOTSTRAP_TEST=OFF;-DVK
 add_external_dependency(SpdLog "spdlog" "-DSPDLOG_MASTER_PROJECT=OFF;-DSPDLOG_INSTALL=ON;-DSPDLOG_USE_STD_FORMAT=ON;-DCMAKE_INSTALL_INCLUDEDIR=include")
 # git submodule add https://github.com/glfw/glfw.git
 add_external_dependency(Glfw "glfw" "-DGLFW_BUILD_EXAMPLES=OFF;-DGLFW_BUILD_TESTS=OFF;-DGLFW_BUILD_DOCS=OFF;-DGLFW_INSTALL=ON")
+# git submodule add https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+add_external_dependency(VMA "VulkanMemoryAllocator" "-DVMA_ENABLE_INSTALL=ON;-DVMA_BUILD_SAMPLES=OFF;-DVMA_BUILD_DOCUMENTATION=OFF")
 
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
 # TODO(vug): assimp, imgui, glm, stb, xatlas, embree
@@ -76,7 +78,7 @@ foreach(CONFIG ${SUPERBUILD_CONFIGS})
         VKBootstrap_${CONFIG}
         SpdLog_${CONFIG}
         Glfw_${CONFIG}
-        # VMA_${CONFIG}
+        VMA_${CONFIG}
         # ImGui_${CONFIG}
         # STB_${CONFIG}
     )
