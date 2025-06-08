@@ -1,4 +1,3 @@
-// TODO(vug): try to get rid of exceptions in favor of fatal()
 // TODO(vug): go over each file and see issues with design, inclusions, methods, members etc.
 // TODO(vug): introduce VMA (Vulkan Memory Allocator) for memory management
 // TODO(vug): smoother resize (current vkDeviceWaitIdle in recreate causes stutter

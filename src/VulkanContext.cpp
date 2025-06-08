@@ -3,6 +3,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #define VOLK_IMPLEMENTATION
 #include <volk/volk.h>
+#include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
 #if defined(CROSS_PLATFORM_SURFACE_CREATION)
 VkResult glfwCreateWindowSurface(VkInstance instance, GLFWwindow* window, const VkAllocationCallbacks* allocator, VkSurfaceKHR* surface);

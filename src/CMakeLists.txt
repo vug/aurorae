@@ -62,7 +62,7 @@ message(STATUS "vk-bootstrap include dirs: ${VK_BOOTSTRAP_INCLUDE_DIR}")
 find_package(spdlog REQUIRED)
 get_target_property(SPDLOG_LIBRARY spdlog::spdlog LOCATION)
 message(STATUS "spdlog target location: ${SPDLOG_LIBRARY}")
-get_target_property(VK_BOOTSTRAP_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "spdlog include dirs: ${SPDLOG_INCLUDE_DIR}")
 
 find_package(glfw3 REQUIRED)
@@ -70,6 +70,8 @@ get_target_property(GLFW_LIBRARY glfw LOCATION)
 message(STATUS "glfw target location: ${GLFW_LIBRARY}")
 get_target_property(GLFW_INCLUDE_DIR glfw INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "glfw include dirs: ${GLFW_INCLUDE_DIR}")
+
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 
 # TODO(vug): add a function that takes package name and target name.
 # target name can be found in the *Config.cmake file.
@@ -94,8 +96,9 @@ target_link_libraries(Aurorae PRIVATE
     volk::volk
     vk-bootstrap::vk-bootstrap
     spdlog::spdlog
+    # spdlog$<$<CONFIG:Debug>:d> # alternative
     glfw
-    # spdlog$<$<CONFIG:Debug>:d>
+    GPUOpen::VulkanMemoryAllocator
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
