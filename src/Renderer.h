@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <string_view>
 #include <vector>
 
@@ -73,7 +72,8 @@ class Renderer {
   uint32_t currentHeight_;
 
   // Clear color, can be set from Application or be fixed
-  std::array<float, 4> clearColor_{0.1f, 0.1f, 0.1f, 1.0f};
+  VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f}; // Default dark gray
+  VkClearDepthStencilValue clearDepthStencil_{1.0f, 0}; // Default depth is 1.0 (far plane), stencil is 0
 };
 
 }  // namespace aur

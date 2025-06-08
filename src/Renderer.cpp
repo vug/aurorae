@@ -350,7 +350,7 @@ bool Renderer::beginFrame() {
       .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
       .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-      .clearValue = {{clearColor_[0], clearColor_[1], clearColor_[2], clearColor_[3]}},
+      .clearValue = clearColor_,
   };
   const VkRenderingInfoKHR renderingInfo{
       .sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
