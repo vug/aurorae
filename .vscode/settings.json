@@ -92,6 +92,7 @@
     "shared_mutex": "cpp",
     "unordered_set": "cpp",
     "string_view": "cpp",
-    "*.rh": "cpp"
+    "*.rh": "cpp",
+    "internal.h": "c"
   }
 }
