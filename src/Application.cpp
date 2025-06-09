@@ -4,9 +4,21 @@
 
 namespace aur {
 
+Application::Initializer::Initializer() {
+  // We are initializing spdlog and glfw here to reduce the complexity of the Logger and Window classes
+  // and to decouple glfw init/termination from the Window class.
+  logInitialize(aur::LogLevel::Debug);
+  Window::initGLFW();  
+}
+
+Application::Initializer::~Initializer() {
+  Window::shutdownGLFW();  
+}
+
 Application::Application(u32 initialWidth, u32 initialHeight,
                          const char* appName)
     : appName_(appName),
+      initializer_{},  // Initialize spdlog and glfw
       window_(initialWidth, initialHeight, appName_),  // Creates window
       renderer_(window_.getGLFWwindow(), appName_, initialWidth,
                 initialHeight) {
@@ -15,7 +27,7 @@ Application::Application(u32 initialWidth, u32 initialHeight,
   log().info("App Name: {}, Initial Dimensions: {}x{}", appName_, initialWidth,
              initialHeight);
 
-  log().info("Application constructed successfully.");
+  log().trace("Application constructed successfully.");
 }
 
 Application::~Application() {
