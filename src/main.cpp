@@ -1,7 +1,3 @@
-// TODO(vug): script to compile shaders. Make shaders reachable by built executables
-// TODO(vug): add STL includes to a precompiled header pch_stl.h
-//            Also add headers such as utils and logger that are included in
-//            every file into pch_aur.h
 // TODO(vug): consider adding init() and deinit()/shutdown() methods to many
 // objects/resources so that we can keep them in stack as members without
 // needing to put them into pointers
@@ -15,6 +11,9 @@
 //            create depth/stencil image of the swapchain (if needed) via VMA.
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer
 // creation via VMA methods
+// TODO(vug): add STL includes to a precompiled header pch_stl.h
+//            Also add headers such as utils and logger that are included in
+//            every file into pch_aur.h. and maybe a pch_dependencies
 // TODO(vug): add Renderer Texture, Depth/Stencil Image, Offscreen Render Target
 // creation via VMA methods
 // TODO(vug): smoother resize (current vkDeviceWaitIdle in recreate causes

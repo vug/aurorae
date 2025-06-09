@@ -7,18 +7,36 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-if [%1]==[] (
-    echo Usage: compile_shader.bat shader_file
-    echo Example: compile_shader.bat triangle.vert
+if "%~1"=="" (
+    echo Usage: compile_shader.bat shader_file [debug^|release]
+    echo Examples:
+    echo   compile_shader.bat triangle.vert
+    echo   compile_shader.bat triangle.vert debug
     exit /b 1
 )
 
-set SHADER_FILE=%1
+set SHADER_FILE=%~1
+set CONFIG=release
+
+if not "%~2"=="" (
+    if /i "%~2"=="debug" (
+        set CONFIG=debug
+    ) else if /i "%~2"=="release" (
+        set CONFIG=release
+    ) else (
+        echo Error: Invalid config value '%~2'. Use 'debug' or 'release'
+        exit /b 1
+    )
+)
+
 set OUTPUT_FILE=%SHADER_FILE%.spv
 
-echo Compiling %SHADER_FILE% to %OUTPUT_FILE%...
-REM Enable optimizations -O: Enable optimizations, -g: Include debug info
-glslc -O -g --target-env=vulkan1.3 --target-spv=spv1.6 -Werror %SHADER_FILE% -o %OUTPUT_FILE%
+echo Compiling %SHADER_FILE% to %OUTPUT_FILE% in %CONFIG% mode...
+if %CONFIG%==debug (
+    glslc -c -g --target-env=vulkan1.3 --target-spv=spv1.6 -Werror %SHADER_FILE% -o %OUTPUT_FILE%
+) else (
+    glslc -c -O --target-env=vulkan1.3 --target-spv=spv1.6 -Werror %SHADER_FILE% -o %OUTPUT_FILE%
+)
 
 if %ERRORLEVEL% EQU 0 (
     echo Compilation successful!
