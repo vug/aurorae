@@ -57,7 +57,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
            VkDebugUtilsMessageTypeFlagsEXT messageType,
            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
            [[maybe_unused]] void* pUserData) -> VkBool32 {
-      const std::array<u32, 2> ignoredMessageIds = {
+      const std::array<i32, 2> ignoredMessageIds = {
           0x675dc32e,  // just warns about VK_EXT_debug_utils is intended to be
                        // used in debugging only.
           0x24b5c69f,  // GPU validation:

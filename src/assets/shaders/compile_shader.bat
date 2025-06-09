@@ -29,7 +29,11 @@ if not "%~2"=="" (
     )
 )
 
-set OUTPUT_FILE=%SHADER_FILE%.spv
+if %CONFIG%==debug (
+set OUTPUT_FILE=debug/%SHADER_FILE%.spv
+) else (
+set OUTPUT_FILE=release/%SHADER_FILE%.spv
+)
 
 echo Compiling %SHADER_FILE% to %OUTPUT_FILE% in %CONFIG% mode...
 if %CONFIG%==debug (

@@ -92,8 +92,8 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) {
 }
 
 void Renderer::createGraphicsPipeline() {
-  BinaryBlob vertShaderCode = readBinaryFile("shaders/triangle.vert.spv");
-  BinaryBlob fragShaderCode = readBinaryFile("shaders/triangle.frag.spv");
+  BinaryBlob vertShaderCode = readBinaryFile(pathJoin(kShadersFolder, "triangle.vert.spv").c_str());
+  BinaryBlob fragShaderCode = readBinaryFile(pathJoin(kShadersFolder, "triangle.frag.spv").c_str());
 
   VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
   VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));

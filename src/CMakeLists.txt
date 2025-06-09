@@ -114,4 +114,4 @@ else()
                         "Add macro for this build type .")
 endif()
 
-
+target_compile_definitions(Aurorae PRIVATE ASSETS_FOLDER="${PROJECT_SOURCE_DIR}/assets")
