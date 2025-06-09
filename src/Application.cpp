@@ -1,18 +1,19 @@
 #include "Application.h"
 
 #include "Logger.h"
+#include "glfwUtils.h"
 
 namespace aur {
 
 Application::Initializer::Initializer() {
   // We are initializing spdlog and glfw here to reduce the complexity of the Logger and Window classes
   // and to decouple glfw init/termination from the Window class.
-  logInitialize(aur::LogLevel::Debug);
-  Window::initGLFW();  
+  logInitialize(aur::LogLevel::Trace);
+  GlfwUtils::initGLFW();  
 }
 
 Application::Initializer::~Initializer() {
-  Window::shutdownGLFW();  
+  GlfwUtils::shutdownGLFW();  
 }
 
 Application::Application(u32 initialWidth, u32 initialHeight,

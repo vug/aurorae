@@ -1,23 +1,13 @@
 #include <array>
 
-#define VK_USE_PLATFORM_WIN32_KHR
-#define VOLK_IMPLEMENTATION
 #include <volk/volk.h>
 
-#if defined(CROSS_PLATFORM_SURFACE_CREATION)
-VkResult glfwCreateWindowSurface(VkInstance instance, GLFWwindow* window,
-                                 const VkAllocationCallbacks* allocator,
-                                 VkSurfaceKHR* surface);
-int glfwGetError(const char** description);
-#else
-#include <glfw/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <glfw/glfw3native.h>
-#endif
-
+#include "GlfwUtils.h"
 #include "Logger.h"
 #include "Utils.h"
 #include "VulkanContext.h"
+
+struct GLFWwindow;
 
 namespace aur {
 
@@ -131,28 +121,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
       vkbInstance_);  // loads Vulkan instance-level function pointers
 
   // Create Vulkan surface
-#if defined(CROSS_PLATFORM_SURFACE_CREATION)
-  // GLFW's internal logic will use the necessary instance functions (which it
-  // also loads internally, or accesses via Volk if Volk initialized first)
-  // to create the platform-specific VkSurfaceKHR.
-  if (glfwCreateWindowSurface(vkbInstance_.instance, window, nullptr,
-                              &surface_) != VK_SUCCESS) {
-    const char* errorMsg;
-    if (glfwGetError(&errorMsg))
-      log().fatal("Failed to create Vulkan surface: {}", errorMsg);
-    else
-      log().fatal("Failed to create Vulkan surface: Unknown error.");
-  }
-#else
-  VkWin32SurfaceCreateInfoKHR sci{
-      .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-      .hinstance = GetModuleHandle(nullptr),
-      .hwnd = glfwGetWin32Window(window),
-  };
-  if (vkCreateWin32SurfaceKHR(vkbInstance_.instance, &sci, nullptr,
-                              &surface_) != VK_SUCCESS)
-    log().fatal("Failed to create Win32 Vulkan surface.");
-#endif
+  GlfwUtils::createWindowSurface(vkbInstance_.instance, window, &surface_);
 
   // Select physical device
   vkb::PhysicalDeviceSelector selector(vkbInstance_);

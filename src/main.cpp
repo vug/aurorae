@@ -22,10 +22,7 @@
 // TODO(vug): looks like at app start, longest duration is spent on graphics pipeline creation.
 //            Add a timer to measure important perf durations (cold start etc)
 //            Investigate what can be done to make pipeline creation faster. Can we cache them?
-#define CROSS_PLATFORM_SURFACE_CREATION
-
 #include "Application.h"
-#include "Logger.h"
 
 namespace aur {
 void main() {

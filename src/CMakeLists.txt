@@ -79,6 +79,7 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 add_executable(Aurorae 
     main.cpp
     Utils.h Utils.cpp
+    GlfwUtils.h GlfwUtils.cpp
     Logger.h Logger.cpp
     FileIO.h FileIO.cpp
     Application.h Application.cpp

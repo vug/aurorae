@@ -1,7 +1,7 @@
 #pragma once
 
 namespace std {
-// Forward declare std::string. Lol.
+// Forward declare std::string_view. Lol.
 template <typename T>
 struct char_traits;
 template<class CharT, class Traits>
@@ -19,11 +19,6 @@ namespace aur {
 
 class Window {
  public:
-  // Has to be called before any other functions in Window
-  static void initGLFW();
-  // Call when GLFW is not needed anymore
-  static void shutdownGLFW();
-
   Window(u32 width, u32 height, std::string_view title);
   ~Window();
 
