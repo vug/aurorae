@@ -6,6 +6,7 @@
 
 struct GLFWwindow;
 VK_DEFINE_HANDLE(VmaAllocator)
+VK_DEFINE_HANDLE(VmaAllocation)
 
 namespace aur {
 
@@ -32,7 +33,9 @@ class Renderer {
     clearColor_ = {r, g, b, a};
   }
 
-  void draw(VkCommandBuffer commandBuffer);
+  void drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt);
+  VkPipeline getTrianglePipeline() const { return triangleGraphicsPipeline_; }
+  VkPipeline getCubePipeline() const { return cubeGraphicsPipeline_; }
 
   // Must be called after draw commands
   void endFrame();
@@ -48,11 +51,15 @@ class Renderer {
   void internalRecreateSwapchain();
 
   VkShaderModule createShaderModule(BinaryBlob code);
-  void createGraphicsPipeline();
+  void createTrianglePipeline();
+  void createCubePipeline();
+  void createDepthResources();
 
   void cleanupSyncObjects();
+  void cleanupDepthResources();
   void cleanupCommandPool();  // Also frees command buffers
-  void cleanupGraphicsPipeline();
+  void cleanupTrianglePipeline();
+  void cleanupCubePipeline();
 
   // Context -> Allocator -> Swapchain needs to be created in that order.
   VulkanContext vulkanContext_;
@@ -62,8 +69,15 @@ class Renderer {
   VkCommandPool commandPool_{VK_NULL_HANDLE};
   VkCommandBuffer commandBuffer_{VK_NULL_HANDLE};
 
-  VkPipelineLayout pipelineLayout_{VK_NULL_HANDLE};
-  VkPipeline graphicsPipeline_{VK_NULL_HANDLE};
+  VkPipelineLayout trianglePipelineLayout_{VK_NULL_HANDLE};
+  VkPipeline triangleGraphicsPipeline_{VK_NULL_HANDLE};
+  VkPipelineLayout cubePipelineLayout_{VK_NULL_HANDLE};
+  VkPipeline cubeGraphicsPipeline_{VK_NULL_HANDLE};
+
+  VkImage depthImage_{VK_NULL_HANDLE};
+  VmaAllocation depthImageMemory_{VK_NULL_HANDLE};
+  VkImageView depthImageView_{VK_NULL_HANDLE};
+  VkFormat depthFormat_{VK_FORMAT_UNDEFINED};
 
   VkSemaphore imageAvailableSemaphore_{VK_NULL_HANDLE};
   VkSemaphore renderFinishedSemaphore_{VK_NULL_HANDLE};

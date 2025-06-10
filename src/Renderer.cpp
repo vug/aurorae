@@ -21,22 +21,31 @@ Renderer::Renderer(GLFWwindow* window, const char* appName,
   createCommandPool();
   allocateCommandBuffer();
   createSyncObjects();
-  createGraphicsPipeline();  // Create the pipeline
+  createDepthResources();    // Create depth buffer
+  createTrianglePipeline();  // Create the triangle pipeline
+  createCubePipeline();      // Create the cube pipeline
   log().debug("Renderer initialized.");
 }
 
 Renderer::~Renderer() {
-  vmaDestroyAllocator(vmaAllocator_);
   // Ensure GPU is idle before destroying resources
   if (vulkanContext_.getDevice() != VK_NULL_HANDLE) {
     vkDeviceWaitIdle(vulkanContext_.getDevice());
   }
 
-  cleanupGraphicsPipeline();  // Destroy the pipeline
+  cleanupCubePipeline();
+  cleanupTrianglePipeline();
+  cleanupDepthResources(); // Destroy depth buffer
   cleanupSyncObjects();
-  cleanupCommandPool();  // Frees command buffers too
-  // Swapchain and VulkanContext are destroyed automatically by their
-  // destructors Order: Swapchain (uses device), VulkanContext (owns device)
+  cleanupCommandPool();      // Frees command buffers too
+
+  if (vmaAllocator_ != VK_NULL_HANDLE) {
+    vmaDestroyAllocator(vmaAllocator_);
+    vmaAllocator_ = VK_NULL_HANDLE;
+  }
+
+  // Swapchain and VulkanContext are destroyed automatically by their destructors
+  // Order: Swapchain (uses device), VulkanContext (owns device)
   log().info("Renderer destroyed.");
 }
 
@@ -91,10 +100,10 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) {
   return shaderModule;
 }
 
-void Renderer::createGraphicsPipeline() {
+void Renderer::createTrianglePipeline() {
   BinaryBlob vertShaderCode = readBinaryFile(pathJoin(kShadersFolder, "triangle.vert.spv").c_str());
   BinaryBlob fragShaderCode = readBinaryFile(pathJoin(kShadersFolder, "triangle.frag.spv").c_str());
-
+  
   VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
   VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));
 
@@ -149,6 +158,15 @@ void Renderer::createGraphicsPipeline() {
       .sampleShadingEnable = VK_FALSE,
   };
 
+  // No depth testing for 2D triangle
+  const VkPipelineDepthStencilStateCreateInfo depthStencilState{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+      .depthTestEnable = VK_FALSE,        // Enable depth testing
+      .depthWriteEnable = VK_FALSE,       // Enable depth writes
+      .depthBoundsTestEnable = VK_FALSE,
+      .stencilTestEnable = VK_FALSE
+  };  
+
   const VkPipelineColorBlendAttachmentState colorBlendAttachment{
       .blendEnable = VK_FALSE,  // No blending for opaque triangle
       .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
@@ -167,8 +185,8 @@ void Renderer::createGraphicsPipeline() {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
   };
   if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo,
-                             nullptr, &pipelineLayout_) != VK_SUCCESS)
-    log().fatal("Failed to create pipeline layout!");
+                             nullptr, &trianglePipelineLayout_) != VK_SUCCESS)
+    log().fatal("Failed to create triangle pipeline layout!");
 
   const std::array<VkDynamicState, 2> dynamicStates = {
       VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
@@ -184,8 +202,7 @@ void Renderer::createGraphicsPipeline() {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
       .colorAttachmentCount = 1,
       .pColorAttachmentFormats = &colorAttachmentFormat,
-      // .depthAttachmentFormat = To be added for cube
-      // .stencilAttachmentFormat = To be added for cube
+      .depthAttachmentFormat = depthFormat_, // Must be compatible with vkCmdBeginRendering
   };
 
   const VkGraphicsPipelineCreateInfo pipelineInfo{
@@ -198,23 +215,152 @@ void Renderer::createGraphicsPipeline() {
       .pViewportState = &viewportState,
       .pRasterizationState = &rasterizer,
       .pMultisampleState = &multisampling,
-      .pDepthStencilState = nullptr,  // No depth/stencil for 2D triangle
+      .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = pipelineLayout_,
+      .layout = trianglePipelineLayout_,
       .renderPass = VK_NULL_HANDLE,  // Must be null for dynamic rendering
       .subpass = 0,
   };
 
   if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1,
                                 &pipelineInfo, nullptr,
-                                &graphicsPipeline_) != VK_SUCCESS)
-    log().fatal("Failed to create graphics pipeline!");
+                                &triangleGraphicsPipeline_) != VK_SUCCESS)
+    log().fatal("Failed to create triangle graphics pipeline!");
 
   // Shader modules can be destroyed after pipeline creation
   vkDestroyShaderModule(vulkanContext_.getDevice(), fragShaderModule, nullptr);
   vkDestroyShaderModule(vulkanContext_.getDevice(), vertShaderModule, nullptr);
-  log().debug("Graphics pipeline created.");
+  log().debug("Triangle graphics pipeline created.");
+}
+
+void Renderer::createCubePipeline() {
+  BinaryBlob vertShaderCode = readBinaryFile(pathJoin(kShadersFolder, "cube.vert.spv").c_str());
+  BinaryBlob fragShaderCode = readBinaryFile(pathJoin(kShadersFolder, "cube.frag.spv").c_str());
+
+  VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
+  VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));
+
+  const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+      .stage = VK_SHADER_STAGE_VERTEX_BIT,
+      .module = vertShaderModule,
+      .pName = "main",
+  };
+  const VkPipelineShaderStageCreateInfo fragShaderStageInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+      .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+      .module = fragShaderModule,
+      .pName = "main",
+  };
+  std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {
+      vertShaderStageInfo, fragShaderStageInfo};
+
+  const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+  };
+
+  const VkPipelineInputAssemblyStateCreateInfo inputAssembly{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+      .primitiveRestartEnable = VK_FALSE,
+  };
+
+  const VkPipelineViewportStateCreateInfo viewportState{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      .viewportCount = 1,
+      .scissorCount = 1,
+  };
+
+  const VkPipelineRasterizationStateCreateInfo rasterizer{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      .depthClampEnable = VK_FALSE,
+      .rasterizerDiscardEnable = VK_FALSE,
+      .polygonMode = VK_POLYGON_MODE_FILL,
+      .cullMode = VK_CULL_MODE_BACK_BIT, // Cull back faces
+      .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE, // Matches cube.vert winding
+      .depthBiasEnable = VK_FALSE,
+      .lineWidth = 1.0f,
+  };
+
+  const VkPipelineMultisampleStateCreateInfo multisampling{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+      .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+      .sampleShadingEnable = VK_FALSE,
+  };
+
+  const VkPipelineDepthStencilStateCreateInfo depthStencilState{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+      .depthTestEnable = VK_TRUE,
+      .depthWriteEnable = VK_TRUE,
+      .depthCompareOp = VK_COMPARE_OP_LESS, // Standard depth test
+      .depthBoundsTestEnable = VK_FALSE,
+      .stencilTestEnable = VK_FALSE,
+  };
+
+  const VkPipelineColorBlendAttachmentState colorBlendAttachment{
+      .blendEnable = VK_FALSE,
+      .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+  };
+
+  const VkPipelineColorBlendStateCreateInfo colorBlending{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+      .logicOpEnable = VK_FALSE,
+      .attachmentCount = 1,
+      .pAttachments = &colorBlendAttachment,
+  };
+
+  // Empty pipeline layout for now (no uniforms, push constants)
+  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+  };
+  if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo,
+                             nullptr, &cubePipelineLayout_) != VK_SUCCESS)
+    log().fatal("Failed to create triangle pipeline layout!");
+
+  const std::array<VkDynamicState, 2> dynamicStates = {
+      VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+  const VkPipelineDynamicStateCreateInfo dynamicStateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+      .dynamicStateCount = static_cast<u32>(dynamicStates.size()),
+      .pDynamicStates = dynamicStates.data(),
+  };
+
+  const VkFormat colorAttachmentFormat = swapchain_.getImageFormat();
+  const VkPipelineRenderingCreateInfoKHR pipelineRenderingCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
+      .colorAttachmentCount = 1,
+      .pColorAttachmentFormats = &colorAttachmentFormat,
+      .depthAttachmentFormat = depthFormat_,
+  };
+
+  const VkGraphicsPipelineCreateInfo pipelineInfo{
+      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+      .pNext = &pipelineRenderingCreateInfo,
+      .stageCount = static_cast<u32>(shaderStages.size()),
+      .pStages = shaderStages.data(),
+      .pVertexInputState = &vertexInputInfo,
+      .pInputAssemblyState = &inputAssembly,
+      .pViewportState = &viewportState,
+      .pRasterizationState = &rasterizer,
+      .pMultisampleState = &multisampling,
+      .pDepthStencilState = &depthStencilState, // Enable depth
+      .pColorBlendState = &colorBlending,
+      .pDynamicState = &dynamicStateInfo,
+      .layout = cubePipelineLayout_,
+      .renderPass = VK_NULL_HANDLE,
+      .subpass = 0,
+  };
+
+  if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1,
+                                &pipelineInfo, nullptr,
+                                &cubeGraphicsPipeline_) != VK_SUCCESS)
+    log().fatal("Failed to create cube graphics pipeline!");
+
+  vkDestroyShaderModule(vulkanContext_.getDevice(), fragShaderModule, nullptr);
+  vkDestroyShaderModule(vulkanContext_.getDevice(), vertShaderModule, nullptr);
+  log().debug("Cube graphics pipeline created.");
 }
 
 void Renderer::cleanupCommandPool() {
@@ -240,15 +386,25 @@ void Renderer::cleanupSyncObjects() {
   inFlightFence_ = VK_NULL_HANDLE;
 }
 
-void Renderer::cleanupGraphicsPipeline() {
-  if (graphicsPipeline_ != VK_NULL_HANDLE) {
-    vkDestroyPipeline(vulkanContext_.getDevice(), graphicsPipeline_, nullptr);
-    graphicsPipeline_ = VK_NULL_HANDLE;
+void Renderer::cleanupTrianglePipeline() {
+  if (triangleGraphicsPipeline_ != VK_NULL_HANDLE) {
+    vkDestroyPipeline(vulkanContext_.getDevice(), triangleGraphicsPipeline_, nullptr);
+    triangleGraphicsPipeline_ = VK_NULL_HANDLE;
   }
-  if (pipelineLayout_ != VK_NULL_HANDLE) {
-    vkDestroyPipelineLayout(vulkanContext_.getDevice(), pipelineLayout_,
-                            nullptr);
-    pipelineLayout_ = VK_NULL_HANDLE;
+  if (trianglePipelineLayout_ != VK_NULL_HANDLE) { // Only destroy if not shared by cube
+    vkDestroyPipelineLayout(vulkanContext_.getDevice(), trianglePipelineLayout_, nullptr);
+    trianglePipelineLayout_ = VK_NULL_HANDLE;
+  }
+}
+
+void Renderer::cleanupCubePipeline() {
+  if (cubeGraphicsPipeline_ != VK_NULL_HANDLE) {
+    vkDestroyPipeline(vulkanContext_.getDevice(), cubeGraphicsPipeline_, nullptr);
+    cubeGraphicsPipeline_ = VK_NULL_HANDLE;
+  }
+  if (cubePipelineLayout_ != VK_NULL_HANDLE) {
+    vkDestroyPipelineLayout(vulkanContext_.getDevice(), cubePipelineLayout_, nullptr);
+    cubePipelineLayout_ = VK_NULL_HANDLE;
   }
 }
 
@@ -266,6 +422,8 @@ void Renderer::internalRecreateSwapchain() {
                                                  // old swapchain are complete
   swapchain_.recreate(vulkanContext_.getVkbDevice(), currentWidth_,
                       currentHeight_);
+  cleanupDepthResources(); // Clean old depth resources
+  createDepthResources();  // Recreate depth resources with new size
   framebufferWasResized_ = false;  // Handled
   swapchainIsStale_ = false;       // Handled
   log().info("Swapchain recreated.");
@@ -318,6 +476,28 @@ bool Renderer::beginFrame() {
     return false;  // Can't proceed with this frame
   }
 
+  // Transition depth image from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+  const VkImageSubresourceRange depthSubresourceRange{
+      .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+      .baseMipLevel = 0,
+      .levelCount = 1,
+      .baseArrayLayer = 0,
+      .layerCount = 1,
+  };
+  const VkImageMemoryBarrier barrierToDepthAttachment{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      .srcAccessMask = 0,
+      .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+      .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .image = depthImage_,
+      .subresourceRange = depthSubresourceRange,
+  };
+  vkCmdPipelineBarrier(commandBuffer_, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                       VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToDepthAttachment);
+
   // Transition swapchain image from UNDEFINED to COLOR_ATTACHMENT_OPTIMAL
   const VkImageSubresourceRange subresourceRange{
       .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -350,14 +530,22 @@ bool Renderer::beginFrame() {
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
       .clearValue = clearColor_,
   };
+  const VkRenderingAttachmentInfoKHR depthAttachmentInfo{
+      .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
+      .imageView = depthImageView_,
+      .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, // Clear depth at start of pass
+      .storeOp = VK_ATTACHMENT_STORE_OP_STORE, // Or DONT_CARE if not needed after
+      .clearValue = {.depthStencil = {1.0f, 0}}, // Clear depth to 1.0
+  };
   const VkRenderingInfoKHR renderingInfo{
       .sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
       .renderArea = {{0, 0}, swapchain_.getImageExtent()},
       .layerCount = 1,
       .colorAttachmentCount = 1,
       .pColorAttachments = &colorAttachmentInfo,
-      // .pDepthAttachment = nullptr, // For cube
-      // .pStencilAttachment = nullptr, // For cube
+      .pDepthAttachment = &depthAttachmentInfo,
+      .pStencilAttachment = nullptr, // No stencil for now
   };
   vkCmdBeginRendering(commandBuffer_, &renderingInfo);
 
@@ -435,24 +623,22 @@ void Renderer::endFrame() {
                 static_cast<int>(result));
 }
 
-void Renderer::draw(VkCommandBuffer commandBuffer) {
-  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    graphicsPipeline_);
+void Renderer::drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt) {
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   const VkViewport viewport{
-      .x = 0.0f,
-      .y = 0.0f,
-      .width = static_cast<float>(swapchain_.getImageExtent().width),
-      .height = static_cast<float>(swapchain_.getImageExtent().height),
-      .minDepth = 0.0f,
-      .maxDepth = 1.0f,
+    .x = 0.0f,
+    .y = 0.0f,
+    .width = static_cast<float>(swapchain_.getImageExtent().width),
+    .height = static_cast<float>(swapchain_.getImageExtent().height),
+    .minDepth = 0.0f,
+    .maxDepth = 1.0f,
   };
   vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
   const VkRect2D scissor{{0, 0}, swapchain_.getImageExtent()};
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-  vkCmdDraw(commandBuffer, 3, 1, 0, 0);  // Draw 3 vertices, 1 instance
+  vkCmdDraw(commandBuffer, vertexCnt, 1, 0, 0);
 }
 
 VmaAllocator Renderer::makeVmaAllocator() {
@@ -473,4 +659,64 @@ VmaAllocator Renderer::makeVmaAllocator() {
   return vmaAllocator;
 }
 
+void Renderer::createDepthResources() {
+    // TODO: Implement a robust format selection mechanism.
+    // For now, hardcoding VK_FORMAT_D32_SFLOAT.
+    // Common alternatives: VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM
+    depthFormat_ = VK_FORMAT_D32_SFLOAT;
+    VkExtent2D swapchainExtent = swapchain_.getImageExtent();
+
+    VkImageCreateInfo imageInfo{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = depthFormat_,
+        .extent = {swapchainExtent.width, swapchainExtent.height, 1},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    };
+
+    VmaAllocationCreateInfo allocInfo = {
+        .usage = VMA_MEMORY_USAGE_GPU_ONLY, // Depth buffer is device local
+        .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    };
+
+    if (vmaCreateImage(vmaAllocator_, &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_, nullptr) != VK_SUCCESS) {
+        log().fatal("Failed to create depth image!");
+    }
+
+    VkImageViewCreateInfo viewInfo{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .image = depthImage_,
+        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .format = depthFormat_,
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1,
+        },
+    };
+
+    if (vkCreateImageView(vulkanContext_.getDevice(), &viewInfo, nullptr, &depthImageView_) != VK_SUCCESS) {
+        log().fatal("Failed to create depth image view!");
+    }
+    log().debug("Depth resources created (Format: {}).", static_cast<int>(depthFormat_));
+}
+
+void Renderer::cleanupDepthResources() {
+    if (depthImageView_ != VK_NULL_HANDLE)
+        vkDestroyImageView(vulkanContext_.getDevice(), depthImageView_, nullptr);
+    if (depthImage_ != VK_NULL_HANDLE) // Memory is freed with vmaDestroyImage
+        vmaDestroyImage(vmaAllocator_, depthImage_, depthImageMemory_);
+    depthImageView_ = VK_NULL_HANDLE;
+    depthImage_ = VK_NULL_HANDLE;
+    depthImageMemory_ = VK_NULL_HANDLE;
+    log().debug("Depth resources cleaned up.");
+}
 }  // namespace aur

@@ -1,16 +1,14 @@
-// TODO(vug): go over each file and see issues with design, inclusions, methods,
-// members etc.
-// TODO(vug): do cube
-//            create depth/stencil image of the swapchain (if needed) via VMA.
 // TODO(vug): config for stopping the debugger at validation issues (via std::abort() or similar)
 // TODO(vug): clang-tidy formatter
-// TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer
-// creation via VMA methods
+// TODO(vug): upload MVP matrices via uniform buffers
+// TODO(vug): consider making all members of dependency library types pointers, so that I can forward declare them and won't leak their headers
+// TODO(vug): try out C++ modules, but don't obsess if it does not work well
+// TODO(vug): upload geometry data via Vertex/Index Buffers
+// TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
 // TODO(vug): add STL includes to a precompiled header pch_stl.h
 //            Also add headers such as utils and logger that are included in
 //            every file into pch_aur.h. and maybe a pch_dependencies
-// TODO(vug): add Renderer Texture, Depth/Stencil Image, Offscreen Render Target
-// creation via VMA methods
+// TODO(vug): add Renderer Texture, Depth/Stencil Image, Offscreen Render Target creation via VMA methods
 // TODO(vug): RAII wrappers for Buffer that takes VmaAllocator, VkDeviceSize, VkBufferUsageFlags (whatever necessary) 
 //            move-only (no copy). Similar for Image, ImageView, Sampler. Manages single Vulkan handle.
 //            can have extra methods, e.g. Buffer can have map/unmap, flush
@@ -22,6 +20,9 @@
 // TODO(vug): looks like at app start, longest duration is spent on graphics pipeline creation.
 //            Add a timer to measure important perf durations (cold start etc)
 //            Investigate what can be done to make pipeline creation faster. Can we cache them?
+// TODO(vug): normal maps
+// TODO(vug): Indirect rendering (various brush shapes for painterly render), 2D/3D gaussian splats,
+//            order independent transparency, differential rendering, bring Mitsuba, PBRT etc
 #include "Application.h"
 
 namespace aur {

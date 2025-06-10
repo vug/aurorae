@@ -57,7 +57,8 @@ void Application::run() {
 
     if (renderer_.beginFrame()) {
       renderer_.setClearColor(0.25f, 0.25f, 0.25f);
-      renderer_.draw(renderer_.getCommandBuffer());
+      renderer_.drawNoVertexInput(renderer_.getCommandBuffer(), renderer_.getTrianglePipeline(), 3);
+      renderer_.drawNoVertexInput(renderer_.getCommandBuffer(), renderer_.getCubePipeline(), 36);
       renderer_.endFrame();
     }
     // If beginFrame() returns false, it means it handled a situation like
