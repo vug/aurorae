@@ -11,9 +11,8 @@ VK_DEFINE_HANDLE(VmaAllocation)
 namespace aur {
 
 class Renderer {
- public:
-  Renderer(GLFWwindow* window, const char* appName, u32 initialWidth,
-           u32 initialHeight);
+public:
+  Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u32 initialHeight);
   ~Renderer();
 
   Renderer(const Renderer&) = delete;
@@ -25,13 +24,11 @@ class Renderer {
   u32 getCurrentImageIndex() const { return currentImageIndex_; }
 
   // Returns true if frame rendering can proceed.
-  // Returns false if swapchain was recreated (or other non-fatal issue) and caller should skip drawing and try next frame.
-  // Must be called before any other draw commands
+  // Returns false if swapchain was recreated (or other non-fatal issue) and caller should skip drawing and
+  // try next frame. Must be called before any other draw commands
   bool beginFrame();
 
-  inline void setClearColor(float r, float g, float b, float a = 1.0f ) {
-    clearColor_ = {r, g, b, a};
-  }
+  inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
 
   void drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt);
   VkPipeline getTrianglePipeline() const { return triangleGraphicsPipeline_; }
@@ -43,7 +40,7 @@ class Renderer {
   // Call this when the window framebuffer size has changed.
   void notifyResize(u32 newWidth, u32 newHeight);
 
- private:
+private:
   VmaAllocator makeVmaAllocator();
   void createCommandPool();
   void allocateCommandBuffer();
@@ -57,7 +54,7 @@ class Renderer {
 
   void cleanupSyncObjects();
   void cleanupDepthResources();
-  void cleanupCommandPool();  // Also frees command buffers
+  void cleanupCommandPool(); // Also frees command buffers
   void cleanupTrianglePipeline();
   void cleanupCubePipeline();
 
@@ -85,7 +82,7 @@ class Renderer {
 
   u32 currentImageIndex_{};
   bool framebufferWasResized_{false};
-  bool swapchainIsStale_{false};  // Combines suboptimal/out-of-date flags
+  bool swapchainIsStale_{false}; // Combines suboptimal/out-of-date flags
 
   u32 currentWidth_;
   u32 currentHeight_;
@@ -93,7 +90,7 @@ class Renderer {
   // Clear color, can be set from Application or be fixed, default dark gray
   VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};
   // Default depth is 1.0 (far plane), stencil is 0
-  VkClearDepthStencilValue clearDepthStencil_{1.0f, 0}; 
+  VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
 };
 
-}  // namespace aur
+} // namespace aur

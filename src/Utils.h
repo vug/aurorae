@@ -25,6 +25,11 @@ enum class BuildType : u8 {
   RelWithDebInfo,
 };
 
+// This is a hint for the IDE so that it won't think {ASSETS_FOLDER "/shaders/..."} is an error
+#ifndef ASSETS_FOLDER
+#define ASSETS_FOLDER "path/to/assets"
+#endif
+
 #if defined(DEBUG_BUILD)
 constexpr BuildType kBuildType{BuildType::Debug};
 inline constexpr const char* kShadersFolder{ASSETS_FOLDER "/shaders/debug"};
@@ -36,11 +41,11 @@ constexpr BuildType kBuildType{BuildType::RelWithDebInfo};
 inline constexpr const char* kShadersFolder{ASSETS_FOLDER "/shaders/relwithdebinfo"};
 #else
 constexpr BuildType kBuildType{BuildType::Release};
-inline constexpr const char* kShadersFolder{ASSETS_FOLDER "/shaders/release"};
+inline constexpr const char* kShadersFolder = {ASSETS_FOLDER "/shaders/release"};
 #endif
 
 class PathBuffer {
- public:
+public:
   explicit PathBuffer(char* data);
   ~PathBuffer();
   PathBuffer(const PathBuffer&) = delete;
@@ -50,10 +55,10 @@ class PathBuffer {
   const char* c_str() const;
   operator const char*() const;
 
- private:
+private:
   char* data_;
 };
 
 PathBuffer pathJoin(const char* path, const char* relativeSubpath);
 
-}  // namespace aur
+} // namespace aur

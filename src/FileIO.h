@@ -1,15 +1,15 @@
 #pragma once
 
 namespace std {
-// Forward declare std::string. Lol.
+// Forward declare std::string_view. Lol.
 template <typename T>
 struct char_traits;
-template<class CharT, class Traits>
+template <class CharT, class Traits>
 class basic_string_view;
 using string_view = basic_string_view<char, std::char_traits<char>>;
 
 enum class byte : unsigned char;
-}  // namespace std
+} // namespace std
 
 namespace aur {
 
@@ -17,7 +17,7 @@ class BinaryBlob {
 public:
   explicit BinaryBlob(size_t size);
   ~BinaryBlob();
-  
+
   // Move-only
   BinaryBlob(BinaryBlob&& other) noexcept;
   BinaryBlob& operator=(BinaryBlob&& other) noexcept;
@@ -31,9 +31,9 @@ public:
 private:
   std::byte* data_;
   size_t size_;
-};  
+};
 
 // Utility function to read a binary file
 BinaryBlob readBinaryFile(std::string_view filename);
 
-}  // namespace aur
+} // namespace aur

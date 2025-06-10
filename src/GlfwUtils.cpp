@@ -3,10 +3,12 @@
 #include "GlfwUtils.h"
 
 // TODO(vug): see whether I can get rid off volk here
+// clang-format off
 #define VK_USE_PLATFORM_WIN32_KHR
 #define VOLK_IMPLEMENTATION
 #include <volk/volk.h>
 #include <glfw/glfw3.h>
+// clang-format on
 #if defined(CROSS_PLATFORM_SURFACE_CREATION)
 #else
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -18,7 +20,8 @@
 namespace aur {
 
 void GlfwUtils::initGLFW() {
-  if (!glfwInit()) log().fatal("Failed to initialize GLFW!");
+  if (!glfwInit())
+    log().fatal("Failed to initialize GLFW!");
   log().trace("GLFW initialized.");
 }
 

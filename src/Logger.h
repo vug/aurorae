@@ -20,31 +20,25 @@ enum class LogLevel : i32 {
 };
 
 // Call this once at the beginning of your application
-void logInitialize(
-    LogLevel defaultLevel = LogLevel::Info,
-    const std::string& pattern =
-        "[%C%m%d %H%M:%S.%e] [%^%l%$] %v @%s:%# on T%t [%!]",  // Matched
-                                                               // previous
-                                                               // default
-    LogLevel flushLevel = LogLevel::Warning);
+void logInitialize(LogLevel defaultLevel = LogLevel::Info,
+                   const std::string& pattern = "[%C%m%d %H%M:%S.%e] [%^%l%$] %v @%s:%# on T%t [%!]",
+                   LogLevel flushLevel = LogLevel::Warning);
 
 namespace detail {
 
-void logWithSpd(const std::source_location& loc, LogLevel level,
-                std::string_view msg);
+void logWithSpd(const std::source_location& loc, LogLevel level, std::string_view msg);
 void logWithSpdFatal(const std::source_location& loc, std::string_view msg);
 ;
 
 template <typename... Args>
-inline void log_at_loc(const std::source_location& loc, LogLevel level,
-                       std::format_string<Args...> fmt, Args&&... args) {
+inline void log_at_loc(const std::source_location& loc, LogLevel level, std::format_string<Args...> fmt,
+                       Args&&... args) {
   auto formattedMessage = std::format(fmt, std::forward<Args>(args)...);
   logWithSpd(loc, level, formattedMessage);
 }
 
 template <typename... Args>
-[[noreturn]] inline void log_fatal_at_loc(const std::source_location& loc,
-                                          std::format_string<Args...> fmt,
+[[noreturn]] inline void log_fatal_at_loc(const std::source_location& loc, std::format_string<Args...> fmt,
                                           Args&&... args) {
   auto formattedMessage = std::format(fmt, std::forward<Args>(args)...);
   logWithSpdFatal(loc, formattedMessage);
@@ -56,10 +50,11 @@ template <typename... Args>
 
 // This class will hold the captured source_location and provide logging methods
 class LoggerProxy {
- public:
+public:
   // Constructor is explicit to avoid accidental conversions, though not
   // strictly necessary here
-  explicit LoggerProxy(const std::source_location& loc) : loc_(loc) {}
+  explicit LoggerProxy(const std::source_location& loc)
+      : loc_(loc) {}
 
   template <typename... Args>
   void trace(std::format_string<Args...> fmt, Args&&... args) const {
@@ -92,21 +87,20 @@ class LoggerProxy {
   }
 
   template <typename... Args>
-  [[noreturn]] void fatal(std::format_string<Args...> fmt,
-                          Args&&... args) const {
+  [[noreturn]] void fatal(std::format_string<Args...> fmt, Args&&... args) const {
     log_fatal_at_loc(loc_, fmt, std::forward<Args>(args)...);
   }
 
- private:
-  std::source_location loc_;  // Store the captured location
+private:
+  std::source_location loc_; // Store the captured location
 };
 
-}  // namespace detail
+} // namespace detail
 
 // Public-facing logging function that returns the proxy object.
-[[nodiscard]] inline detail::LoggerProxy log(
-    const std::source_location& loc = std::source_location::current()) {
+[[nodiscard]] inline detail::LoggerProxy
+log(const std::source_location& loc = std::source_location::current()) {
   return detail::LoggerProxy(loc);
 }
 
-}  // namespace aur
+} // namespace aur

@@ -9,15 +9,16 @@
 namespace aur {
 
 Window::Window(uint32_t width, uint32_t height, std::string_view title)
-    : currentWidth_(width), currentHeight_(height) {
+    : currentWidth_(width)
+    , currentHeight_(height) {
   // GLFW initialization is expected to be done by the Application class
-  glfwWindowHint(GLFW_CLIENT_API,
-                 GLFW_NO_API);  // Tell GLFW not to create an OpenGL/ES context
+
+  // Tell GLFW not to create an OpenGL/ES context
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
   glfwWindow_ =
-      glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
-                       title.data(), nullptr, nullptr);
+      glfwCreateWindow(static_cast<int>(width), static_cast<int>(height), title.data(), nullptr, nullptr);
   if (!glfwWindow_)
     log().fatal("Failed to create GLFW window");
 
@@ -34,18 +35,23 @@ Window::~Window() {
   // glfwTerminate() is handled in main
 }
 
-bool Window::shouldClose() const { return glfwWindowShouldClose(glfwWindow_); }
+bool Window::shouldClose() const {
+  return glfwWindowShouldClose(glfwWindow_);
+}
 
-void Window::pollEvents() const { glfwPollEvents(); }
+void Window::pollEvents() const {
+  glfwPollEvents();
+}
 
-void Window::waitEvents() const { glfwWaitEvents(); }
+void Window::waitEvents() const {
+  glfwWaitEvents();
+}
 
 void Window::getFramebufferSize(i32& width, i32& height) const {
   glfwGetFramebufferSize(glfwWindow_, &width, &height);
 }
 
-void Window::framebufferResizeCallback(GLFWwindow* glfwWin, i32 width,
-                                       i32 height) {
+void Window::framebufferResizeCallback(GLFWwindow* glfwWin, i32 width, i32 height) {
   auto windowInstance = static_cast<Window*>(glfwGetWindowUserPointer(glfwWin));
   if (windowInstance) {
     windowInstance->framebufferResized_ = true;
@@ -55,4 +61,4 @@ void Window::framebufferResizeCallback(GLFWwindow* glfwWin, i32 width,
   }
 }
 
-}  // namespace aur
+} // namespace aur

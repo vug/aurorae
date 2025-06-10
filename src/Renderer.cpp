@@ -1,4 +1,4 @@
-#include <volk/volk.h>  // For Vulkan functions
+#include <volk/volk.h> // For Vulkan functions
 #define VMA_IMPLEMENTATION
 #include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
@@ -11,33 +11,31 @@
 
 namespace aur {
 
-Renderer::Renderer(GLFWwindow* window, const char* appName,
-                   u32 initialWidth, u32 initialHeight)
-    : vulkanContext_(window, appName),
-      vmaAllocator_{makeVmaAllocator()},
-      swapchain_(vulkanContext_.getVkbDevice(), initialWidth, initialHeight),
-      currentWidth_(initialWidth),
-      currentHeight_(initialHeight) {
+Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u32 initialHeight)
+    : vulkanContext_(window, appName)
+    , vmaAllocator_{makeVmaAllocator()}
+    , swapchain_(vulkanContext_.getVkbDevice(), initialWidth, initialHeight)
+    , currentWidth_(initialWidth)
+    , currentHeight_(initialHeight) {
   createCommandPool();
   allocateCommandBuffer();
   createSyncObjects();
-  createDepthResources();    // Create depth buffer
-  createTrianglePipeline();  // Create the triangle pipeline
-  createCubePipeline();      // Create the cube pipeline
+  createDepthResources();   // Create depth buffer
+  createTrianglePipeline(); // Create the triangle pipeline
+  createCubePipeline();     // Create the cube pipeline
   log().debug("Renderer initialized.");
 }
 
 Renderer::~Renderer() {
   // Ensure GPU is idle before destroying resources
-  if (vulkanContext_.getDevice() != VK_NULL_HANDLE) {
+  if (vulkanContext_.getDevice() != VK_NULL_HANDLE)
     vkDeviceWaitIdle(vulkanContext_.getDevice());
-  }
 
   cleanupCubePipeline();
   cleanupTrianglePipeline();
   cleanupDepthResources(); // Destroy depth buffer
   cleanupSyncObjects();
-  cleanupCommandPool();      // Frees command buffers too
+  cleanupCommandPool(); // Frees command buffers too
 
   if (vmaAllocator_ != VK_NULL_HANDLE) {
     vmaDestroyAllocator(vmaAllocator_);
@@ -54,8 +52,7 @@ void Renderer::createCommandPool() {
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
       .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
   };
-  if (vkCreateCommandPool(vulkanContext_.getDevice(), &poolInfo, nullptr,
-                          &commandPool_) != VK_SUCCESS)
+  if (vkCreateCommandPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &commandPool_) != VK_SUCCESS)
     log().fatal("Failed to create command pool!");
 }
 
@@ -66,36 +63,31 @@ void Renderer::allocateCommandBuffer() {
       .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
       .commandBufferCount = 1,
   };
-  if (vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo,
-                               &commandBuffer_) != VK_SUCCESS)
+  if (vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo, &commandBuffer_) != VK_SUCCESS)
     log().fatal("Failed to allocate command buffer!");
 }
 
 void Renderer::createSyncObjects() {
-  const VkSemaphoreCreateInfo semaphoreInfo{
-      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-  const VkFenceCreateInfo fenceInfo{
-      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-      .flags = VK_FENCE_CREATE_SIGNALED_BIT};
+  const VkSemaphoreCreateInfo semaphoreInfo{.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+  const VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                                    .flags = VK_FENCE_CREATE_SIGNALED_BIT};
 
-  if (vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr,
-                        &imageAvailableSemaphore_) != VK_SUCCESS ||
-      vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr,
-                        &renderFinishedSemaphore_) != VK_SUCCESS ||
-      vkCreateFence(vulkanContext_.getDevice(), &fenceInfo, nullptr,
-                    &inFlightFence_) != VK_SUCCESS)
+  if (vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore_) !=
+          VK_SUCCESS ||
+      vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore_) !=
+          VK_SUCCESS ||
+      vkCreateFence(vulkanContext_.getDevice(), &fenceInfo, nullptr, &inFlightFence_) != VK_SUCCESS)
     log().fatal("Failed to create synchronization objects!");
 }
 
 VkShaderModule Renderer::createShaderModule(BinaryBlob code) {
   const VkShaderModuleCreateInfo createInfo{
-    .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-    .codeSize = code.size(),
-    .pCode = reinterpret_cast<const u32*>(code.data()),
+      .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+      .codeSize = code.size(),
+      .pCode = reinterpret_cast<const u32*>(code.data()),
   };
   VkShaderModule shaderModule;
-  if (vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr,
-                           &shaderModule) != VK_SUCCESS)
+  if (vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
     log().fatal("Failed to create shader module!");
   return shaderModule;
 }
@@ -103,7 +95,7 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) {
 void Renderer::createTrianglePipeline() {
   BinaryBlob vertShaderCode = readBinaryFile(pathJoin(kShadersFolder, "triangle.vert.spv").c_str());
   BinaryBlob fragShaderCode = readBinaryFile(pathJoin(kShadersFolder, "triangle.frag.spv").c_str());
-  
+
   VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
   VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));
 
@@ -119,8 +111,7 @@ void Renderer::createTrianglePipeline() {
       .module = fragShaderModule,
       .pName = "main",
   };
-  std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {
-      vertShaderStageInfo, fragShaderStageInfo};
+  std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
 
   // For hardcoded vertices, vertex input state is empty
   const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
@@ -137,8 +128,8 @@ void Renderer::createTrianglePipeline() {
   // Viewport and scissor will be dynamic
   const VkPipelineViewportStateCreateInfo viewportState{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-      .viewportCount = 1,  // Dynamic state will set this
-      .scissorCount = 1,   // Dynamic state will set this
+      .viewportCount = 1, // Dynamic state will set this
+      .scissorCount = 1,  // Dynamic state will set this
   };
 
   const VkPipelineRasterizationStateCreateInfo rasterizer{
@@ -146,7 +137,7 @@ void Renderer::createTrianglePipeline() {
       .depthClampEnable = VK_FALSE,
       .rasterizerDiscardEnable = VK_FALSE,
       .polygonMode = VK_POLYGON_MODE_FILL,
-      .cullMode = VK_CULL_MODE_NONE,  // No culling for a 2D triangle
+      .cullMode = VK_CULL_MODE_NONE, // No culling for a 2D triangle
       .frontFace = VK_FRONT_FACE_CLOCKWISE,
       .depthBiasEnable = VK_FALSE,
       .lineWidth = 1.0f,
@@ -161,16 +152,15 @@ void Renderer::createTrianglePipeline() {
   // No depth testing for 2D triangle
   const VkPipelineDepthStencilStateCreateInfo depthStencilState{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-      .depthTestEnable = VK_FALSE,        // Enable depth testing
-      .depthWriteEnable = VK_FALSE,       // Enable depth writes
+      .depthTestEnable = VK_FALSE,  // Enable depth testing
+      .depthWriteEnable = VK_FALSE, // Enable depth writes
       .depthBoundsTestEnable = VK_FALSE,
-      .stencilTestEnable = VK_FALSE
-  };  
+      .stencilTestEnable = VK_FALSE};
 
   const VkPipelineColorBlendAttachmentState colorBlendAttachment{
-      .blendEnable = VK_FALSE,  // No blending for opaque triangle
-      .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+      .blendEnable = VK_FALSE, // No blending for opaque triangle
+      .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                        VK_COLOR_COMPONENT_A_BIT,
   };
 
   const VkPipelineColorBlendStateCreateInfo colorBlending{
@@ -184,12 +174,11 @@ void Renderer::createTrianglePipeline() {
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
   };
-  if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo,
-                             nullptr, &trianglePipelineLayout_) != VK_SUCCESS)
+  if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
+                             &trianglePipelineLayout_) != VK_SUCCESS)
     log().fatal("Failed to create triangle pipeline layout!");
 
-  const std::array<VkDynamicState, 2> dynamicStates = {
-      VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+  const std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
   const VkPipelineDynamicStateCreateInfo dynamicStateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
       .dynamicStateCount = static_cast<u32>(dynamicStates.size()),
@@ -207,7 +196,7 @@ void Renderer::createTrianglePipeline() {
 
   const VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .pNext = &pipelineRenderingCreateInfo,  // Link dynamic rendering info
+      .pNext = &pipelineRenderingCreateInfo, // Link dynamic rendering info
       .stageCount = static_cast<u32>(shaderStages.size()),
       .pStages = shaderStages.data(),
       .pVertexInputState = &vertexInputInfo,
@@ -219,12 +208,11 @@ void Renderer::createTrianglePipeline() {
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
       .layout = trianglePipelineLayout_,
-      .renderPass = VK_NULL_HANDLE,  // Must be null for dynamic rendering
+      .renderPass = VK_NULL_HANDLE, // Must be null for dynamic rendering
       .subpass = 0,
   };
 
-  if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1,
-                                &pipelineInfo, nullptr,
+  if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
                                 &triangleGraphicsPipeline_) != VK_SUCCESS)
     log().fatal("Failed to create triangle graphics pipeline!");
 
@@ -253,8 +241,7 @@ void Renderer::createCubePipeline() {
       .module = fragShaderModule,
       .pName = "main",
   };
-  std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {
-      vertShaderStageInfo, fragShaderStageInfo};
+  std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
 
   const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -277,7 +264,7 @@ void Renderer::createCubePipeline() {
       .depthClampEnable = VK_FALSE,
       .rasterizerDiscardEnable = VK_FALSE,
       .polygonMode = VK_POLYGON_MODE_FILL,
-      .cullMode = VK_CULL_MODE_BACK_BIT, // Cull back faces
+      .cullMode = VK_CULL_MODE_BACK_BIT,            // Cull back faces
       .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE, // Matches cube.vert winding
       .depthBiasEnable = VK_FALSE,
       .lineWidth = 1.0f,
@@ -300,8 +287,8 @@ void Renderer::createCubePipeline() {
 
   const VkPipelineColorBlendAttachmentState colorBlendAttachment{
       .blendEnable = VK_FALSE,
-      .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+      .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                        VK_COLOR_COMPONENT_A_BIT,
   };
 
   const VkPipelineColorBlendStateCreateInfo colorBlending{
@@ -312,15 +299,12 @@ void Renderer::createCubePipeline() {
   };
 
   // Empty pipeline layout for now (no uniforms, push constants)
-  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-  };
-  if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo,
-                             nullptr, &cubePipelineLayout_) != VK_SUCCESS)
+  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+  if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
+                             &cubePipelineLayout_) != VK_SUCCESS)
     log().fatal("Failed to create triangle pipeline layout!");
 
-  const std::array<VkDynamicState, 2> dynamicStates = {
-      VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+  const std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
   const VkPipelineDynamicStateCreateInfo dynamicStateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
       .dynamicStateCount = static_cast<u32>(dynamicStates.size()),
@@ -345,7 +329,7 @@ void Renderer::createCubePipeline() {
       .pViewportState = &viewportState,
       .pRasterizationState = &rasterizer,
       .pMultisampleState = &multisampling,
-      .pDepthStencilState = &depthStencilState, // Enable depth
+      .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
       .layout = cubePipelineLayout_,
@@ -353,8 +337,7 @@ void Renderer::createCubePipeline() {
       .subpass = 0,
   };
 
-  if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1,
-                                &pipelineInfo, nullptr,
+  if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
                                 &cubeGraphicsPipeline_) != VK_SUCCESS)
     log().fatal("Failed to create cube graphics pipeline!");
 
@@ -368,17 +351,15 @@ void Renderer::cleanupCommandPool() {
     // Command buffers allocated from this pool are implicitly freed
     vkDestroyCommandPool(vulkanContext_.getDevice(), commandPool_, nullptr);
     commandPool_ = VK_NULL_HANDLE;
-    commandBuffer_ = VK_NULL_HANDLE;  // It's freed with the pool
+    commandBuffer_ = VK_NULL_HANDLE; // It's freed with the pool
   }
 }
 
 void Renderer::cleanupSyncObjects() {
   if (imageAvailableSemaphore_ != VK_NULL_HANDLE)
-    vkDestroySemaphore(vulkanContext_.getDevice(), imageAvailableSemaphore_,
-                       nullptr);
+    vkDestroySemaphore(vulkanContext_.getDevice(), imageAvailableSemaphore_, nullptr);
   if (renderFinishedSemaphore_ != VK_NULL_HANDLE)
-    vkDestroySemaphore(vulkanContext_.getDevice(), renderFinishedSemaphore_,
-                       nullptr);
+    vkDestroySemaphore(vulkanContext_.getDevice(), renderFinishedSemaphore_, nullptr);
   if (inFlightFence_ != VK_NULL_HANDLE)
     vkDestroyFence(vulkanContext_.getDevice(), inFlightFence_, nullptr);
   imageAvailableSemaphore_ = VK_NULL_HANDLE;
@@ -416,22 +397,19 @@ void Renderer::notifyResize(u32 newWidth, u32 newHeight) {
 }
 
 void Renderer::internalRecreateSwapchain() {
-  log().info("Recreating swapchain with dimensions: {}x{}", currentWidth_,
-             currentHeight_);
-  vkDeviceWaitIdle(vulkanContext_.getDevice());  // Ensure all operations on the
-                                                 // old swapchain are complete
-  swapchain_.recreate(vulkanContext_.getVkbDevice(), currentWidth_,
-                      currentHeight_);
-  cleanupDepthResources(); // Clean old depth resources
-  createDepthResources();  // Recreate depth resources with new size
-  framebufferWasResized_ = false;  // Handled
-  swapchainIsStale_ = false;       // Handled
+  log().info("Recreating swapchain with dimensions: {}x{}", currentWidth_, currentHeight_);
+  vkDeviceWaitIdle(vulkanContext_.getDevice()); // Ensure all operations on the
+                                                // old swapchain are complete
+  swapchain_.recreate(vulkanContext_.getVkbDevice(), currentWidth_, currentHeight_);
+  cleanupDepthResources();        // Clean old depth resources
+  createDepthResources();         // Recreate depth resources with new size
+  framebufferWasResized_ = false; // Handled
+  swapchainIsStale_ = false;      // Handled
   log().info("Swapchain recreated.");
 }
 
 bool Renderer::beginFrame() {
-  vkWaitForFences(vulkanContext_.getDevice(), 1, &inFlightFence_, VK_TRUE,
-                  UINT64_MAX);
+  vkWaitForFences(vulkanContext_.getDevice(), 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
 
   if (framebufferWasResized_ || swapchainIsStale_) {
     internalRecreateSwapchain();
@@ -441,18 +419,16 @@ bool Renderer::beginFrame() {
     // fails with out-of-date, we'll handle it below.
   }
 
-  VkResult result = vkAcquireNextImageKHR(
-      vulkanContext_.getDevice(), swapchain_.getSwapchain(), UINT64_MAX,
-      imageAvailableSemaphore_, VK_NULL_HANDLE, &currentImageIndex_);
+  VkResult result = vkAcquireNextImageKHR(vulkanContext_.getDevice(), swapchain_.getSwapchain(), UINT64_MAX,
+                                          imageAvailableSemaphore_, VK_NULL_HANDLE, &currentImageIndex_);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     log().debug("Swapchain out of date/suboptimal during acquire. Recreating.");
-    swapchainIsStale_ = true;     // Mark it explicitly
-    internalRecreateSwapchain();  // Recreate immediately
-    return false;  // Signal to skip rendering this frame and try again
+    swapchainIsStale_ = true;    // Mark it explicitly
+    internalRecreateSwapchain(); // Recreate immediately
+    return false;                // Signal to skip rendering this frame and try again
   } else if (result != VK_SUCCESS) {
-    log().error("Failed to acquire swap chain image: {}",
-                static_cast<int>(result));
+    log().error("Failed to acquire swap chain image: {}", static_cast<int>(result));
     // This is a more serious error, could throw or try to recover
     return false;
   }
@@ -466,14 +442,12 @@ bool Renderer::beginFrame() {
 
   const VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-      .flags =
-          VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,  // Good practice for
-                                                        // command buffers
-                                                        // recorded each frame
+      // Good practice for command buffers recorded each frame
+      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
   };
   if (vkBeginCommandBuffer(commandBuffer_, &beginInfo) != VK_SUCCESS) {
     log().error("Failed to begin recording command buffer!");
-    return false;  // Can't proceed with this frame
+    return false; // Can't proceed with this frame
   }
 
   // Transition depth image from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL
@@ -484,10 +458,12 @@ bool Renderer::beginFrame() {
       .baseArrayLayer = 0,
       .layerCount = 1,
   };
+
   const VkImageMemoryBarrier barrierToDepthAttachment{
       .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
       .srcAccessMask = 0,
-      .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+      .dstAccessMask =
+          VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
       .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
       .newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
       .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -495,8 +471,10 @@ bool Renderer::beginFrame() {
       .image = depthImage_,
       .subresourceRange = depthSubresourceRange,
   };
+
   vkCmdPipelineBarrier(commandBuffer_, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                       VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToDepthAttachment);
+                       VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                       0, 0, nullptr, 0, nullptr, 1, &barrierToDepthAttachment);
 
   // Transition swapchain image from UNDEFINED to COLOR_ATTACHMENT_OPTIMAL
   const VkImageSubresourceRange subresourceRange{
@@ -506,6 +484,7 @@ bool Renderer::beginFrame() {
       .baseArrayLayer = 0,
       .layerCount = 1,
   };
+
   const VkImageMemoryBarrier barrierToColorAttachment{
       .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
       .srcAccessMask = 0,
@@ -517,9 +496,10 @@ bool Renderer::beginFrame() {
       .image = swapchain_.getImages()[currentImageIndex_],
       .subresourceRange = subresourceRange,
   };
+
   vkCmdPipelineBarrier(commandBuffer_, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0,
-                       nullptr, 0, nullptr, 1, &barrierToColorAttachment);
+                       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1,
+                       &barrierToColorAttachment);
 
   // Begin dynamic rendering (which includes the clear operation)
   const VkRenderingAttachmentInfoKHR colorAttachmentInfo{
@@ -530,14 +510,16 @@ bool Renderer::beginFrame() {
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
       .clearValue = clearColor_,
   };
+
   const VkRenderingAttachmentInfoKHR depthAttachmentInfo{
       .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
       .imageView = depthImageView_,
       .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, // Clear depth at start of pass
-      .storeOp = VK_ATTACHMENT_STORE_OP_STORE, // Or DONT_CARE if not needed after
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,     // Clear depth at start of pass
+      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,   // Or DONT_CARE if not needed after
       .clearValue = {.depthStencil = {1.0f, 0}}, // Clear depth to 1.0
   };
+
   const VkRenderingInfoKHR renderingInfo{
       .sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
       .renderArea = {{0, 0}, swapchain_.getImageExtent()},
@@ -549,11 +531,11 @@ bool Renderer::beginFrame() {
   };
   vkCmdBeginRendering(commandBuffer_, &renderingInfo);
 
-  return true;  // Ready for drawing commands
+  return true; // Ready for drawing commands
 }
 
 void Renderer::endFrame() {
-  vkCmdEndRendering(commandBuffer_);  // End the dynamic rendering pass
+  vkCmdEndRendering(commandBuffer_); // End the dynamic rendering pass
 
   // Transition swapchain image from COLOR_ATTACHMENT_OPTIMAL to PRESENT_SRC_KHR
   const VkImageSubresourceRange subresourceRange{
@@ -566,7 +548,7 @@ void Renderer::endFrame() {
   const VkImageMemoryBarrier barrierToPresent{
       .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
       .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-      .dstAccessMask = 0,  // No specific access for present needed by app
+      .dstAccessMask = 0, // No specific access for present needed by app
       .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
       .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
       .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -574,17 +556,14 @@ void Renderer::endFrame() {
       .image = swapchain_.getImages()[currentImageIndex_],
       .subresourceRange = subresourceRange,
   };
-  vkCmdPipelineBarrier(commandBuffer_,
-                       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0,
-                       nullptr, 1, &barrierToPresent);
+  vkCmdPipelineBarrier(commandBuffer_, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToPresent);
 
   if (vkEndCommandBuffer(commandBuffer_) != VK_SUCCESS)
     log().fatal("Failed to record command buffer!");
 
   const std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphore_};
-  const std::array<VkPipelineStageFlags, 1> waitStages{
-      VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+  const std::array<VkPipelineStageFlags, 1> waitStages{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
   const std::array<VkSemaphore, 1> signalSemaphores{renderFinishedSemaphore_};
   const VkSubmitInfo submitInfo{
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -597,8 +576,7 @@ void Renderer::endFrame() {
       .pSignalSemaphores = signalSemaphores.data(),
   };
 
-  if (vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo,
-                    inFlightFence_) != VK_SUCCESS)
+  if (vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo, inFlightFence_) != VK_SUCCESS)
     log().fatal("Failed to submit draw command buffer!");
 
   const VkPresentInfoKHR presentInfo{
@@ -611,28 +589,24 @@ void Renderer::endFrame() {
   };
 
   VkResult result = vkQueuePresentKHR(vulkanContext_.getPresentQueue(),
-                                      &presentInfo);  // Use present queue
+                                      &presentInfo); // Use present queue
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-    log().debug(
-        "Swapchain out of date/suboptimal during present. Flagging for next "
-        "frame.");
-    swapchainIsStale_ =
-        true;  // Will be handled at the start of the next beginFrame
+    log().debug("Swapchain out of date/suboptimal during present. Flagging for next frame.");
+    swapchainIsStale_ = true; // Will be handled at the start of the next beginFrame
   } else if (result != VK_SUCCESS)
-    log().fatal("Failed to present swap chain image: {}",
-                static_cast<int>(result));
+    log().fatal("Failed to present swap chain image: {}", static_cast<int>(result));
 }
 
 void Renderer::drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt) {
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   const VkViewport viewport{
-    .x = 0.0f,
-    .y = 0.0f,
-    .width = static_cast<float>(swapchain_.getImageExtent().width),
-    .height = static_cast<float>(swapchain_.getImageExtent().height),
-    .minDepth = 0.0f,
-    .maxDepth = 1.0f,
+      .x = 0.0f,
+      .y = 0.0f,
+      .width = static_cast<float>(swapchain_.getImageExtent().width),
+      .height = static_cast<float>(swapchain_.getImageExtent().height),
+      .minDepth = 0.0f,
+      .maxDepth = 1.0f,
   };
   vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
   const VkRect2D scissor{{0, 0}, swapchain_.getImageExtent()};
@@ -660,63 +634,62 @@ VmaAllocator Renderer::makeVmaAllocator() {
 }
 
 void Renderer::createDepthResources() {
-    // TODO: Implement a robust format selection mechanism.
-    // For now, hardcoding VK_FORMAT_D32_SFLOAT.
-    // Common alternatives: VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM
-    depthFormat_ = VK_FORMAT_D32_SFLOAT;
-    VkExtent2D swapchainExtent = swapchain_.getImageExtent();
+  // TODO: Implement a robust format selection mechanism.
+  // For now, hardcoding VK_FORMAT_D32_SFLOAT.
+  // Common alternatives: VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM
+  depthFormat_ = VK_FORMAT_D32_SFLOAT;
+  VkExtent2D swapchainExtent = swapchain_.getImageExtent();
 
-    VkImageCreateInfo imageInfo{
-        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-        .imageType = VK_IMAGE_TYPE_2D,
-        .format = depthFormat_,
-        .extent = {swapchainExtent.width, swapchainExtent.height, 1},
-        .mipLevels = 1,
-        .arrayLayers = 1,
-        .samples = VK_SAMPLE_COUNT_1_BIT,
-        .tiling = VK_IMAGE_TILING_OPTIMAL,
-        .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-    };
+  VkImageCreateInfo imageInfo{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .imageType = VK_IMAGE_TYPE_2D,
+      .format = depthFormat_,
+      .extent = {swapchainExtent.width, swapchainExtent.height, 1},
+      .mipLevels = 1,
+      .arrayLayers = 1,
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .tiling = VK_IMAGE_TILING_OPTIMAL,
+      .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+  };
 
-    VmaAllocationCreateInfo allocInfo = {
-        .usage = VMA_MEMORY_USAGE_GPU_ONLY, // Depth buffer is device local
-        .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-    };
+  VmaAllocationCreateInfo allocInfo = {.usage = VMA_MEMORY_USAGE_GPU_ONLY, // Depth buffer is device local
+                                       .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
 
-    if (vmaCreateImage(vmaAllocator_, &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_, nullptr) != VK_SUCCESS) {
-        log().fatal("Failed to create depth image!");
-    }
+  if (vmaCreateImage(vmaAllocator_, &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_, nullptr) !=
+      VK_SUCCESS) {
+    log().fatal("Failed to create depth image!");
+  }
 
-    VkImageViewCreateInfo viewInfo{
-        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .image = depthImage_,
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .format = depthFormat_,
-        .subresourceRange = {
-            .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .baseArrayLayer = 0,
-            .layerCount = 1,
-        },
-    };
+  VkImageViewCreateInfo viewInfo{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .image = depthImage_,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = depthFormat_,
+      .subresourceRange =
+          {
+              .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+              .baseMipLevel = 0,
+              .levelCount = 1,
+              .baseArrayLayer = 0,
+              .layerCount = 1,
+          },
+  };
 
-    if (vkCreateImageView(vulkanContext_.getDevice(), &viewInfo, nullptr, &depthImageView_) != VK_SUCCESS) {
-        log().fatal("Failed to create depth image view!");
-    }
-    log().debug("Depth resources created (Format: {}).", static_cast<int>(depthFormat_));
+  if (vkCreateImageView(vulkanContext_.getDevice(), &viewInfo, nullptr, &depthImageView_) != VK_SUCCESS)
+    log().fatal("Failed to create depth image view!");
+  log().debug("Depth resources created (Format: {}).", static_cast<int>(depthFormat_));
 }
 
 void Renderer::cleanupDepthResources() {
-    if (depthImageView_ != VK_NULL_HANDLE)
-        vkDestroyImageView(vulkanContext_.getDevice(), depthImageView_, nullptr);
-    if (depthImage_ != VK_NULL_HANDLE) // Memory is freed with vmaDestroyImage
-        vmaDestroyImage(vmaAllocator_, depthImage_, depthImageMemory_);
-    depthImageView_ = VK_NULL_HANDLE;
-    depthImage_ = VK_NULL_HANDLE;
-    depthImageMemory_ = VK_NULL_HANDLE;
-    log().debug("Depth resources cleaned up.");
+  if (depthImageView_ != VK_NULL_HANDLE)
+    vkDestroyImageView(vulkanContext_.getDevice(), depthImageView_, nullptr);
+  if (depthImage_ != VK_NULL_HANDLE) // Memory is freed with vmaDestroyImage
+    vmaDestroyImage(vmaAllocator_, depthImage_, depthImageMemory_);
+  depthImageView_ = VK_NULL_HANDLE;
+  depthImage_ = VK_NULL_HANDLE;
+  depthImageMemory_ = VK_NULL_HANDLE;
+  log().debug("Depth resources cleaned up.");
 }
-}  // namespace aur
+} // namespace aur

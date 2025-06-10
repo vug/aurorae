@@ -1,0 +1,17 @@
+# BasedOnStyle: LLVM # You can base your style on predefined styles like LLVM, Google, Chromium, Mozilla, WebKit
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+
+Language: Cpp
+Standard: Latest
+BreakBeforeBraces: Attach
+Cpp11BracedListStyle: true
+SpaceBeforeCpp11BracedList: false
+DerivePointerAlignment: false
+PointerAlignment: Left
+BreakConstructorInitializers: BeforeComma
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+BreakTemplateDeclarations: Yes
+ColumnLimit: 110

@@ -4,12 +4,12 @@ namespace std {
 // Forward declare std::string_view. Lol.
 template <typename T>
 struct char_traits;
-template<class CharT, class Traits>
+template <class CharT, class Traits>
 class basic_string_view;
 using string_view = basic_string_view<char, std::char_traits<char>>;
 
 enum class byte : unsigned char;
-}  // namespace std
+} // namespace std
 
 #include "Utils.h"
 
@@ -18,7 +18,7 @@ struct GLFWwindow;
 namespace aur {
 
 class Window {
- public:
+public:
   Window(u32 width, u32 height, std::string_view title);
   ~Window();
 
@@ -36,9 +36,8 @@ class Window {
   void clearResizedFlag() { framebufferResized_ = false; }
   void getFramebufferSize(i32& width, i32& height) const;
 
- private:
-  static void framebufferResizeCallback(GLFWwindow* window, i32 width,
-                                        i32 height);
+private:
+  static void framebufferResizeCallback(GLFWwindow* window, i32 width, i32 height);
 
   GLFWwindow* glfwWindow_{nullptr};
   bool framebufferResized_{false};
@@ -47,4 +46,4 @@ class Window {
   u32 currentHeight_;
 };
 
-}  // namespace aur
+} // namespace aur
