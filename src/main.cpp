@@ -1,4 +1,3 @@
-// TODO(vug): config for stopping the debugger at validation issues (via std::abort() or similar)
 // TODO(vug): clang-tidy formatter
 // TODO(vug): upload MVP matrices via uniform buffers
 // TODO(vug): consider making all members of dependency library types pointers, so that I can forward declare them and won't leak their headers

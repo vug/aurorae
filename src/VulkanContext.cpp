@@ -19,6 +19,7 @@ constexpr bool kEnableGpuAssistedValidation{false};
 // validation mode
 constexpr bool kEnableCoreValidationLayers{kEnableValidationLayers &&
                                            !kEnableGpuAssistedValidation};
+constexpr bool kDebugBreakAtValidationErrors{false};
 
 VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion,
@@ -81,6 +82,8 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           log().critical("Unknown Vulkan message severity: {}",
                          static_cast<int>(messageSeverity));
       }
+      if (kDebugBreakAtValidationErrors)
+        std::abort();
       return VK_FALSE;
       // Return true for validation to skip passing down the call to the driver
       // and return back VK_ERROR_VALIDATION_FAILED_EXT from VK function calls
