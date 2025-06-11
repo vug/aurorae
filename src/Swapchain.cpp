@@ -55,7 +55,7 @@ void Swapchain::recreate(const vkb::Device& vkb_device, u32 width, u32 height) {
   vkDeviceWaitIdle(vkb_device.device);
 
   vkb::Swapchain vkbSwapchainToDestroy = vkbSwapchain_; // Shallow copy of the vkb::Swapchain struct
-  std::vector<VkImageView> imageViewsToDestroy = imageViews_;
+  const std::vector<VkImageView> imageViewsToDestroy = imageViews_;
 
   // New swapchain created, oldSwapchain (vkbSwapchainToDestroy.swapchain) is
   // retired. Its resources might be internally transitioned or marked for

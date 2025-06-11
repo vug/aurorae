@@ -53,7 +53,7 @@ public:
   PathBuffer(PathBuffer&& other) noexcept;
   PathBuffer& operator=(PathBuffer&& other) noexcept;
   const char* c_str() const;
-  operator const char*() const;
+  explicit operator const char*() const;
 
 private:
   char* data_;

@@ -30,7 +30,7 @@ public:
 
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
 
-  void drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt);
+  void drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt) const;
   VkPipeline getTrianglePipeline() const { return triangleGraphicsPipeline_; }
   VkPipeline getCubePipeline() const { return cubeGraphicsPipeline_; }
 
@@ -41,13 +41,13 @@ public:
   void notifyResize(u32 newWidth, u32 newHeight);
 
 private:
-  VmaAllocator makeVmaAllocator();
+  VmaAllocator makeVmaAllocator() const;
   void createCommandPool();
   void allocateCommandBuffer();
   void createSyncObjects();
   void internalRecreateSwapchain();
 
-  VkShaderModule createShaderModule(BinaryBlob code);
+  VkShaderModule createShaderModule(BinaryBlob code) const;
   void createTrianglePipeline();
   void createCubePipeline();
   void createDepthResources();

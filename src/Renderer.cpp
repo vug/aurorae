@@ -80,7 +80,7 @@ void Renderer::createSyncObjects() {
     log().fatal("Failed to create synchronization objects!");
 }
 
-VkShaderModule Renderer::createShaderModule(BinaryBlob code) {
+VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
   const VkShaderModuleCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
       .codeSize = code.size(),
@@ -588,7 +588,7 @@ void Renderer::endFrame() {
       .pImageIndices = &currentImageIndex_,
   };
 
-  VkResult result = vkQueuePresentKHR(vulkanContext_.getPresentQueue(),
+  const VkResult result = vkQueuePresentKHR(vulkanContext_.getPresentQueue(),
                                       &presentInfo); // Use present queue
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     log().debug("Swapchain out of date/suboptimal during present. Flagging for next frame.");
@@ -597,7 +597,7 @@ void Renderer::endFrame() {
     log().fatal("Failed to present swap chain image: {}", static_cast<int>(result));
 }
 
-void Renderer::drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt) {
+void Renderer::drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt) const {
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   const VkViewport viewport{
@@ -615,12 +615,12 @@ void Renderer::drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipel
   vkCmdDraw(commandBuffer, vertexCnt, 1, 0, 0);
 }
 
-VmaAllocator Renderer::makeVmaAllocator() {
+VmaAllocator Renderer::makeVmaAllocator() const {
   VmaVulkanFunctions vmaVulkanFunctions = {
       .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
       .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
   };
-  VmaAllocatorCreateInfo allocatorInfo = {
+  const VmaAllocatorCreateInfo allocatorInfo = {
       .physicalDevice = vulkanContext_.getPhysicalDevice(),
       .device = vulkanContext_.getDevice(),
       .pVulkanFunctions = &vmaVulkanFunctions,
@@ -640,7 +640,7 @@ void Renderer::createDepthResources() {
   depthFormat_ = VK_FORMAT_D32_SFLOAT;
   VkExtent2D swapchainExtent = swapchain_.getImageExtent();
 
-  VkImageCreateInfo imageInfo{
+  const VkImageCreateInfo imageInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = depthFormat_,
@@ -654,7 +654,7 @@ void Renderer::createDepthResources() {
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
   };
 
-  VmaAllocationCreateInfo allocInfo = {.usage = VMA_MEMORY_USAGE_GPU_ONLY, // Depth buffer is device local
+  const VmaAllocationCreateInfo allocInfo = {.usage = VMA_MEMORY_USAGE_GPU_ONLY, // Depth buffer is device local
                                        .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
 
   if (vmaCreateImage(vmaAllocator_, &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_, nullptr) !=
@@ -662,7 +662,7 @@ void Renderer::createDepthResources() {
     log().fatal("Failed to create depth image!");
   }
 
-  VkImageViewCreateInfo viewInfo{
+  const VkImageViewCreateInfo viewInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
       .image = depthImage_,
       .viewType = VK_IMAGE_VIEW_TYPE_2D,

@@ -39,7 +39,7 @@ void logInitialize(LogLevel defaultLevel, const std::string& pattern, LogLevel f
   // std::vector<spdlog::sink_ptr> sinks{console_sink, file_sink};
   // auto logger = std::make_shared<spdlog::logger>("app", sinks.begin(),
   // sinks.end());
-  auto logger = std::make_shared<spdlog::logger>("app", console_sink);
+  const auto logger = std::make_shared<spdlog::logger>("app", console_sink);
 
   spdlog::set_default_logger(logger);
   spdlog::set_level(detail::toSpdLogLevel(defaultLevel));

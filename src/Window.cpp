@@ -39,11 +39,11 @@ bool Window::shouldClose() const {
   return glfwWindowShouldClose(glfwWindow_);
 }
 
-void Window::pollEvents() const {
+void Window::pollEvents() {
   glfwPollEvents();
 }
 
-void Window::waitEvents() const {
+void Window::waitEvents() {
   glfwWaitEvents();
 }
 

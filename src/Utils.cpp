@@ -47,11 +47,11 @@ PathBuffer pathJoin(const char* path, const char* relativeSubpath) {
     return len;
   };
 
-  size_t pathLen = strlen(path);
-  size_t subLen = strlen(relativeSubpath);
+  const size_t pathLen = strlen(path);
+  const size_t subLen = strlen(relativeSubpath);
 
   // +2: one for possible '/', one for '\0'
-  size_t totalLen = pathLen + subLen + 2;
+  const size_t totalLen = pathLen + subLen + 2;
   char* outBuffer = new char[totalLen];
 
   size_t pos = 0;

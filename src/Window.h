@@ -28,8 +28,8 @@ public:
   Window& operator=(Window&&) = delete;
 
   bool shouldClose() const;
-  void pollEvents() const;
-  void waitEvents() const;
+  static void pollEvents();
+  static void waitEvents();
 
   GLFWwindow* getGLFWwindow() const { return glfwWindow_; }
   bool wasResized() const { return framebufferResized_; }

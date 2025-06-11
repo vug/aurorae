@@ -12,14 +12,14 @@
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
       "cacheVariables": {
-        "AURORAE_DEPENDENCIES_DIR": "${sourceDirectory}/../superbuild/build/dependencies-install"
+        "AURORAE_DEPENDENCIES_DIR": "${sourceDir}/../superbuild/build/dependencies-install"
       }
     },
     {
       "name": "app-debug",
       "displayName": "Aurorae App (Debug)",
       "inherits": "app-common",
-      "binaryDir": "${sourceDirectory}/build/debug",
+      "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -28,7 +28,7 @@
       "name": "app-release",
       "displayName": "Aurorae App (Release)",
       "inherits": "app-common",
-      "binaryDir": "${sourceDirectory}/build/release",
+      "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
