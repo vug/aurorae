@@ -61,14 +61,35 @@ message("Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
 add_external_dependency(Volk "volk" "-DVOLK_INSTALL=ON")
 add_external_dependency(VKBootstrap "vk-bootstrap" "-DVK_BOOTSTRAP_TEST=OFF;-DVK_BOOTSTRAP_INSTALL=ON")
 # git submodule add https://github.com/gabime/spdlog.git
-add_external_dependency(SpdLog "spdlog" "-DSPDLOG_MASTER_PROJECT=OFF;-DSPDLOG_INSTALL=ON;-DSPDLOG_USE_STD_FORMAT=ON;-DCMAKE_INSTALL_INCLUDEDIR=include")
+add_external_dependency(SpdLog "spdlog" 
+  "-DSPDLOG_MASTER_PROJECT=OFF;
+   -DSPDLOG_INSTALL=ON;
+   -DSPDLOG_USE_STD_FORMAT=ON;
+   -DCMAKE_INSTALL_INCLUDEDIR=include")
 # git submodule add https://github.com/glfw/glfw.git
-add_external_dependency(Glfw "glfw" "-DGLFW_BUILD_EXAMPLES=OFF;-DGLFW_BUILD_TESTS=OFF;-DGLFW_BUILD_DOCS=OFF;-DGLFW_INSTALL=ON")
+add_external_dependency(Glfw "glfw" 
+  "-DGLFW_BUILD_EXAMPLES=OFF;
+   -DGLFW_BUILD_TESTS=OFF;
+   -DGLFW_BUILD_DOCS=OFF;
+   -DGLFW_INSTALL=ON")
 # git submodule add https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-add_external_dependency(VMA "VulkanMemoryAllocator" "-DVMA_ENABLE_INSTALL=ON;-DVMA_BUILD_SAMPLES=OFF;-DVMA_BUILD_DOCUMENTATION=OFF")
+add_external_dependency(VMA "VulkanMemoryAllocator" 
+  "-DVMA_ENABLE_INSTALL=ON;
+   -DVMA_BUILD_SAMPLES=OFF;
+   -DVMA_BUILD_DOCUMENTATION=OFF")
+# git submodule add https://github.com/g-truc/glm.git
+add_external_dependency(GLM "glm" 
+  "-DGLM_BUILD_TESTS=OFF;
+   -DBUILD_SHARED_LIBS=OFF;
+   -DGLM_BUILD_INSTALL=ON;
+   -DGLM_FORCE_AVX512=ON;
+   -DGLM_FORCE_SIZE_T_LENGTH=ON;
+   -DGLM_FORCE_SILENT_WARNINGS=ON;
+   -DGLM_ENABLE_EXPERIMENTAL=ON;
+   -DGLM_ENABLE_SIMD_AVX2=ON")
 
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
-# TODO(vug): assimp, imgui, glm, stb, xatlas, embree
+# TODO(vug): assimp, imgui, stb, xatlas, embree
 
 add_custom_target(build_all_deps)
 foreach(CONFIG ${SUPERBUILD_CONFIGS})
@@ -79,6 +100,8 @@ foreach(CONFIG ${SUPERBUILD_CONFIGS})
         SpdLog_${CONFIG}
         Glfw_${CONFIG}
         VMA_${CONFIG}
+        GLM_${CONFIG}
+        # Vulkan_${CONFIG}}
         # ImGui_${CONFIG}
         # STB_${CONFIG}
     )
