@@ -1,5 +1,6 @@
 #pragma once
 
+#define VK_NO_PROTOTYPES
 #include <vk-bootstrap/VkBootstrap.h>
 
 struct GLFWwindow;
@@ -18,19 +19,19 @@ public:
   VulkanContext& operator=(VulkanContext&&) = delete;
 
   // Public getters for raw Vulkan handles
-  inline VkInstance getInstance() const { return vkbInstance_.instance; }
-  VkDevice getDevice() const { return vkbDevice_.device; }
-  VkPhysicalDevice getPhysicalDevice() const { return vkbPhysicalDevice_.physical_device; }
-  VkSurfaceKHR getSurface() const { return surface_; }
+  [[nodiscard]] inline VkInstance getInstance() const { return vkbInstance_.instance; }
+  [[nodiscard]] VkDevice getDevice() const { return vkbDevice_.device; }
+  [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const { return vkbPhysicalDevice_.physical_device; }
+  [[nodiscard]] VkSurfaceKHR getSurface() const { return surface_; }
 
-  VkQueue getGraphicsQueue() const { return graphicsQueue_; }
-  VkQueue getPresentQueue() const { return presentQueue_; }
-  u32 getGraphicsQueueFamilyIndex() const { return graphicsQueueFamilyIndex_; }
-  u32 getPresentQueueFamilyIndex() const { return presentQueueFamilyIndex_; }
+  [[nodiscard]] VkQueue getGraphicsQueue() const { return graphicsQueue_; }
+  [[nodiscard]] VkQueue getPresentQueue() const { return presentQueue_; }
+  [[nodiscard]] u32 getGraphicsQueueFamilyIndex() const { return graphicsQueueFamilyIndex_; }
+  [[nodiscard]] u32 getPresentQueueFamilyIndex() const { return presentQueueFamilyIndex_; }
 
-  const vkb::Instance& getVkbInstance() const { return vkbInstance_; }
-  const vkb::PhysicalDevice& getVkbPhysicalDevice() const { return vkbPhysicalDevice_; }
-  const vkb::Device& getVkbDevice() const { return vkbDevice_; }
+  [[nodiscard]] const vkb::Instance& getVkbInstance() const { return vkbInstance_; }
+  [[nodiscard]] const vkb::PhysicalDevice& getVkbPhysicalDevice() const { return vkbPhysicalDevice_; }
+  [[nodiscard]] const vkb::Device& getVkbDevice() const { return vkbDevice_; }
 
 private:
   vkb::Instance vkbInstance_;

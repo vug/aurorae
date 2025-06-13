@@ -16,7 +16,7 @@ constexpr bool kEnableGpuAssistedValidation{false};
 // For performance reasons, core validation layers are disabled in GPU-assisted
 // validation mode
 constexpr bool kEnableCoreValidationLayers{kEnableValidationLayers && !kEnableGpuAssistedValidation};
-constexpr bool kDebugBreakAtValidationErrors{false};
+constexpr bool kDebugBreakAtValidationErrors{true};
 
 VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion,
@@ -46,7 +46,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           0x675dc32e, // just warns about VK_EXT_debug_utils is intended to be
                       // used in debugging only.
           0x24b5c69f, // GPU validation:
-          0x0,        // Layer name GalaxyOverlayVkLayer does not conform to naming standard (Policy #LLP_LAYER_3)
+          0x0, // Layer name GalaxyOverlayVkLayer does not conform to naming standard (Policy #LLP_LAYER_3)
       };
       for (const auto& msgId : ignoredMessageIds) {
         if (pCallbackData->messageIdNumber == msgId)
@@ -80,7 +80,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
         std::abort();
       return VK_FALSE;
       // Return true for validation to skip passing down the call to the driver
-      // and return back VK_ERROR_VALIDATION_FAILED_EXT from VK function calls
+      // and return VK_ERROR_VALIDATION_FAILED_EXT from VK function calls
       // return VK_TRUE;
     };
     vkbInstanceBuilder.set_debug_callback(debugCallback); // vkb::default_debug_callback
@@ -94,7 +94,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
         .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
   } else if constexpr (kEnableGpuAssistedValidation) {
     // GPU-AV instruments shaders and GPU resources to detect issues that are
-    // difficult to find with CPU-only validation
+    // challenging to find with CPU-only validation
     vkbInstanceBuilder.enable_validation_layers()
         .add_validation_feature_disable(VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT)
         .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
