@@ -1,5 +1,3 @@
-// TODO(vug): start creating issues for individual TODO items/features
-// https://gemini.google.com/app/ffc17ec1cab7538c
 // TODO(vug): upload View and Project matrices via uniform buffers. Use "Scalar Block Layout"
 // TODO(vug): upload Model matrix per-object via push constants
 // TODO(vug): upload geometry data via Vertex/Index Buffers

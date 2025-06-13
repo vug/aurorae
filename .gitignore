@@ -3,3 +3,4 @@ src/assets/shaders/debug
 src/assets/shaders/release
 src/assets/shaders/relwithdebinfo
 .idea/
+_deps/
