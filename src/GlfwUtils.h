@@ -1,8 +1,9 @@
 #pragma once
 
-#define VK_DEFINE_HANDLE(object) typedef struct object##_T* object;
-VK_DEFINE_HANDLE(VkInstance)
-VK_DEFINE_HANDLE(VkSurfaceKHR)
+#include "Utils.h"
+
+FORWARD_DEFINE_VK_HANDLE(VkInstance)
+FORWARD_DEFINE_VK_HANDLE(VkSurfaceKHR)
 
 struct GLFWwindow;
 

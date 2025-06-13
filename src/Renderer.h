@@ -7,6 +7,8 @@
 struct GLFWwindow;
 VK_DEFINE_HANDLE(VmaAllocator)
 VK_DEFINE_HANDLE(VmaAllocation)
+FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
+FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
 
 namespace aur {
 
