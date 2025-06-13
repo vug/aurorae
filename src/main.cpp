@@ -1,4 +1,7 @@
-// TODO(vug): upload MVP matrices via uniform buffers
+// TODO(vug): start creating issues for individual TODO items/features
+// https://gemini.google.com/app/ffc17ec1cab7538c
+// TODO(vug): upload View and Project matrices via uniform buffers. Use "Scalar Block Layout"
+// TODO(vug): upload Model matrix per-object via push constants
 // TODO(vug): upload geometry data via Vertex/Index Buffers
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
 // TODO(vug): consider making all members of dependency library types pointers, so that I can

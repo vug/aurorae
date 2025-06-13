@@ -71,6 +71,12 @@ message(STATUS "glfw target location: ${GLFW_LIBRARY}")
 get_target_property(GLFW_INCLUDE_DIR glfw INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "glfw include dirs: ${GLFW_INCLUDE_DIR}")
 
+find_package(glm REQUIRED)
+get_target_property(GLM_LIBRARY glm::glm LOCATION)
+message(STATUS "glm target location: ${GLM_LIBRARY}")
+get_target_property(GLM_INCLUDE_DIR glm::glm INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "glm include dirs: ${GLM_INCLUDE_DIR}")
+
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 
 # TODO(vug): add a function that takes package name and target name.
@@ -105,6 +111,7 @@ target_link_libraries(Aurorae PRIVATE
         # spdlog$<$<CONFIG:Debug>:d> # alternative
         glfw
         GPUOpen::VulkanMemoryAllocator
+        glm::glm
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
