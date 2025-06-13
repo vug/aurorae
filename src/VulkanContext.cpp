@@ -1,5 +1,3 @@
-#include <array>
-
 #include <volk/volk.h>
 
 #include "GlfwUtils.h"
@@ -44,30 +42,36 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
            VkDebugUtilsMessageTypeFlagsEXT messageType,
            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
            [[maybe_unused]] void* pUserData) -> VkBool32 {
-      constexpr std::array<i32, 2> ignoredMessageIds = {
+      constexpr i32 ignoredMessageIds[] = {
           0x675dc32e, // just warns about VK_EXT_debug_utils is intended to be
                       // used in debugging only.
           0x24b5c69f, // GPU validation:
+          0x0,        // Layer name GalaxyOverlayVkLayer does not conform to naming standard (Policy #LLP_LAYER_3)
       };
       for (const auto& msgId : ignoredMessageIds) {
         if (pCallbackData->messageIdNumber == msgId)
           return VK_FALSE; // Skip this message
       }
+
       const char* severity = vkb::to_string_message_severity(messageSeverity);
       const char* type = vkb::to_string_message_type(messageType);
+      const char* message = pCallbackData->pMessage;
+      const i32 messageId = pCallbackData->messageIdNumber;
+      constexpr const char* fmt = "Vulkan [{}][{}]: {} [0x{:x}]";
+
       switch (messageSeverity) {
       case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        log().trace("Vulkan [{}][{}]: {}", severity, type, pCallbackData->pMessage);
+        log().trace(fmt, severity, type, message, messageId);
         // can return VK_FALSE here to ignore verbose messages
         break;
       case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        log().info("Vulkan [{}][{}]: {}", severity, type, pCallbackData->pMessage);
+        log().info(fmt, severity, type, message, messageId);
         break;
       case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        log().warn("Vulkan [{}][{}]: {}", severity, type, pCallbackData->pMessage);
+        log().warn(fmt, severity, type, message, messageId);
         break;
       case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        log().error("Vulkan [{}][{}]: {}", severity, type, pCallbackData->pMessage);
+        log().error(fmt, severity, type, message, messageId);
         break;
       default:
         log().critical("Unknown Vulkan message severity: {}", static_cast<int>(messageSeverity));
