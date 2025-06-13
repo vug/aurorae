@@ -19,9 +19,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   createCommandPool();
   allocateCommandBuffer();
   createSyncObjects();
-  createDepthResources();   // Create the depth buffer for depth attachment to swapchain image
-  createTrianglePipeline(); // Create the triangle pipeline
-  createCubePipeline();     // Create the cube pipeline
+  createDepthResources(); // Create the depth buffer for depth attachment to swapchain image
   BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
                                              .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                              .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
@@ -35,8 +33,6 @@ Renderer::~Renderer() {
   if (vulkanContext_.getDevice() != VK_NULL_HANDLE)
     vkDeviceWaitIdle(vulkanContext_.getDevice());
 
-  cleanupCubePipeline();
-  cleanupTrianglePipeline();
   cleanupDepthResources(); // Destroy depth buffer
   cleanupSyncObjects();
   cleanupCommandPool(); // Frees command buffers too
@@ -91,9 +87,16 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
   return shaderModule;
 }
 
-void Renderer::createTrianglePipeline() {
-  BinaryBlob vertShaderCode = readBinaryFile(pathJoin(kShadersFolder, "triangle.vert.spv").c_str());
-  BinaryBlob fragShaderCode = readBinaryFile(pathJoin(kShadersFolder, "triangle.frag.spv").c_str());
+Renderer::Pipeline Renderer::createTrianglePipeline() const {
+  PathBuffer vertexPath{pathJoin(kShadersFolder, "triangle.vert.spv")};
+  PathBuffer fragmentPath{pathJoin(kShadersFolder, "triangle.frag.spv")};
+  Pipeline pipeline{
+      .vertexPath = std::move(vertexPath),
+      .fragmentPath = std::move(fragmentPath),
+  };
+
+  BinaryBlob vertShaderCode = readBinaryFile(pipeline.vertexPath.c_str());
+  BinaryBlob fragShaderCode = readBinaryFile(pipeline.fragmentPath.c_str());
 
   VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
   VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));
@@ -174,7 +177,7 @@ void Renderer::createTrianglePipeline() {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
   };
   if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
-                             &trianglePipelineLayout_) != VK_SUCCESS)
+                             &pipeline.pipelineLayout) != VK_SUCCESS)
     log().fatal("Failed to create triangle pipeline layout!");
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
@@ -207,24 +210,32 @@ void Renderer::createTrianglePipeline() {
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = trianglePipelineLayout_,
+      .layout = pipeline.pipelineLayout,
       .renderPass = VK_NULL_HANDLE, // Must be null for dynamic rendering
       .subpass = 0,
   };
 
   if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
-                                &triangleGraphicsPipeline_) != VK_SUCCESS)
+                                &pipeline.pipeline) != VK_SUCCESS)
     log().fatal("Failed to create triangle graphics pipeline!");
 
   // Shader modules can be destroyed after pipeline creation
   vkDestroyShaderModule(vulkanContext_.getDevice(), fragShaderModule, nullptr);
   vkDestroyShaderModule(vulkanContext_.getDevice(), vertShaderModule, nullptr);
   log().debug("Triangle graphics pipeline created.");
+
+  return pipeline;
 }
 
-void Renderer::createCubePipeline() {
-  BinaryBlob vertShaderCode = readBinaryFile(pathJoin(kShadersFolder, "cube.vert.spv").c_str());
-  BinaryBlob fragShaderCode = readBinaryFile(pathJoin(kShadersFolder, "cube.frag.spv").c_str());
+Renderer::Pipeline Renderer::createCubePipeline() const {
+  PathBuffer vertexPath{pathJoin(kShadersFolder, "cube.vert.spv")};
+  PathBuffer fragmentPath{pathJoin(kShadersFolder, "cube.frag.spv")};
+  Pipeline pipeline{
+      .vertexPath = std::move(vertexPath),
+      .fragmentPath = std::move(fragmentPath),
+  };
+  BinaryBlob vertShaderCode = readBinaryFile(pipeline.vertexPath.c_str());
+  BinaryBlob fragShaderCode = readBinaryFile(pipeline.fragmentPath.c_str());
 
   VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
   VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));
@@ -302,7 +313,7 @@ void Renderer::createCubePipeline() {
   constexpr VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType =
                                                               VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
   if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
-                             &cubePipelineLayout_) != VK_SUCCESS)
+                             &pipeline.pipelineLayout) != VK_SUCCESS)
     log().fatal("Failed to create triangle pipeline layout!");
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
@@ -334,18 +345,32 @@ void Renderer::createCubePipeline() {
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = cubePipelineLayout_,
+      .layout = pipeline.pipelineLayout,
       .renderPass = VK_NULL_HANDLE,
       .subpass = 0,
   };
 
   if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
-                                &cubeGraphicsPipeline_) != VK_SUCCESS)
+                                &pipeline.pipeline) != VK_SUCCESS)
     log().fatal("Failed to create cube graphics pipeline!");
 
   vkDestroyShaderModule(vulkanContext_.getDevice(), fragShaderModule, nullptr);
   vkDestroyShaderModule(vulkanContext_.getDevice(), vertShaderModule, nullptr);
   log().debug("Cube graphics pipeline created.");
+
+  return pipeline;
+}
+
+// TODO(vug): move this into future Pipeline class' destructor
+void Renderer::cleanupPipeline(Pipeline& pipeline) const {
+  if (pipeline.pipeline != VK_NULL_HANDLE) {
+    vkDestroyPipeline(vulkanContext_.getDevice(), pipeline.pipeline, nullptr);
+    pipeline.pipeline = VK_NULL_HANDLE;
+  }
+  if (pipeline.pipelineLayout != VK_NULL_HANDLE) { // Only destroy if not shared by cube
+    vkDestroyPipelineLayout(vulkanContext_.getDevice(), pipeline.pipelineLayout, nullptr);
+    pipeline.pipelineLayout = VK_NULL_HANDLE;
+  }
 }
 
 void Renderer::cleanupCommandPool() {
@@ -367,28 +392,6 @@ void Renderer::cleanupSyncObjects() {
   imageAvailableSemaphore_ = VK_NULL_HANDLE;
   renderFinishedSemaphore_ = VK_NULL_HANDLE;
   inFlightFence_ = VK_NULL_HANDLE;
-}
-
-void Renderer::cleanupTrianglePipeline() {
-  if (triangleGraphicsPipeline_ != VK_NULL_HANDLE) {
-    vkDestroyPipeline(vulkanContext_.getDevice(), triangleGraphicsPipeline_, nullptr);
-    triangleGraphicsPipeline_ = VK_NULL_HANDLE;
-  }
-  if (trianglePipelineLayout_ != VK_NULL_HANDLE) { // Only destroy if not shared by cube
-    vkDestroyPipelineLayout(vulkanContext_.getDevice(), trianglePipelineLayout_, nullptr);
-    trianglePipelineLayout_ = VK_NULL_HANDLE;
-  }
-}
-
-void Renderer::cleanupCubePipeline() {
-  if (cubeGraphicsPipeline_ != VK_NULL_HANDLE) {
-    vkDestroyPipeline(vulkanContext_.getDevice(), cubeGraphicsPipeline_, nullptr);
-    cubeGraphicsPipeline_ = VK_NULL_HANDLE;
-  }
-  if (cubePipelineLayout_ != VK_NULL_HANDLE) {
-    vkDestroyPipelineLayout(vulkanContext_.getDevice(), cubePipelineLayout_, nullptr);
-    cubePipelineLayout_ = VK_NULL_HANDLE;
-  }
 }
 
 void Renderer::notifyResize(u32 newWidth, u32 newHeight) {
@@ -599,8 +602,8 @@ void Renderer::endFrame() {
     log().fatal("Failed to present swap chain image: {}", static_cast<int>(result));
 }
 
-void Renderer::drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt) const {
-  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+void Renderer::drawWithoutVertexInput(VkPipeline pipeline, u32 vertexCnt) const {
+  vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   const VkViewport viewport{
       .x = 0.0f,
@@ -610,11 +613,14 @@ void Renderer::drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipel
       .minDepth = 0.0f,
       .maxDepth = 1.0f,
   };
-  vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+  vkCmdSetViewport(commandBuffer_, 0, 1, &viewport);
   const VkRect2D scissor{{0, 0}, swapchain_.getImageExtent()};
-  vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+  vkCmdSetScissor(commandBuffer_, 0, 1, &scissor);
 
-  vkCmdDraw(commandBuffer, vertexCnt, 1, 0, 0);
+  vkCmdDraw(commandBuffer_, vertexCnt, 1, 0, 0);
+}
+void Renderer::deviceWaitIdle() const {
+  vkDeviceWaitIdle(vulkanContext_.getDevice());
 }
 
 void Renderer::createDepthResources() {

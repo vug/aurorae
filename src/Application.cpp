@@ -33,6 +33,9 @@ Application::~Application() {
 }
 
 void Application::run() {
+  auto trianglePipeline = renderer_.createTrianglePipeline();
+  auto cubePipeline = renderer_.createCubePipeline();
+
   log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
     window_.pollEvents();
@@ -51,15 +54,20 @@ void Application::run() {
 
     if (renderer_.beginFrame()) {
       renderer_.setClearColor(0.25f, 0.25f, 0.25f);
-      renderer_.drawNoVertexInput(renderer_.getCommandBuffer(), renderer_.getTrianglePipeline(), 3);
-      renderer_.drawNoVertexInput(renderer_.getCommandBuffer(), renderer_.getCubePipeline(), 36);
+      renderer_.drawWithoutVertexInput(trianglePipeline.pipeline, 3);
+      renderer_.drawWithoutVertexInput(cubePipeline.pipeline, 36);
       renderer_.endFrame();
     }
     // If beginFrame() returns false, it means it handled a situation like
     // swapchain recreation, and the loop should just continue to the next
     // iteration.
   }
+
+  // TODO(vug): With proper RAII, and architecture, we shouldn't need to call wait idle for cleaning up
+  // pipelines manually
+  renderer_.deviceWaitIdle();
+  renderer_.cleanupPipeline(trianglePipeline);
+  renderer_.cleanupPipeline(cubePipeline);
   log().debug("Main loop finished.");
 }
-
 } // namespace aur

@@ -18,6 +18,14 @@ struct PerFrameData {
 
 class Renderer {
 public:
+  // TODO(vug): this is defined temporarily to group certain resources together. Move it into its own class
+  // later.
+  struct Pipeline {
+    PathBuffer vertexPath;
+    PathBuffer fragmentPath;
+    VkPipeline pipeline{VK_NULL_HANDLE};
+    VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
+  };
   Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u32 initialHeight);
   ~Renderer();
 
@@ -35,10 +43,8 @@ public:
   bool beginFrame();
 
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
-
-  void drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt) const;
-  [[nodiscard]] VkPipeline getTrianglePipeline() const { return triangleGraphicsPipeline_; }
-  [[nodiscard]] VkPipeline getCubePipeline() const { return cubeGraphicsPipeline_; }
+  void drawWithoutVertexInput(VkPipeline pipeline, u32 vertexCnt) const;
+  void deviceWaitIdle() const;
 
   // Must be called after draw commands
   void endFrame();
@@ -47,23 +53,27 @@ public:
   void notifyResize(u32 newWidth, u32 newHeight);
 
   [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo) const;
+  [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
+
+  // "Materials" so far. TODO(vug): move these logic out of Renderer
+  Pipeline createTrianglePipeline() const;
+  Pipeline createCubePipeline() const;
+  void cleanupPipeline(Pipeline& pipeline) const;
 
 private:
+  // --- Core Renderer Initialization ---
+  // These are fundamental to the renderer's operation.
   void createCommandPool();
+  void cleanupCommandPool(); // Also frees command buffers
   void allocateCommandBuffer();
   void createSyncObjects();
-  void internalRecreateSwapchain();
-
-  [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
-  void createTrianglePipeline();
-  void createCubePipeline();
-  void createDepthResources();
-
   void cleanupSyncObjects();
+
+  // --- Swapchain & Framebuffer Resources ---
+  // These are tied to the surface and swapping images.
+  void internalRecreateSwapchain();
+  void createDepthResources();
   void cleanupDepthResources();
-  void cleanupCommandPool(); // Also frees command buffers
-  void cleanupTrianglePipeline();
-  void cleanupCubePipeline();
 
   // Context -> Allocator -> Swapchain needs to be created in that order.
   VulkanContext vulkanContext_;
@@ -73,11 +83,6 @@ private:
 
   VkCommandPool commandPool_{VK_NULL_HANDLE};
   VkCommandBuffer commandBuffer_{VK_NULL_HANDLE};
-
-  VkPipelineLayout trianglePipelineLayout_{VK_NULL_HANDLE};
-  VkPipeline triangleGraphicsPipeline_{VK_NULL_HANDLE};
-  VkPipelineLayout cubePipelineLayout_{VK_NULL_HANDLE};
-  VkPipeline cubeGraphicsPipeline_{VK_NULL_HANDLE};
 
   VkImage depthImage_{VK_NULL_HANDLE};
   VmaAllocation depthImageMemory_{VK_NULL_HANDLE};
