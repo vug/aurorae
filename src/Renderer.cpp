@@ -1,6 +1,5 @@
+#include "Allocator.h"
 #include <volk/volk.h> // For Vulkan functions
-#define VMA_IMPLEMENTATION
-#include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
 #include "Renderer.h"
 
@@ -13,7 +12,7 @@ namespace aur {
 
 Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u32 initialHeight)
     : vulkanContext_(window, appName)
-    , vmaAllocator_{makeVmaAllocator()}
+    , allocator_{vulkanContext_}
     , swapchain_(vulkanContext_.getVkbDevice(), initialWidth, initialHeight)
     , currentWidth_(initialWidth)
     , currentHeight_(initialHeight) {
@@ -23,6 +22,11 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   createDepthResources();   // Create depth buffer
   createTrianglePipeline(); // Create the triangle pipeline
   createCubePipeline();     // Create the cube pipeline
+  BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
+                                             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                             .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
+  perFrameUniform_ = createBuffer(perFrameUniformCreateInto);
+
   log().debug("Renderer initialized.");
 }
 
@@ -36,11 +40,6 @@ Renderer::~Renderer() {
   cleanupDepthResources(); // Destroy depth buffer
   cleanupSyncObjects();
   cleanupCommandPool(); // Frees command buffers too
-
-  if (vmaAllocator_ != VK_NULL_HANDLE) {
-    vmaDestroyAllocator(vmaAllocator_);
-    vmaAllocator_ = VK_NULL_HANDLE;
-  }
 
   // Swapchain and VulkanContext are destroyed automatically by their destructors
   // Order: Swapchain (uses device), VulkanContext (owns device)
@@ -657,8 +656,8 @@ void Renderer::createDepthResources() {
   const VmaAllocationCreateInfo allocInfo = {.usage = VMA_MEMORY_USAGE_GPU_ONLY, // Depth buffer is device local
                                        .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
 
-  if (vmaCreateImage(vmaAllocator_, &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_, nullptr) !=
-      VK_SUCCESS) {
+  if (vmaCreateImage(allocator_.getHandle(), &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_,
+                     nullptr) != VK_SUCCESS) {
     log().fatal("Failed to create depth image!");
   }
 
@@ -686,7 +685,7 @@ void Renderer::cleanupDepthResources() {
   if (depthImageView_ != VK_NULL_HANDLE)
     vkDestroyImageView(vulkanContext_.getDevice(), depthImageView_, nullptr);
   if (depthImage_ != VK_NULL_HANDLE) // Memory is freed with vmaDestroyImage
-    vmaDestroyImage(vmaAllocator_, depthImage_, depthImageMemory_);
+    vmaDestroyImage(allocator_.getHandle(), depthImage_, depthImageMemory_);
   depthImageView_ = VK_NULL_HANDLE;
   depthImage_ = VK_NULL_HANDLE;
   depthImageMemory_ = VK_NULL_HANDLE;
