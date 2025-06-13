@@ -1,16 +1,20 @@
 #pragma once
 
+#include "Allocator.h"
+#include "Buffer.h"
 #include "FileIO.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
 
 struct GLFWwindow;
-VK_DEFINE_HANDLE(VmaAllocator)
-VK_DEFINE_HANDLE(VmaAllocation)
 FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
 FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
 
 namespace aur {
+
+struct PerFrameData {
+  u64 frameIndex{};
+};
 
 class Renderer {
 public:
@@ -22,19 +26,19 @@ public:
   Renderer(Renderer&&) = delete;
   Renderer& operator=(Renderer&&) = delete;
 
-  VkCommandBuffer getCommandBuffer() const { return commandBuffer_; }
-  u32 getCurrentImageIndex() const { return currentImageIndex_; }
+  [[nodiscard]] VkCommandBuffer getCommandBuffer() const { return commandBuffer_; }
+  [[nodiscard]] u32 getCurrentImageIndex() const { return currentImageIndex_; }
 
   // Returns true if frame rendering can proceed.
-  // Returns false if swapchain was recreated (or other non-fatal issue) and caller should skip drawing and
-  // try next frame. Must be called before any other draw commands
+  // Returns false if the swapchain was recreated (or another non-fatal issue) and the caller should skip
+  // drawing and try the next frame. Must be called before any other draw commands
   bool beginFrame();
 
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
 
   void drawNoVertexInput(VkCommandBuffer commandBuffer, VkPipeline pipeline, u32 vertexCnt) const;
-  VkPipeline getTrianglePipeline() const { return triangleGraphicsPipeline_; }
-  VkPipeline getCubePipeline() const { return cubeGraphicsPipeline_; }
+  [[nodiscard]] VkPipeline getTrianglePipeline() const { return triangleGraphicsPipeline_; }
+  [[nodiscard]] VkPipeline getCubePipeline() const { return cubeGraphicsPipeline_; }
 
   // Must be called after draw commands
   void endFrame();
@@ -42,14 +46,15 @@ public:
   // Call this when the window framebuffer size has changed.
   void notifyResize(u32 newWidth, u32 newHeight);
 
+  [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo) const;
+
 private:
-  VmaAllocator makeVmaAllocator() const;
   void createCommandPool();
   void allocateCommandBuffer();
   void createSyncObjects();
   void internalRecreateSwapchain();
 
-  VkShaderModule createShaderModule(BinaryBlob code) const;
+  [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
   void createTrianglePipeline();
   void createCubePipeline();
   void createDepthResources();
@@ -62,7 +67,8 @@ private:
 
   // Context -> Allocator -> Swapchain needs to be created in that order.
   VulkanContext vulkanContext_;
-  VmaAllocator vmaAllocator_{VK_NULL_HANDLE};
+  // The Allocator must be declared before any resources (buffers, images) that use it
+  Allocator allocator_;
   Swapchain swapchain_;
 
   VkCommandPool commandPool_{VK_NULL_HANDLE};
@@ -89,10 +95,12 @@ private:
   u32 currentWidth_;
   u32 currentHeight_;
 
-  // Clear color, can be set from Application or be fixed, default dark gray
+  // Clear color can be set from Application or be fixed, default dark gray
   VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};
   // Default depth is 1.0 (far plane), stencil is 0
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
+
+  Buffer perFrameUniform_;
 };
 
 } // namespace aur

@@ -9,11 +9,11 @@ project(Aurorae LANGUAGES CXX)
 # cmake -S . -B build -DAURORAE_DEPENDENCIES_DIR:PATH=/path/to/your/dependencies-install
 set(AURORAE_DEPENDENCIES_DIR "" CACHE PATH "Root directory of prebuilt Aurorae dependencies")
 
-if(NOT AURORAE_DEPENDENCIES_DIR)
+if (NOT AURORAE_DEPENDENCIES_DIR)
     message(FATAL_ERROR "AURORAE_DEPENDENCIES_DIR is not set. "
-                        "Please specify the path to the prebuilt dependencies installation directory "
-                        "(e.g., -DAURORAE_DEPENDENCIES_DIR:PATH=/path/to/aurorae/build/dependencies-install).")
-endif()
+            "Please specify the path to the prebuilt dependencies installation directory "
+            "(e.g., -DAURORAE_DEPENDENCIES_DIR:PATH=/path/to/aurorae/build/dependencies-install).")
+endif ()
 
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 message(STATUS "Generator is multi-config: ${is_multi_config}")
@@ -24,14 +24,14 @@ message(STATUS "Generator is multi-config: ${is_multi_config}")
 # CMAKE_BUILD_TYPE is set by our CMakePresets.json (and passed on the command line, as seen in your log)
 # for both Debug and Release configurations, and is available during this configure step.
 
-if(NOT CMAKE_BUILD_TYPE)
-  # This check is a fallback. Presets should ensure CMAKE_BUILD_TYPE is set.
-  # If it's not set, we cannot reliably find dependencies installed in config-specific dirs.
-  message(FATAL_ERROR "CMAKE_BUILD_TYPE is not set. It is required to locate dependencies "
-                      "in configuration-specific subdirectories (e.g., Debug, Release). "
-                      "Please ensure your CMake preset or command line sets CMAKE_BUILD_TYPE "
-                      "(e.g., -DCMAKE_BUILD_TYPE=Debug).")
-endif()
+if (NOT CMAKE_BUILD_TYPE)
+    # This check is a fallback. Presets should ensure CMAKE_BUILD_TYPE is set.
+    # If it's not set, we cannot reliably find dependencies installed in config-specific dirs.
+    message(FATAL_ERROR "CMAKE_BUILD_TYPE is not set. It is required to locate dependencies "
+            "in configuration-specific subdirectories (e.g., Debug, Release). "
+            "Please ensure your CMake preset or command line sets CMAKE_BUILD_TYPE "
+            "(e.g., -DCMAKE_BUILD_TYPE=Debug).")
+endif ()
 
 # Add the path to the specific configuration's installation directory.
 # For example, if AURORAE_DEPENDENCIES_DIR is ".../dependencies-install" and CMAKE_BUILD_TYPE is "Debug",
@@ -42,10 +42,10 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 # --- Find Dependencies ---
 # Find Vulkan (usually provided by the SDK)
-find_package(Vulkan REQUIRED)
-message(STATUS "Found Vulkan: ${Vulkan_LIBRARIES}")
-get_target_property(VULKAN_LIBRARY Vulkan::Vulkan LOCATION)
-message(STATUS "Vulkan target location: ${VULKAN_LIBRARY}")
+#find_package(Vulkan REQUIRED)
+#message(STATUS "Found Vulkan: ${Vulkan_LIBRARIES}")
+#get_target_property(VULKAN_LIBRARY Vulkan::Vulkan LOCATION)
+#message(STATUS "Vulkan target location: ${VULKAN_LIBRARY}")
 
 find_package(Volk REQUIRED)
 get_target_property(VOLK_LIBRARY volk::volk LOCATION)
@@ -76,17 +76,20 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 # TODO(vug): add a function that takes package name and target name.
 # target name can be found in the *Config.cmake file.
 
-add_executable(Aurorae 
-    main.cpp
-    Utils.h Utils.cpp
-    GlfwUtils.h GlfwUtils.cpp
-    Logger.h Logger.cpp
-    FileIO.h FileIO.cpp
-    Application.h Application.cpp
-    Window.h Window.cpp
-    VulkanContext.h VulkanContext.cpp
-    Swapchain.h Swapchain.cpp
-    Renderer.h Renderer.cpp
+add_executable(Aurorae
+        main.cpp
+        Utils.h Utils.cpp
+        GlfwUtils.h GlfwUtils.cpp
+        Logger.h Logger.cpp
+        FileIO.h FileIO.cpp
+        Application.h Application.cpp
+        Window.h Window.cpp
+        VulkanContext.h VulkanContext.cpp
+        Swapchain.h Swapchain.cpp
+        Renderer.h Renderer.cpp
+        Buffer.h
+        Buffer.cpp
+        Allocator.h Allocator.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
@@ -95,24 +98,24 @@ target_compile_options(Aurorae PRIVATE /W4 /external:I${PROJECT_SOURCE_DIR}/../s
 target_compile_definitions(Aurorae PRIVATE SPDLOG_USE_STD_FORMAT SPDLOG_USE_STD_SOURCE_LOCATION)
 
 target_link_libraries(Aurorae PRIVATE
-    Vulkan::Vulkan
-    volk::volk
-    vk-bootstrap::vk-bootstrap
-    spdlog::spdlog
-    # spdlog$<$<CONFIG:Debug>:d> # alternative
-    glfw
-    GPUOpen::VulkanMemoryAllocator
+        Vulkan::Vulkan
+        volk::volk
+        vk-bootstrap::vk-bootstrap
+        spdlog::spdlog
+        # spdlog$<$<CONFIG:Debug>:d> # alternative
+        glfw
+        GPUOpen::VulkanMemoryAllocator
 )
 
-if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     target_compile_definitions(Aurorae PRIVATE REL_WITH_DEBUG_INFO_BUILD)
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_definitions(Aurorae PRIVATE RELEASE_BUILD)
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(Aurorae PRIVATE DEBUG_BUILD)
-else()
+else ()
     message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}. "
-                        "Add macro for this build type .")
-endif()
+            "Add macro for this build type .")
+endif ()
 
 target_compile_definitions(Aurorae PRIVATE ASSETS_FOLDER="${PROJECT_SOURCE_DIR}/assets")
