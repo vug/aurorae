@@ -66,4 +66,7 @@ private:
 
 PathBuffer pathJoin(const char* path, const char* relativeSubpath);
 
+// In Utils.h - don't reference VkResult at all
+const char* vkResultToString(i32 result);
+
 } // namespace aur
