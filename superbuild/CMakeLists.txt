@@ -8,8 +8,16 @@ set(SUPERBUILD_CONFIGS "Debug" "Release") # "RelWithDebInfo")
 set(DEP_INSTALL_BASE_DIR ${CMAKE_BINARY_DIR}/dependencies-install)
 message("DEP_INSTALL_BASE_DIR: ${DEP_INSTALL_BASE_DIR}")
 
-# EXTRA_CMAKE_ARGS: Additional arguments for this specific dependency
-function(add_external_dependency NAME SOURCE_DIR EXTRA_CMAKE_ARGS)
+# NAME: The alias of the dependency (e.g., SpdLog)
+# SOURCE_DIR: The subdirectory in dependencies/ (e.g., spdlog)
+# LIST_OF_DEFINITIONS: A CMake list (semicolon-separated string) of definitions like "KEY=VALUE" or "KEY"
+function(add_external_dependency NAME SOURCE_DIR LIST_OF_DEFINITIONS)
+
+  set(FORMATTED_DEFINITIONS "")
+  foreach(DEFINITION_ITEM ${LIST_OF_DEFINITIONS})
+    # Prepend -D to each definition item
+    list(APPEND FORMATTED_DEFINITIONS "-D${DEFINITION_ITEM}")
+  endforeach()
 
   foreach(CONFIG ${SUPERBUILD_CONFIGS})
     set(INSTALL_DIR "${DEP_INSTALL_BASE_DIR}/${CONFIG}")
@@ -29,7 +37,7 @@ function(add_external_dependency NAME SOURCE_DIR EXTRA_CMAKE_ARGS)
       SOURCE_DIR "${CMAKE_SOURCE_DIR}/../dependencies/${SOURCE_DIR}" # when dependency is in the repo (maybe via submodules)
       # use GIT_REPOSITORY to make ExternalProject to clone the repo itself
       INSTALL_DIR "${INSTALL_DIR}"
-      CMAKE_ARGS ${COMMON_EP_ARGS} ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE=${CONFIG}
+      CMAKE_ARGS ${COMMON_EP_ARGS} ${FORMATTED_DEFINITIONS}
       BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config ${CONFIG}
       INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR> --config ${CONFIG} --prefix ${INSTALL_DIR}
       BUILD_ALWAYS OFF # Only rebuild if source changes
@@ -58,42 +66,53 @@ endfunction()
 # Vulkan SDK needs to be installed so that volk and vk-bootstrap can use it
 find_package(Vulkan REQUIRED)
 message("Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
-add_external_dependency(Volk "volk" "-DVOLK_INSTALL=ON")
-add_external_dependency(VKBootstrap "vk-bootstrap" "-DVK_BOOTSTRAP_TEST=OFF;-DVK_BOOTSTRAP_INSTALL=ON")
+
+# git submodule add https://github.com/gnuradio/volk.git
+set(VOLK_DEFS "VOLK_INSTALL=ON")
+add_external_dependency(Volk "volk" "${VOLK_DEFS}")
+
+# git submodule add https://github.com/charles-lunarg/vk-bootstrap.git
+set(VKBOOTSTRAP_DEFS
+  "VK_BOOTSTRAP_TEST=OFF"
+  "VK_BOOTSTRAP_INSTALL=ON")
+add_external_dependency(VKBootstrap "vk-bootstrap" "${VKBOOTSTRAP_DEFS}")
+
 # git submodule add https://github.com/gabime/spdlog.git
-add_external_dependency(SpdLog "spdlog" 
-  "-DSPDLOG_MASTER_PROJECT=OFF;
-   -DSPDLOG_INSTALL=ON;
-   -DSPDLOG_USE_STD_FORMAT=ON;
-   -DCMAKE_INSTALL_INCLUDEDIR=include")
+set(SPDLOG_DEFS
+  "SPDLOG_MASTER_PROJECT=OFF"
+  "SPDLOG_USE_STD_FORMAT=ON"
+  "SPDLOG_INSTALL=ON"
+  "CMAKE_INSTALL_INCLUDEDIR=include")
+add_external_dependency(SpdLog "spdlog" "${SPDLOG_DEFS}")
+
 # git submodule add https://github.com/glfw/glfw.git
-add_external_dependency(Glfw "glfw" 
-  "-DGLFW_BUILD_EXAMPLES=OFF;
-   -DGLFW_BUILD_TESTS=OFF;
-   -DGLFW_BUILD_DOCS=OFF;
-   -DGLFW_INSTALL=ON")
+set(GLFW_DEFS
+  "GLFW_BUILD_EXAMPLES=OFF"
+  "GLFW_BUILD_TESTS=OFF"
+  "GLFW_BUILD_DOCS=OFF"
+  "GLFW_INSTALL=ON")
+add_external_dependency(Glfw "glfw" "${GLFW_DEFS}")
+
 # git submodule add https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-add_external_dependency(VMA "VulkanMemoryAllocator" 
-  "-DVMA_ENABLE_INSTALL=ON;
-   -DVMA_BUILD_SAMPLES=OFF;
-   -DVMA_BUILD_DOCUMENTATION=OFF")
+set(VMA_DEFS
+  "VMA_ENABLE_INSTALL=ON"
+  "VMA_BUILD_SAMPLES=OFF"
+  "VMA_BUILD_DOCUMENTATION=OFF")
+add_external_dependency(VMA "VulkanMemoryAllocator" "${VMA_DEFS}")
+
 # git submodule add https://github.com/g-truc/glm.git
-add_external_dependency(GLM "glm" 
-  "-DGLM_BUILD_TESTS=OFF;
-   -DBUILD_SHARED_LIBS=OFF;
-   -DGLM_BUILD_INSTALL=ON;
-   -DGLM_FORCE_AVX512=ON;
-   -DGLM_FORCE_SIZE_T_LENGTH=ON;
-   -DGLM_FORCE_SILENT_WARNINGS=ON;
-   -DGLM_ENABLE_EXPERIMENTAL=ON;
-   -DGLM_ENABLE_SIMD_AVX2=ON")
+set(GLM_DEFS
+  "GLM_BUILD_TESTS=OFF"
+  "BUILD_SHARED_LIBS=OFF"
+  "GLM_BUILD_INSTALL=ON"
+  "GLM_ENABLE_SIMD_AVX2=ON")
+add_external_dependency(GLM "glm" "${GLM_DEFS}")
 
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
 # TODO(vug): assimp, imgui, stb, xatlas, embree
 
 add_custom_target(build_all_deps)
 foreach(CONFIG ${SUPERBUILD_CONFIGS})
-    # Add a dependency for each named external project and its config
     add_dependencies(build_all_deps
         Volk_${CONFIG}
         VKBootstrap_${CONFIG}
@@ -102,7 +121,5 @@ foreach(CONFIG ${SUPERBUILD_CONFIGS})
         VMA_${CONFIG}
         GLM_${CONFIG}
         # Vulkan_${CONFIG}}
-        # ImGui_${CONFIG}
-        # STB_${CONFIG}
     )
 endforeach()
