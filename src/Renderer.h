@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/mat4x4.hpp>
+
 #include "Allocator.h"
 #include "Buffer.h"
 #include "FileIO.h"
@@ -38,6 +40,7 @@ public:
 
   [[nodiscard]] VkCommandBuffer getCommandBuffer() const { return commandBuffer_; }
   [[nodiscard]] u32 getCurrentImageIndex() const { return currentImageIndex_; }
+  [[nodiscard]] VkDescriptorSet getPerFrameDescriptorSet() const { return perFrameDescriptorSet_; }
 
   // Returns true if frame rendering can proceed.
   // Returns false if the swapchain was recreated (or another non-fatal issue) and the caller should skip
@@ -45,7 +48,8 @@ public:
   bool beginFrame();
 
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
-  void drawWithoutVertexInput(VkPipeline pipeline, u32 vertexCnt) const;
+  void bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) const;
+  void drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt) const;
   void deviceWaitIdle() const;
 
   // Must be called after draw commands
@@ -68,6 +72,8 @@ private:
   void createCommandPool();
   void cleanupCommandPool();
   void allocateCommandBuffer();
+  void createDescriptorPool();
+  void cleanupDescriptorPool() const;
   void createSyncObjects();
   void cleanupSyncObjects();
   //
@@ -100,7 +106,6 @@ private:
   VkSemaphore imageAvailableSemaphore_{VK_NULL_HANDLE};
   VkSemaphore renderFinishedSemaphore_{VK_NULL_HANDLE};
   VkFence inFlightFence_{VK_NULL_HANDLE};
-
   u32 currentImageIndex_{};
 
   VkDescriptorSetLayout perFrameDescriptorSetLayout_{VK_NULL_HANDLE};
@@ -118,8 +123,6 @@ private:
   VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};
   // Default depth is 1.0 (far plane), stencil is 0
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
-
-  Buffer perFrameUniform_;
 };
 
 } // namespace aur

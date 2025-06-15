@@ -20,6 +20,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
     , currentHeight_(initialHeight) {
   createCommandPool();
   allocateCommandBuffer();
+  createDescriptorPool();
   createSyncObjects();
   createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
 
@@ -178,10 +179,9 @@ Renderer::Pipeline Renderer::createTrianglePipeline() const {
       .pAttachments = &colorBlendAttachment,
   };
 
-  // Empty pipeline layout for now (no uniforms, push constants)
-  constexpr VkPipelineLayoutCreateInfo pipelineLayoutInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-  };
+  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                                                      .setLayoutCount = 1,
+                                                      .pSetLayouts = &perFrameDescriptorSetLayout_};
   if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
                              &pipeline.pipelineLayout) != VK_SUCCESS)
     log().fatal("Failed to create triangle pipeline layout!");
@@ -234,8 +234,8 @@ Renderer::Pipeline Renderer::createTrianglePipeline() const {
 }
 
 Renderer::Pipeline Renderer::createCubePipeline() const {
-  PathBuffer vertexPath{pathJoin(kShadersFolder, "cube.vert.spv")};
-  PathBuffer fragmentPath{pathJoin(kShadersFolder, "cube.frag.spv")};
+  PathBuffer vertexPath{pathJoin(kShadersFolder, "cube2.vert.spv")};
+  PathBuffer fragmentPath{pathJoin(kShadersFolder, "cube2.frag.spv")};
   Pipeline pipeline{
       .vertexPath = std::move(vertexPath),
       .fragmentPath = std::move(fragmentPath),
@@ -315,9 +315,9 @@ Renderer::Pipeline Renderer::createCubePipeline() const {
       .pAttachments = &colorBlendAttachment,
   };
 
-  // Empty pipeline layout for now (no uniforms, push constants)
-  constexpr VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType =
-                                                              VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                                                      .setLayoutCount = 1,
+                                                      .pSetLayouts = &perFrameDescriptorSetLayout_};
   if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
                              &pipeline.pipelineLayout) != VK_SUCCESS)
     log().fatal("Failed to create triangle pipeline layout!");
@@ -696,8 +696,13 @@ void Renderer::endFrame() {
     log().fatal("Failed to present swap chain image: {}", static_cast<int>(result));
 }
 
-void Renderer::drawWithoutVertexInput(VkPipeline pipeline, u32 vertexCnt) const {
-  vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+void Renderer::bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) const {
+  vkCmdBindDescriptorSets(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                          &descriptorSet, 0, nullptr);
+}
+void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt) const {
+  vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
+  bindDescriptorSet(pipeline.pipelineLayout, perFrameDescriptorSet_);
 
   const VkViewport viewport{
       .x = 0.0f,
@@ -780,6 +785,14 @@ void Renderer::cleanupSwapchainDepthResources() {
 
 Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo) const {
   return {allocator_.getHandle(), createInfo};
+}
+
+void Renderer::cleanupPerFrameDescriptorSetLayout() const {
+  vkDestroyDescriptorSetLayout(vulkanContext_.getDevice(), perFrameDescriptorSetLayout_, nullptr);
+}
+
+void Renderer::cleanupDescriptorPool() const {
+  vkDestroyDescriptorPool(vulkanContext_.getDevice(), descriptorPool_, nullptr);
 }
 
 } // namespace aur

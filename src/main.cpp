@@ -1,9 +1,11 @@
 // TODO(vug): upload View and Project matrices via uniform buffers. Use "Scalar Block Layout"
+// TODO(vug): use vkResultToString from Utils at every VkResult returning operation
 // TODO(vug): upload Model matrix per-object via push constants
 // TODO(vug): upload geometry data via Vertex/Index Buffers
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
 // TODO(vug): consider making all members of dependency library types pointers, so that I can
 // forward declare them and won't leak their headers
+// TODO(vug): Go over former commits and create issues and milestones for them.
 // TODO(vug): try out C++ modules, but don't obsess if it does not work well
 //            https://gemini.google.com/app/31dc373a7f5b3005
 // TODO(vug): add STL includes to a precompiled header pch_stl.h
