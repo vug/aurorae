@@ -21,7 +21,11 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   createCommandPool();
   allocateCommandBuffer();
   createSyncObjects();
+  createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
+
+  createPerFrameDescriptorSetLayout();
   createPerFrameUniformBuffer();
+  createPerFrameDescriptorSets();
 
   log().debug("Renderer initialized.");
 }
@@ -32,6 +36,10 @@ Renderer::~Renderer() {
     vkDeviceWaitIdle(vulkanContext_.getDevice());
 
   cleanupSwapchainDepthResources(); // Destroy depth buffer
+
+  cleanupDescriptorPool();
+  cleanupPerFrameDescriptorSetLayout();
+
   cleanupSyncObjects();
   cleanupCommandPool(); // Frees command buffers too
 
@@ -398,6 +406,73 @@ void Renderer::createPerFrameUniformBuffer() {
   perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto);
 }
 
+void Renderer::createPerFrameDescriptorSetLayout() {
+  VkDescriptorSetLayoutBinding layoutBinding{
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+      .pImmutableSamplers = nullptr,
+  };
+
+  VkDescriptorSetLayoutCreateInfo createInfo{
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .bindingCount = 1,
+      .pBindings = &layoutBinding,
+  };
+
+  if (VkResult result = vkCreateDescriptorSetLayout(vulkanContext_.getDevice(), &createInfo, nullptr,
+                                                    &perFrameDescriptorSetLayout_);
+      result != VK_SUCCESS)
+    log().fatal("Failed to create descriptor set layout!", vkResultToString(result));
+}
+void Renderer::createDescriptorPool() {
+  VkDescriptorPoolSize poolSize{
+      .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = 1, // One descriptor for our single uniform buffer
+  };
+
+  VkDescriptorPoolCreateInfo poolInfo{
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+      .maxSets = 1, // We only need one descriptor set
+      .poolSizeCount = 1,
+      .pPoolSizes = &poolSize,
+  };
+
+  if (vkCreateDescriptorPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &descriptorPool_) != VK_SUCCESS)
+    log().fatal("Failed to create descriptor pool!");
+}
+
+void Renderer::createPerFrameDescriptorSets() {
+  VkDescriptorSetAllocateInfo allocInfo{
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = descriptorPool_,
+      .descriptorSetCount = 1,
+      .pSetLayouts = &perFrameDescriptorSetLayout_,
+  };
+
+  if (vkAllocateDescriptorSets(vulkanContext_.getDevice(), &allocInfo, &perFrameDescriptorSet_) != VK_SUCCESS)
+    log().fatal("Failed to allocate descriptor sets!");
+
+  // Now, link our buffer to the allocated descriptor set
+  VkDescriptorBufferInfo bufferInfo{
+      .buffer = perFrameUniformBuffer_.getHandle(),
+      .offset = 0,
+      .range = sizeof(PerFrameData),
+  };
+
+  VkWriteDescriptorSet descriptorWrite{
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = perFrameDescriptorSet_,
+      .dstBinding = 0,
+      .dstArrayElement = 0,
+      .descriptorCount = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .pBufferInfo = &bufferInfo,
+  };
+
+  vkUpdateDescriptorSets(vulkanContext_.getDevice(), 1, &descriptorWrite, 0, nullptr);
+}
 
 void Renderer::notifyResize(u32 newWidth, u32 newHeight) {
   framebufferWasResized_ = true;
@@ -452,6 +527,13 @@ bool Renderer::beginFrame() {
                                              static_cast<f32>(currentWidth_) / currentHeight_, 0.1f, 100.0f)};
   // TODO(vug): see whether GLM has a setting for this, so that I don't have to do the flip manually.
   perFrameData.projectionFromView[1][1] *= -1; // Flip Y. Vulkan uses a left-handed coordinate system
+
+  // TODO(vug): introduce a scopedMap -> when it goes out of scope, it unmaps automatically.
+  {
+    void* data = perFrameUniformBuffer_.map();
+    memcpy(data, &perFrameData, sizeof(perFrameData));
+    perFrameUniformBuffer_.unmap();
+  }
 
   // Reset the command pool (which resets all command buffers allocated from it)
   // more performant than to reset each command buffer individually

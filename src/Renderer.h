@@ -102,7 +102,12 @@ private:
   VkFence inFlightFence_{VK_NULL_HANDLE};
 
   u32 currentImageIndex_{};
+
+  VkDescriptorSetLayout perFrameDescriptorSetLayout_{VK_NULL_HANDLE};
+  VkDescriptorPool descriptorPool_{VK_NULL_HANDLE};
+  VkDescriptorSet perFrameDescriptorSet_{VK_NULL_HANDLE};
   Buffer perFrameUniformBuffer_;
+
   bool framebufferWasResized_{false};
   bool swapchainIsStale_{false}; // Combines suboptimal/out-of-date flags
 
