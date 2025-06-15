@@ -1,3 +1,6 @@
+// TODO(vug): store DescriptorSetLayout and DescriptorSet in Renderer::Pipeline too
+// TODO(vug): un-refactor the create and clean-up functions for Renderer main resources. I'm OK with longer
+// functions.
 // TODO(vug): upload Model matrix per-object via push constants
 // TODO(vug): upload geometry data via Vertex/Index Buffers
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
