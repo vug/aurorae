@@ -133,6 +133,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           .set_required_features_11(VkPhysicalDeviceVulkan11Features{})
           .set_required_features_12(VkPhysicalDeviceVulkan12Features{
               .uniformAndStorageBuffer8BitAccess{kEnableGpuAssistedValidation},
+              .scalarBlockLayout{VK_TRUE},
               .timelineSemaphore{kEnableGpuAssistedValidation},
               .bufferDeviceAddress{kEnableGpuAssistedValidation},
           })
