@@ -427,16 +427,21 @@ void Renderer::createPerFrameDescriptorSetLayout() {
     log().fatal("Failed to create descriptor set layout!", vkResultToString(result));
 }
 void Renderer::createDescriptorPool() {
-  VkDescriptorPoolSize poolSize{
-      .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .descriptorCount = 1, // One descriptor for our single uniform buffer
+  VkDescriptorPoolSize poolSizes[] = {
+      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 512},          // Many UBOs for per-frame, per-object data
+      {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024}, // Many textures
+      {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 256},          // Some storage buffers for compute/large data
+      {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256},           // If you separate images/samplers
+      {VK_DESCRIPTOR_TYPE_SAMPLER, 64},                  // Reused samplers
+      {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 32},            // For render targets or compute images
+      // Add other types as needed (e.g., INVOCATION_GRAPHICS_NV, ACCELERATION_STRUCTURE_KHR)
   };
 
   VkDescriptorPoolCreateInfo poolInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-      .maxSets = 1, // We only need one descriptor set
-      .poolSizeCount = 1,
-      .pPoolSizes = &poolSize,
+      .maxSets = 512,
+      .poolSizeCount = sizeof(poolSizes) / sizeof(VkDescriptorPoolSize),
+      .pPoolSizes = &poolSizes[0],
   };
 
   if (vkCreateDescriptorPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &descriptorPool_) != VK_SUCCESS)
