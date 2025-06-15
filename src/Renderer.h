@@ -13,6 +13,8 @@ FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
 namespace aur {
 
 struct PerFrameData {
+  glm::mat4 viewFromObject;
+  glm::mat4 projectionFromView;
   u64 frameIndex{};
 };
 
@@ -64,16 +66,22 @@ private:
   // --- Core Renderer Initialization ---
   // These are fundamental to the renderer's operation.
   void createCommandPool();
-  void cleanupCommandPool(); // Also frees command buffers
+  void cleanupCommandPool();
   void allocateCommandBuffer();
   void createSyncObjects();
   void cleanupSyncObjects();
+  //
+  void createPerFrameUniformBuffer();
+
+  void createPerFrameDescriptorSetLayout();
+  void cleanupPerFrameDescriptorSetLayout() const;
+  void createPerFrameDescriptorSets();
 
   // --- Swapchain & Framebuffer Resources ---
   // These are tied to the surface and swapping images.
   void internalRecreateSwapchain();
-  void createDepthResources();
-  void cleanupDepthResources();
+  void createSwapchainDepthResources();
+  void cleanupSwapchainDepthResources();
 
   // Context -> Allocator -> Swapchain needs to be created in that order.
   VulkanContext vulkanContext_;
@@ -94,6 +102,7 @@ private:
   VkFence inFlightFence_{VK_NULL_HANDLE};
 
   u32 currentImageIndex_{};
+  Buffer perFrameUniformBuffer_;
   bool framebufferWasResized_{false};
   bool swapchainIsStale_{false}; // Combines suboptimal/out-of-date flags
 

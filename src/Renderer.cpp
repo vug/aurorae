@@ -1,4 +1,6 @@
 #include "Allocator.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <volk/volk.h> // For Vulkan functions
 
 #include "Renderer.h"
@@ -19,11 +21,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   createCommandPool();
   allocateCommandBuffer();
   createSyncObjects();
-  createDepthResources(); // Create the depth buffer for depth attachment to swapchain image
-  BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
-                                             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                             .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
-  perFrameUniform_ = createBuffer(perFrameUniformCreateInto);
+  createPerFrameUniformBuffer();
 
   log().debug("Renderer initialized.");
 }
@@ -33,7 +31,7 @@ Renderer::~Renderer() {
   if (vulkanContext_.getDevice() != VK_NULL_HANDLE)
     vkDeviceWaitIdle(vulkanContext_.getDevice());
 
-  cleanupDepthResources(); // Destroy depth buffer
+  cleanupSwapchainDepthResources(); // Destroy depth buffer
   cleanupSyncObjects();
   cleanupCommandPool(); // Frees command buffers too
 
@@ -393,6 +391,13 @@ void Renderer::cleanupSyncObjects() {
   renderFinishedSemaphore_ = VK_NULL_HANDLE;
   inFlightFence_ = VK_NULL_HANDLE;
 }
+void Renderer::createPerFrameUniformBuffer() {
+  BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
+                                             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                             .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
+  perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto);
+}
+
 
 void Renderer::notifyResize(u32 newWidth, u32 newHeight) {
   framebufferWasResized_ = true;
@@ -406,10 +411,10 @@ void Renderer::internalRecreateSwapchain() {
   vkDeviceWaitIdle(vulkanContext_.getDevice()); // Ensure all operations on the
                                                 // old swapchain are complete
   swapchain_.recreate(vulkanContext_.getVkbDevice(), currentWidth_, currentHeight_);
-  cleanupDepthResources();        // Clean old depth resources
-  createDepthResources();         // Recreate depth resources with a new size
-  framebufferWasResized_ = false; // Handled
-  swapchainIsStale_ = false;      // Handled
+  cleanupSwapchainDepthResources(); // Clean old depth resources
+  createSwapchainDepthResources();  // Recreate depth resources with a new size
+  framebufferWasResized_ = false;   // Handled
+  swapchainIsStale_ = false;        // Handled
   log().info("Swapchain recreated.");
 }
 
@@ -440,6 +445,13 @@ bool Renderer::beginFrame() {
 
   // Only reset the fence if we are sure we will submit work that signals it
   vkResetFences(vulkanContext_.getDevice(), 1, &inFlightFence_);
+
+  PerFrameData perFrameData{
+      .viewFromObject = glm::lookAt(glm::vec3{-5, -5, -5}, glm::vec3{0}, glm::vec3{0, 1, 0}),
+      .projectionFromView = glm::perspective(glm::radians(45.0f),
+                                             static_cast<f32>(currentWidth_) / currentHeight_, 0.1f, 100.0f)};
+  // TODO(vug): see whether GLM has a setting for this, so that I don't have to do the flip manually.
+  perFrameData.projectionFromView[1][1] *= -1; // Flip Y. Vulkan uses a left-handed coordinate system
 
   // Reset the command pool (which resets all command buffers allocated from it)
   // more performant than to reset each command buffer individually
@@ -623,7 +635,7 @@ void Renderer::deviceWaitIdle() const {
   vkDeviceWaitIdle(vulkanContext_.getDevice());
 }
 
-void Renderer::createDepthResources() {
+void Renderer::createSwapchainDepthResources() {
   // TODO: Implement a robust format selection mechanism.
   // For now, hardcoding VK_FORMAT_D32_SFLOAT.
   // Common alternatives: VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM
@@ -673,7 +685,7 @@ void Renderer::createDepthResources() {
   log().debug("Depth resources created (Format: {}).", static_cast<int>(depthFormat_));
 }
 
-void Renderer::cleanupDepthResources() {
+void Renderer::cleanupSwapchainDepthResources() {
   if (depthImageView_ != VK_NULL_HANDLE)
     vkDestroyImageView(vulkanContext_.getDevice(), depthImageView_, nullptr);
   if (depthImage_ != VK_NULL_HANDLE) // Memory is freed with vmaDestroyImage
