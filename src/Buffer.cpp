@@ -5,23 +5,22 @@
 namespace aur {
 
 Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& createInfo)
-    : allocator_{allocator}, createInfo_{createInfo} {
+    : allocator_{allocator}
+    , createInfo_{createInfo} {
   const VkBufferCreateInfo bufferInfo{
-    .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-    .size = createInfo.size,
-    .usage = createInfo.usage,
-    // For now, we'll stick to exclusive access from the graphics queue.
-    .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      .size = createInfo.size,
+      .usage = createInfo.usage,
+      // For now, we'll stick to exclusive access from the graphics queue.
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
   };
   const VmaAllocationCreateInfo allocInfo{
-    .usage = createInfo.memoryUsage,
+      .usage = createInfo.memoryUsage,
   };
 
-  VkResult result = vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo,
-                                    &buffer_, &allocation_, nullptr);
+  VkResult result = vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer_, &allocation_, nullptr);
   if (result != VK_SUCCESS)
-    log().fatal("Failed to create buffer! VMA error: %d" , static_cast<u32>(result));
-    // log().fatal("Failed to create buffer! VMA error: %d", result);
+    log().fatal("Failed to create buffer! VMA error: %d", vkResultToString(result));
 }
 
 Buffer::~Buffer() {
@@ -29,10 +28,10 @@ Buffer::~Buffer() {
 }
 
 Buffer::Buffer(Buffer&& other) noexcept
-    : allocator_{other.allocator_},
-      allocation_{other.allocation_},
-      buffer_{other.buffer_},
-      createInfo_{other.createInfo_} {
+    : allocator_{other.allocator_}
+    , allocation_{other.allocation_}
+    , buffer_{other.buffer_}
+    , createInfo_{other.createInfo_} {
   // Invalidate the other object so its destructor doesn't double-free
   other.allocator_ = VK_NULL_HANDLE;
   other.allocation_ = VK_NULL_HANDLE;
@@ -56,6 +55,16 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept {
     other.buffer_ = VK_NULL_HANDLE;
   }
   return *this;
+}
+
+void* Buffer::map() const {
+  void* data{};
+  vmaMapMemory(allocator_, allocation_, &data);
+  return data;
+}
+
+void Buffer::unmap() const {
+  vmaUnmapMemory(allocator_, allocation_);
 }
 
 void Buffer::destroy() {

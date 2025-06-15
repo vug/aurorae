@@ -1,7 +1,9 @@
 #pragma once
 
+// clang-format off
 #include <volk/volk.h>
 #include <VulkanMemoryAllocator/vk_mem_alloc.h>
+// clang-format on
 
 namespace aur {
 
@@ -24,11 +26,13 @@ public:
   Buffer& operator=(const Buffer&) = delete;
   Buffer(Buffer&& other) noexcept;
   Buffer& operator=(Buffer&& other) noexcept;
+  [[nodiscard]] bool isValid() const { return buffer_ != VK_NULL_HANDLE; }
 
-  // --- Accessors ---
   [[nodiscard]] VkBuffer getHandle() const { return buffer_; }
   [[nodiscard]] const BufferCreateInfo& getCreateInfo() const { return createInfo_; }
-  [[nodiscard]] bool isValid() const { return buffer_ != VK_NULL_HANDLE; }
+
+  void* map() const;
+  void unmap() const;
 
 private:
   void destroy();
