@@ -33,8 +33,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
 
 Renderer::~Renderer() {
   // Ensure GPU is idle before destroying resources
-  if (vulkanContext_.getDevice() != VK_NULL_HANDLE)
-    vkDeviceWaitIdle(vulkanContext_.getDevice());
+  deviceWaitIdle();
 
   cleanupSwapchainDepthResources(); // Destroy depth buffer
 
@@ -54,8 +53,7 @@ void Renderer::createCommandPool() {
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
       .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
   };
-  if (vkCreateCommandPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &commandPool_) != VK_SUCCESS)
-    log().fatal("Failed to create command pool!");
+  VK(vkCreateCommandPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &commandPool_));
 }
 
 void Renderer::allocateCommandBuffer() {
@@ -65,8 +63,7 @@ void Renderer::allocateCommandBuffer() {
       .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
       .commandBufferCount = 1,
   };
-  if (vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo, &commandBuffer_) != VK_SUCCESS)
-    log().fatal("Failed to allocate command buffer!");
+  VK(vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo, &commandBuffer_));
 }
 
 void Renderer::createSyncObjects() {
@@ -74,12 +71,10 @@ void Renderer::createSyncObjects() {
   constexpr VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
                                         .flags = VK_FENCE_CREATE_SIGNALED_BIT};
 
-  if (vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore_) !=
-          VK_SUCCESS ||
-      vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore_) !=
-          VK_SUCCESS ||
-      vkCreateFence(vulkanContext_.getDevice(), &fenceInfo, nullptr, &inFlightFence_) != VK_SUCCESS)
-    log().fatal("Failed to create synchronization objects!");
+  VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore_));
+  VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore_));
+  VK(vkCreateFence(vulkanContext_.getDevice(), &fenceInfo, nullptr, &inFlightFence_));
+  log().trace("Renderer sync objects created.");
 }
 
 VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
@@ -89,8 +84,7 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
       .pCode = reinterpret_cast<const u32*>(code.data()),
   };
   VkShaderModule shaderModule;
-  if (vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-    log().fatal("Failed to create shader module!");
+  VK(vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr, &shaderModule));
   return shaderModule;
 }
 
@@ -182,9 +176,8 @@ Renderer::Pipeline Renderer::createTrianglePipeline() const {
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                                                       .setLayoutCount = 1,
                                                       .pSetLayouts = &perFrameDescriptorSetLayout_};
-  if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
-                             &pipeline.pipelineLayout) != VK_SUCCESS)
-    log().fatal("Failed to create triangle pipeline layout!");
+  VK(vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
+                            &pipeline.pipelineLayout));
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
@@ -221,9 +214,8 @@ Renderer::Pipeline Renderer::createTrianglePipeline() const {
       .subpass = 0,
   };
 
-  if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
-                                &pipeline.pipeline) != VK_SUCCESS)
-    log().fatal("Failed to create triangle graphics pipeline!");
+  VK(vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                               &pipeline.pipeline));
 
   // Shader modules can be destroyed after pipeline creation
   vkDestroyShaderModule(vulkanContext_.getDevice(), fragShaderModule, nullptr);
@@ -318,9 +310,8 @@ Renderer::Pipeline Renderer::createCubePipeline() const {
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                                                       .setLayoutCount = 1,
                                                       .pSetLayouts = &perFrameDescriptorSetLayout_};
-  if (vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
-                             &pipeline.pipelineLayout) != VK_SUCCESS)
-    log().fatal("Failed to create triangle pipeline layout!");
+  VK(vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
+                            &pipeline.pipelineLayout));
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
@@ -356,9 +347,8 @@ Renderer::Pipeline Renderer::createCubePipeline() const {
       .subpass = 0,
   };
 
-  if (vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
-                                &pipeline.pipeline) != VK_SUCCESS)
-    log().fatal("Failed to create cube graphics pipeline!");
+  VK(vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                               &pipeline.pipeline));
 
   vkDestroyShaderModule(vulkanContext_.getDevice(), fragShaderModule, nullptr);
   vkDestroyShaderModule(vulkanContext_.getDevice(), vertShaderModule, nullptr);
@@ -421,11 +411,10 @@ void Renderer::createPerFrameDescriptorSetLayout() {
       .pBindings = &layoutBinding,
   };
 
-  if (VkResult result = vkCreateDescriptorSetLayout(vulkanContext_.getDevice(), &createInfo, nullptr,
-                                                    &perFrameDescriptorSetLayout_);
-      result != VK_SUCCESS)
-    log().fatal("Failed to create descriptor set layout!", vkResultToString(result));
+  VK(vkCreateDescriptorSetLayout(vulkanContext_.getDevice(), &createInfo, nullptr,
+                                 &perFrameDescriptorSetLayout_));
 }
+
 void Renderer::createDescriptorPool() {
   VkDescriptorPoolSize poolSizes[] = {
       {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 512},          // Many UBOs for per-frame, per-object data
@@ -444,8 +433,7 @@ void Renderer::createDescriptorPool() {
       .pPoolSizes = &poolSizes[0],
   };
 
-  if (vkCreateDescriptorPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &descriptorPool_) != VK_SUCCESS)
-    log().fatal("Failed to create descriptor pool!");
+  VK(vkCreateDescriptorPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &descriptorPool_));
 }
 
 void Renderer::createPerFrameDescriptorSets() {
@@ -488,8 +476,8 @@ void Renderer::notifyResize(u32 newWidth, u32 newHeight) {
 
 void Renderer::internalRecreateSwapchain() {
   log().info("Recreating swapchain with dimensions: {}x{}", currentWidth_, currentHeight_);
-  vkDeviceWaitIdle(vulkanContext_.getDevice()); // Ensure all operations on the
-                                                // old swapchain are complete
+  deviceWaitIdle(); // Ensure all operations on the
+                    // old swapchain are complete
   swapchain_.recreate(vulkanContext_.getVkbDevice(), currentWidth_, currentHeight_);
   cleanupSwapchainDepthResources(); // Clean old depth resources
   createSwapchainDepthResources();  // Recreate depth resources with a new size
@@ -499,7 +487,7 @@ void Renderer::internalRecreateSwapchain() {
 }
 
 bool Renderer::beginFrame() {
-  vkWaitForFences(vulkanContext_.getDevice(), 1, &inFlightFence_, VK_TRUE, UINT64_MAX);
+  VK(vkWaitForFences(vulkanContext_.getDevice(), 1, &inFlightFence_, VK_TRUE, UINT64_MAX));
 
   if (framebufferWasResized_ || swapchainIsStale_) {
     internalRecreateSwapchain();
@@ -511,20 +499,17 @@ bool Renderer::beginFrame() {
 
   VkResult result = vkAcquireNextImageKHR(vulkanContext_.getDevice(), swapchain_.getSwapchain(), UINT64_MAX,
                                           imageAvailableSemaphore_, VK_NULL_HANDLE, &currentImageIndex_);
-
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     log().debug("Swapchain out of date/suboptimal during acquire. Recreating.");
     swapchainIsStale_ = true;    // Mark it explicitly
     internalRecreateSwapchain(); // Recreate immediately
     return false;                // Signal to skip rendering this frame and try again
   } else if (result != VK_SUCCESS) {
-    log().error("Failed to acquire swap chain image: {}", static_cast<int>(result));
-    // This is a more serious error, could throw or try to recover
-    return false;
+    log().fatal("Failed to acquire swap chain image: {}", vkResultToString(result));
   }
 
   // Only reset the fence if we are sure we will submit work that signals it
-  vkResetFences(vulkanContext_.getDevice(), 1, &inFlightFence_);
+  VK(vkResetFences(vulkanContext_.getDevice(), 1, &inFlightFence_));
 
   PerFrameData perFrameData{
       .viewFromObject = glm::lookAt(glm::vec3{-5, -5, -5}, glm::vec3{0}, glm::vec3{0, 1, 0}),
@@ -542,17 +527,14 @@ bool Renderer::beginFrame() {
 
   // Reset the command pool (which resets all command buffers allocated from it)
   // more performant than to reset each command buffer individually
-  vkResetCommandPool(vulkanContext_.getDevice(), commandPool_, 0);
+  VK(vkResetCommandPool(vulkanContext_.getDevice(), commandPool_, 0));
 
   constexpr VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       // Good practice for command buffers recorded each frame
       .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
   };
-  if (vkBeginCommandBuffer(commandBuffer_, &beginInfo) != VK_SUCCESS) {
-    log().error("Failed to begin recording command buffer!");
-    return false; // Can't proceed with this frame
-  }
+  VK(vkBeginCommandBuffer(commandBuffer_, &beginInfo));
 
   // Transition depth image from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL
   constexpr VkImageSubresourceRange depthSubresourceRange{
@@ -663,8 +645,7 @@ void Renderer::endFrame() {
   vkCmdPipelineBarrier(commandBuffer_, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToPresent);
 
-  if (vkEndCommandBuffer(commandBuffer_) != VK_SUCCESS)
-    log().fatal("Failed to record command buffer!");
+  VK(vkEndCommandBuffer(commandBuffer_));
 
   const std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphore_};
   constexpr std::array<VkPipelineStageFlags, 1> waitStages{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
@@ -680,8 +661,7 @@ void Renderer::endFrame() {
       .pSignalSemaphores = signalSemaphores.data(),
   };
 
-  if (vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo, inFlightFence_) != VK_SUCCESS)
-    log().fatal("Failed to submit draw command buffer!");
+  VK(vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo, inFlightFence_));
 
   const VkPresentInfoKHR presentInfo{
       .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -724,7 +704,7 @@ void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt) c
   vkCmdDraw(commandBuffer_, vertexCnt, 1, 0, 0);
 }
 void Renderer::deviceWaitIdle() const {
-  vkDeviceWaitIdle(vulkanContext_.getDevice());
+  VK(vkDeviceWaitIdle(vulkanContext_.getDevice()));
 }
 
 void Renderer::createSwapchainDepthResources() {
@@ -752,10 +732,8 @@ void Renderer::createSwapchainDepthResources() {
       .usage = VMA_MEMORY_USAGE_GPU_ONLY, // Depth buffer is device local
       .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
 
-  if (vmaCreateImage(allocator_.getHandle(), &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_,
-                     nullptr) != VK_SUCCESS) {
-    log().fatal("Failed to create depth image!");
-  }
+  VK(vmaCreateImage(allocator_.getHandle(), &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_,
+                    nullptr));
 
   const VkImageViewCreateInfo viewInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -772,8 +750,7 @@ void Renderer::createSwapchainDepthResources() {
           },
   };
 
-  if (vkCreateImageView(vulkanContext_.getDevice(), &viewInfo, nullptr, &depthImageView_) != VK_SUCCESS)
-    log().fatal("Failed to create depth image view!");
+  VK(vkCreateImageView(vulkanContext_.getDevice(), &viewInfo, nullptr, &depthImageView_));
   log().debug("Depth resources created (Format: {}).", static_cast<int>(depthFormat_));
 }
 

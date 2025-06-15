@@ -18,9 +18,7 @@ Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& createInfo)
       .usage = createInfo.memoryUsage,
   };
 
-  VkResult result = vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer_, &allocation_, nullptr);
-  if (result != VK_SUCCESS)
-    log().fatal("Failed to create buffer! VMA error: %d", vkResultToString(result));
+  VK(vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer_, &allocation_, nullptr));
 }
 
 Buffer::~Buffer() {
@@ -59,7 +57,7 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept {
 
 void* Buffer::map() const {
   void* data{};
-  vmaMapMemory(allocator_, allocation_, &data);
+  VK(vmaMapMemory(allocator_, allocation_, &data));
   return data;
 }
 

@@ -13,6 +13,7 @@ Allocator::Allocator(const aur::VulkanContext& context) {
       .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
       .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
   };
+
   const VmaAllocatorCreateInfo createInfo = {
       .physicalDevice = context.getPhysicalDevice(),
       .device = context.getDevice(),
@@ -21,9 +22,7 @@ Allocator::Allocator(const aur::VulkanContext& context) {
       .vulkanApiVersion = VK_API_VERSION_1_3,
   };
 
-  VkResult result = vmaCreateAllocator(&createInfo, &handle_);
-  if (result != VK_SUCCESS)
-    log().fatal("Failed to create VMA allocator. Error: {}", vkResultToString(result));
+  VK(vmaCreateAllocator(&createInfo, &handle_));
   log().trace("VMA allocator created.");
 }
 

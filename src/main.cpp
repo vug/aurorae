@@ -1,5 +1,3 @@
-// TODO(vug): upload View and Project matrices via uniform buffers. Use "Scalar Block Layout"
-// TODO(vug): use vkResultToString from Utils at every VkResult returning operation
 // TODO(vug): upload Model matrix per-object via push constants
 // TODO(vug): upload geometry data via Vertex/Index Buffers
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods

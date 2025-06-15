@@ -52,7 +52,7 @@ void Swapchain::destroy() {
 void Swapchain::recreate(const vkb::Device& vkb_device, u32 width, u32 height) {
   // Minimization handling (waiting for non-zero width/height)
   // is expected to be done by the caller
-  vkDeviceWaitIdle(vkb_device.device);
+  VK(vkDeviceWaitIdle(vkb_device.device));
 
   vkb::Swapchain vkbSwapchainToDestroy = vkbSwapchain_; // Shallow copy of the vkb::Swapchain struct
   const std::vector<VkImageView> imageViewsToDestroy = imageViews_;

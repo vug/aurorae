@@ -69,4 +69,15 @@ PathBuffer pathJoin(const char* path, const char* relativeSubpath);
 // In Utils.h - don't reference VkResult at all
 const char* vkResultToString(i32 result);
 
+// Helper macros for token pasting
+#define PASTE_IMPL(a, b) a##b
+#define PASTE(a, b) PASTE_IMPL(a, b)
+
+#define VK(vk_call)                                                                                          \
+  do {                                                                                                       \
+    if (const VkResult PASTE(result_, __LINE__) = (vk_call); PASTE(result_, __LINE__) != VK_SUCCESS) {       \
+      log().fatal("Vulkan call `{}` failed! {}", #vk_call, vkResultToString(PASTE(result_, __LINE__)));      \
+    }                                                                                                        \
+  } while (0)
+
 } // namespace aur

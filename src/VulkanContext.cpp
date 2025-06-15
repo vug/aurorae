@@ -21,9 +21,7 @@ constexpr bool kDebugBreakAtValidationErrors{true};
 VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion,
   // vkGetInstanceProcAddr etc.
-  VkResult volkInitResult = volkInitialize();
-  if (volkInitResult != VK_SUCCESS)
-    log().fatal("Failed to initialize Volk: {}", static_cast<int>(volkInitResult));
+  VK(volkInitialize());
   {
     uint32_t instanceVersion{};
     vkEnumerateInstanceVersion(&instanceVersion);
