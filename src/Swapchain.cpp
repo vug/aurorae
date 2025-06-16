@@ -40,6 +40,8 @@ void Swapchain::create(const vkb::Device& vkb_device, u32 width, u32 height, VkS
   if (!imagesResult)
     log().fatal("Failed to get swapchain images: {}", imagesResult.error().message());
   images_ = imagesResult.value();
+
+  log().debug("Swapchain created with {} images.", getImageCount());
 }
 
 void Swapchain::destroy() {
