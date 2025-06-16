@@ -22,6 +22,8 @@ struct PerFrameData {
 
 class Renderer {
 public:
+  // This is the maximum value. The actual value can be 1 too.
+  static constexpr u32 kMaxImagesInFlight = 2;
   // TODO(vug): this is defined temporarily to group certain resources together. Move it into its own class
   // later.
   struct Pipeline {
@@ -39,7 +41,7 @@ public:
   Renderer& operator=(Renderer&&) = delete;
 
   [[nodiscard]] VkCommandBuffer getCommandBuffer() const { return commandBuffer_; }
-  [[nodiscard]] u32 getCurrentImageIndex() const { return currentImageIndex_; }
+  [[nodiscard]] u32 getCurrentImageIndex() const { return currentSwapchainImageIx_; }
   [[nodiscard]] VkDescriptorSet getPerFrameDescriptorSet() const { return perFrameDescriptorSet_; }
 
   // Returns true if frame rendering can proceed.
@@ -103,10 +105,11 @@ private:
   VkImageView depthImageView_{VK_NULL_HANDLE};
   VkFormat depthFormat_{VK_FORMAT_UNDEFINED};
 
-  VkSemaphore imageAvailableSemaphore_{VK_NULL_HANDLE};
-  VkSemaphore renderFinishedSemaphore_{VK_NULL_HANDLE};
+  u32 currentInFlightImageIx_{};
+  VkSemaphore imageAvailableSemaphores_[kMaxImagesInFlight] = {VK_NULL_HANDLE};
+  VkSemaphore renderFinishedSemaphores_[kMaxImagesInFlight] = {VK_NULL_HANDLE};
   VkFence inFlightFence_{VK_NULL_HANDLE};
-  u32 currentImageIndex_{};
+  u32 currentSwapchainImageIx_{};
 
   VkDescriptorSetLayout perFrameDescriptorSetLayout_{VK_NULL_HANDLE};
   VkDescriptorPool descriptorPool_{VK_NULL_HANDLE};

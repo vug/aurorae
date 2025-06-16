@@ -68,11 +68,13 @@ void Renderer::allocateCommandBuffer() {
 
 void Renderer::createSyncObjects() {
   constexpr VkSemaphoreCreateInfo semaphoreInfo{.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+  for (auto& semaphore : imageAvailableSemaphores_)
+    VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &semaphore));
+  for (auto& semaphore : renderFinishedSemaphores_)
+    VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &semaphore));
+
   constexpr VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
                                         .flags = VK_FENCE_CREATE_SIGNALED_BIT};
-
-  VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore_));
-  VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore_));
   VK(vkCreateFence(vulkanContext_.getDevice(), &fenceInfo, nullptr, &inFlightFence_));
   log().trace("Renderer sync objects created.");
 }
@@ -379,14 +381,18 @@ void Renderer::cleanupCommandPool() {
 }
 
 void Renderer::cleanupSyncObjects() {
-  if (imageAvailableSemaphore_ != VK_NULL_HANDLE)
-    vkDestroySemaphore(vulkanContext_.getDevice(), imageAvailableSemaphore_, nullptr);
-  if (renderFinishedSemaphore_ != VK_NULL_HANDLE)
-    vkDestroySemaphore(vulkanContext_.getDevice(), renderFinishedSemaphore_, nullptr);
+  for (auto& semaphore : imageAvailableSemaphores_) {
+    if (semaphore != VK_NULL_HANDLE)
+      vkDestroySemaphore(vulkanContext_.getDevice(), semaphore, nullptr);
+    semaphore = VK_NULL_HANDLE;
+  }
+  for (auto& semaphore : renderFinishedSemaphores_) {
+    if (semaphore != VK_NULL_HANDLE)
+      vkDestroySemaphore(vulkanContext_.getDevice(), semaphore, nullptr);
+    semaphore = VK_NULL_HANDLE;
+  }
   if (inFlightFence_ != VK_NULL_HANDLE)
     vkDestroyFence(vulkanContext_.getDevice(), inFlightFence_, nullptr);
-  imageAvailableSemaphore_ = VK_NULL_HANDLE;
-  renderFinishedSemaphore_ = VK_NULL_HANDLE;
   inFlightFence_ = VK_NULL_HANDLE;
 }
 void Renderer::createPerFrameUniformBuffer() {
@@ -498,7 +504,8 @@ bool Renderer::beginFrame() {
   }
 
   VkResult result = vkAcquireNextImageKHR(vulkanContext_.getDevice(), swapchain_.getSwapchain(), UINT64_MAX,
-                                          imageAvailableSemaphore_, VK_NULL_HANDLE, &currentImageIndex_);
+                                          imageAvailableSemaphores_[currentInFlightImageIx_], VK_NULL_HANDLE,
+                                          &currentSwapchainImageIx_);
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     log().debug("Swapchain out of date/suboptimal during acquire. Recreating.");
     swapchainIsStale_ = true;    // Mark it explicitly
@@ -579,7 +586,7 @@ bool Renderer::beginFrame() {
       .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
       .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
       .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .image = swapchain_.getImages()[currentImageIndex_],
+      .image = swapchain_.getImages()[currentSwapchainImageIx_],
       .subresourceRange = subresourceRange,
   };
 
@@ -590,7 +597,7 @@ bool Renderer::beginFrame() {
   // Begin dynamic rendering (which includes the clear operation)
   const VkRenderingAttachmentInfoKHR colorAttachmentInfo{
       .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
-      .imageView = swapchain_.getImageViews()[currentImageIndex_],
+      .imageView = swapchain_.getImageViews()[currentSwapchainImageIx_],
       .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
       .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -639,7 +646,7 @@ void Renderer::endFrame() {
       .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
       .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
       .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .image = swapchain_.getImages()[currentImageIndex_],
+      .image = swapchain_.getImages()[currentSwapchainImageIx_],
       .subresourceRange = subresourceRange,
   };
   vkCmdPipelineBarrier(commandBuffer_, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -647,9 +654,9 @@ void Renderer::endFrame() {
 
   VK(vkEndCommandBuffer(commandBuffer_));
 
-  const std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphore_};
+  const std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphores_[currentInFlightImageIx_]};
   constexpr std::array<VkPipelineStageFlags, 1> waitStages{VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
-  const std::array<VkSemaphore, 1> signalSemaphores{renderFinishedSemaphore_};
+  const std::array<VkSemaphore, 1> signalSemaphores{renderFinishedSemaphores_[currentInFlightImageIx_]};
   const VkSubmitInfo submitInfo{
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
       .waitSemaphoreCount = static_cast<u32>(waitSemaphores.size()),
@@ -669,7 +676,7 @@ void Renderer::endFrame() {
       .pWaitSemaphores = signalSemaphores.data(),
       .swapchainCount = 1,
       .pSwapchains = &swapchain_.getSwapchain(),
-      .pImageIndices = &currentImageIndex_,
+      .pImageIndices = &currentSwapchainImageIx_,
   };
 
   const VkResult result = vkQueuePresentKHR(vulkanContext_.getPresentQueue(),
@@ -679,6 +686,8 @@ void Renderer::endFrame() {
     swapchainIsStale_ = true; // Will be handled at the start of the next beginFrame
   } else if (result != VK_SUCCESS)
     log().fatal("Failed to present swap chain image: {}", static_cast<int>(result));
+
+  currentInFlightImageIx_ = (currentInFlightImageIx_ + 1) % kMaxImagesInFlight;
 }
 
 void Renderer::bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) const {

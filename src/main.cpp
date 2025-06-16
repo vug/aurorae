@@ -4,6 +4,7 @@
 // TODO(vug): upload Model matrix per-object via push constants
 // TODO(vug): introduce DescriptorSet abstraction. Have layout comparison:
 // https://gemini.google.com/app/b54463a6f7ddbb82
+// TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?
 // TODO(vug): upload geometry data via Vertex/Index Buffers
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
 // TODO(vug): consider making all members of dependency library types pointers, so that I can
