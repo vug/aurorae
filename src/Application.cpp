@@ -2,6 +2,7 @@
 
 #include "GlfwUtils.h"
 #include "Logger.h"
+#include "Pipelines.h"
 
 namespace aur {
 
@@ -33,12 +34,13 @@ Application::~Application() {
 }
 
 void Application::run() {
-  auto trianglePipeline = renderer_.createTrianglePipeline();
-  auto cubePipeline = renderer_.createCubePipeline();
+  Pipelines pipelines{renderer_};
+  Pipeline trianglePipeline = pipelines.createTrianglePipeline();
+  Pipeline cubePipeline = pipelines.createCubePipeline();
 
   log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
-    window_.pollEvents();
+    Window::pollEvents();
 
     if (window_.wasResized()) {
       int w, h;
@@ -46,7 +48,7 @@ void Application::run() {
       while (w == 0 || h == 0) { // Handle minimization
         log().debug("Window minimized ({}x{}), waiting...", w, h);
         window_.getFramebufferSize(w, h); // Re-check size
-        window_.waitEvents();             // Wait for events that might restore the window
+        Window::waitEvents();             // Wait for events that might restore the window
       }
       renderer_.notifyResize(static_cast<uint32_t>(w), static_cast<uint32_t>(h));
       window_.clearResizedFlag();
@@ -66,8 +68,8 @@ void Application::run() {
   // TODO(vug): With proper RAII, and architecture, we shouldn't need to call wait idle for cleaning up
   // pipelines manually
   renderer_.deviceWaitIdle();
-  renderer_.cleanupPipeline(trianglePipeline);
-  renderer_.cleanupPipeline(cubePipeline);
+  pipelines.cleanupPipeline(trianglePipeline);
+  pipelines.cleanupPipeline(cubePipeline);
   log().debug("Main loop finished.");
 }
 } // namespace aur

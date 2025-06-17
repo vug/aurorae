@@ -1,9 +1,9 @@
-// TODO(vug): store DescriptorSetLayout and DescriptorSet in Renderer::Pipeline too
 // TODO(vug): un-refactor the create and clean-up functions for Renderer main resources. I'm OK with longer
 // functions.
 // TODO(vug): upload Model matrix per-object via push constants
 // TODO(vug): introduce DescriptorSet abstraction. Have layout comparison:
 // https://gemini.google.com/app/b54463a6f7ddbb82
+// TODO(vug): Consider making Renderer a singleton
 // TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?
 // TODO(vug): upload geometry data via Vertex/Index Buffers
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods

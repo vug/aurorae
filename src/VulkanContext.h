@@ -19,10 +19,12 @@ public:
   VulkanContext& operator=(VulkanContext&&) = delete;
 
   // Public getters for raw Vulkan handles
-  [[nodiscard]] inline VkInstance getInstance() const { return vkbInstance_.instance; }
-  [[nodiscard]] VkDevice getDevice() const { return vkbDevice_.device; }
-  [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const { return vkbPhysicalDevice_.physical_device; }
-  [[nodiscard]] VkSurfaceKHR getSurface() const { return surface_; }
+  [[nodiscard]] inline const VkInstance& getInstance() const { return vkbInstance_.instance; }
+  [[nodiscard]] inline const VkDevice& getDevice() const { return vkbDevice_.device; }
+  [[nodiscard]] inline const VkPhysicalDevice& getPhysicalDevice() const {
+    return vkbPhysicalDevice_.physical_device;
+  }
+  [[nodiscard]] inline const VkSurfaceKHR& getSurface() const { return surface_; }
 
   [[nodiscard]] VkQueue getGraphicsQueue() const { return graphicsQueue_; }
   [[nodiscard]] VkQueue getPresentQueue() const { return presentQueue_; }

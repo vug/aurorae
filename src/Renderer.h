@@ -14,9 +14,11 @@ FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
 
 namespace aur {
 
+struct Pipeline;
+
 struct PerFrameData {
-  glm::mat4 viewFromObject;
-  glm::mat4 projectionFromView;
+  glm::mat4 viewFromObject{};
+  glm::mat4 projectionFromView{};
   u64 frameIndex{};
 };
 
@@ -24,14 +26,7 @@ class Renderer {
 public:
   // This is the maximum value. The actual value can be 1 too.
   static constexpr u32 kMaxImagesInFlight = 2;
-  // TODO(vug): this is defined temporarily to group certain resources together. Move it into its own class
-  // later.
-  struct Pipeline {
-    PathBuffer vertexPath;
-    PathBuffer fragmentPath;
-    VkPipeline pipeline{VK_NULL_HANDLE};
-    VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
-  };
+
   Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u32 initialHeight);
   ~Renderer();
 
@@ -40,9 +35,20 @@ public:
   Renderer(Renderer&&) = delete;
   Renderer& operator=(Renderer&&) = delete;
 
-  [[nodiscard]] VkCommandBuffer getCommandBuffer() const { return commandBuffer_; }
-  [[nodiscard]] u32 getCurrentImageIndex() const { return currentSwapchainImageIx_; }
-  [[nodiscard]] VkDescriptorSet getPerFrameDescriptorSet() const { return perFrameDescriptorSet_; }
+  [[nodiscard]] inline const VkCommandBuffer& getCommandBuffer() const { return commandBuffer_; }
+  [[nodiscard]] inline u32 getCurrentImageIndex() const { return currentSwapchainImageIx_; }
+  [[nodiscard]] inline const VkDescriptorSet& getPerFrameDescriptorSet() const {
+    return perFrameDescriptorSet_;
+  }
+  [[nodiscard]] inline const VkDescriptorSetLayout& getPerFrameDescriptorSetLayout() const {
+    return perFrameDescriptorSetLayout_;
+  }
+  [[nodiscard]] inline const VkDevice& getDevice() const { return vulkanContext_.getDevice(); }
+  [[nodiscard]] inline u32 getSwapchainImageCount() const { return swapchain_.getImageCount(); }
+  [[nodiscard]] inline const VkFormat& getSwapchainColorImageFormat() const {
+    return swapchain_.getImageFormat();
+  }
+  [[nodiscard]] inline const VkFormat& getSwapchainDepthImageFormat() const { return depthFormat_; }
 
   // Returns true if frame rendering can proceed.
   // Returns false if the swapchain was recreated (or another non-fatal issue) and the caller should skip
@@ -62,11 +68,6 @@ public:
 
   [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo) const;
   [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
-
-  // "Materials" so far. TODO(vug): move these logic out of Renderer
-  Pipeline createTrianglePipeline() const;
-  Pipeline createCubePipeline() const;
-  void cleanupPipeline(Pipeline& pipeline) const;
 
 private:
   // --- Core Renderer Initialization ---

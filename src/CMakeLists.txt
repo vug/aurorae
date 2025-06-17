@@ -96,6 +96,8 @@ add_executable(Aurorae
         Buffer.h
         Buffer.cpp
         Allocator.h Allocator.cpp
+        Pipelines.h Pipelines.cpp
+        Pipeline.h
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
