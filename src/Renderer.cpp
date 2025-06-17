@@ -93,13 +93,9 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
 Renderer::Pipeline Renderer::createTrianglePipeline() const {
   PathBuffer vertexPath{pathJoin(kShadersFolder, "triangle.vert.spv")};
   PathBuffer fragmentPath{pathJoin(kShadersFolder, "triangle.frag.spv")};
-  Pipeline pipeline{
-      .vertexPath = std::move(vertexPath),
-      .fragmentPath = std::move(fragmentPath),
-  };
 
-  BinaryBlob vertShaderCode = readBinaryFile(pipeline.vertexPath.c_str());
-  BinaryBlob fragShaderCode = readBinaryFile(pipeline.fragmentPath.c_str());
+  BinaryBlob vertShaderCode = readBinaryFile(vertexPath.c_str());
+  BinaryBlob fragShaderCode = readBinaryFile(fragmentPath.c_str());
 
   VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
   VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));
@@ -178,8 +174,8 @@ Renderer::Pipeline Renderer::createTrianglePipeline() const {
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                                                       .setLayoutCount = 1,
                                                       .pSetLayouts = &perFrameDescriptorSetLayout_};
-  VK(vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
-                            &pipeline.pipelineLayout));
+  VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
+  VK(vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
@@ -211,31 +207,33 @@ Renderer::Pipeline Renderer::createTrianglePipeline() const {
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = pipeline.pipelineLayout,
+      .layout = pipelineLayout,
       .renderPass = VK_NULL_HANDLE, // Must be null for dynamic rendering
       .subpass = 0,
   };
 
+  VkPipeline pipeline{VK_NULL_HANDLE};
   VK(vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
-                               &pipeline.pipeline));
+                               &pipeline));
 
   // Shader modules can be destroyed after pipeline creation
   vkDestroyShaderModule(vulkanContext_.getDevice(), fragShaderModule, nullptr);
   vkDestroyShaderModule(vulkanContext_.getDevice(), vertShaderModule, nullptr);
   log().debug("Triangle graphics pipeline created.");
 
-  return pipeline;
+  return {
+      .vertexPath = std::move(vertexPath),
+      .fragmentPath = std::move(fragmentPath),
+      .pipeline = pipeline,
+      .pipelineLayout = pipelineLayout,
+  };
 }
 
 Renderer::Pipeline Renderer::createCubePipeline() const {
   PathBuffer vertexPath{pathJoin(kShadersFolder, "cube2.vert.spv")};
   PathBuffer fragmentPath{pathJoin(kShadersFolder, "cube2.frag.spv")};
-  Pipeline pipeline{
-      .vertexPath = std::move(vertexPath),
-      .fragmentPath = std::move(fragmentPath),
-  };
-  BinaryBlob vertShaderCode = readBinaryFile(pipeline.vertexPath.c_str());
-  BinaryBlob fragShaderCode = readBinaryFile(pipeline.fragmentPath.c_str());
+  BinaryBlob vertShaderCode = readBinaryFile(vertexPath.c_str());
+  BinaryBlob fragShaderCode = readBinaryFile(fragmentPath.c_str());
 
   VkShaderModule vertShaderModule = createShaderModule(std::move(vertShaderCode));
   VkShaderModule fragShaderModule = createShaderModule(std::move(fragShaderCode));
@@ -312,8 +310,8 @@ Renderer::Pipeline Renderer::createCubePipeline() const {
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                                                       .setLayoutCount = 1,
                                                       .pSetLayouts = &perFrameDescriptorSetLayout_};
-  VK(vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr,
-                            &pipeline.pipelineLayout));
+  VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
+  VK(vkCreatePipelineLayout(vulkanContext_.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
@@ -344,19 +342,25 @@ Renderer::Pipeline Renderer::createCubePipeline() const {
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = pipeline.pipelineLayout,
+      .layout = pipelineLayout,
       .renderPass = VK_NULL_HANDLE,
       .subpass = 0,
   };
 
+  VkPipeline pipeline{VK_NULL_HANDLE};
   VK(vkCreateGraphicsPipelines(vulkanContext_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
-                               &pipeline.pipeline));
+                               &pipeline));
 
   vkDestroyShaderModule(vulkanContext_.getDevice(), fragShaderModule, nullptr);
   vkDestroyShaderModule(vulkanContext_.getDevice(), vertShaderModule, nullptr);
   log().debug("Cube graphics pipeline created.");
 
-  return pipeline;
+  return {
+      .vertexPath = std::move(vertexPath),
+      .fragmentPath = std::move(fragmentPath),
+      .pipeline = pipeline,
+      .pipelineLayout = pipelineLayout,
+  };
 }
 
 // TODO(vug): move this into future Pipeline class' destructor
