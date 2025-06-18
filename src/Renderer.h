@@ -70,21 +70,7 @@ public:
   [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
 
 private:
-  // --- Core Renderer Initialization ---
-  // These are fundamental to the renderer's operation.
-  void createCommandPool();
-  void cleanupCommandPool();
-  void allocateCommandBuffer();
-  void createDescriptorPool();
-  void cleanupDescriptorPool() const;
-  void createSyncObjects();
-  void cleanupSyncObjects();
-  //
-  void createPerFrameUniformBuffer();
-
-  void createPerFrameDescriptorSetLayout();
-  void cleanupPerFrameDescriptorSetLayout() const;
-  void createPerFrameDescriptorSets();
+  void createPerFrameDataResources();
 
   // --- Swapchain & Framebuffer Resources ---
   // These are tied to the surface and swapping images.

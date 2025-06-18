@@ -1,5 +1,3 @@
-// TODO(vug): un-refactor the create and clean-up functions for Renderer main resources. I'm OK with longer
-// functions.
 // TODO(vug): upload Model matrix per-object via push constants
 // TODO(vug): introduce DescriptorSet abstraction. Have layout comparison:
 // https://gemini.google.com/app/b54463a6f7ddbb82

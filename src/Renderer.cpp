@@ -19,45 +19,16 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
     , swapchain_(vulkanContext_.getVkbDevice(), initialWidth, initialHeight)
     , currentWidth_(initialWidth)
     , currentHeight_(initialHeight) {
-  createCommandPool();
-  allocateCommandBuffer();
-  createDescriptorPool();
-  createSyncObjects();
-  createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
 
-  createPerFrameDescriptorSetLayout();
-  createPerFrameUniformBuffer();
-  createPerFrameDescriptorSets();
-
-  log().debug("Renderer initialized.");
-}
-
-Renderer::~Renderer() {
-  // Ensure GPU is idle before destroying resources
-  deviceWaitIdle();
-
-  cleanupSwapchainDepthResources(); // Destroy depth buffer
-
-  cleanupDescriptorPool();
-  cleanupPerFrameDescriptorSetLayout();
-
-  cleanupSyncObjects();
-  cleanupCommandPool(); // Frees command buffers too
-
-  // Swapchain and VulkanContext are destroyed automatically by their destructors
-  // Order: Swapchain (uses the device), VulkanContext (owns the device)
-  log().info("Renderer destroyed.");
-}
-
-void Renderer::createCommandPool() {
-  const VkCommandPoolCreateInfo poolInfo{
+  // Command Pool
+  const VkCommandPoolCreateInfo cmdPoolInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
       .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
   };
-  VK(vkCreateCommandPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &commandPool_));
-}
+  VK(vkCreateCommandPool(vulkanContext_.getDevice(), &cmdPoolInfo, nullptr, &commandPool_));
+  log().trace("Renderer command pool created.");
 
-void Renderer::allocateCommandBuffer() {
+  // Command Buffer
   const VkCommandBufferAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = commandPool_,
@@ -65,9 +36,27 @@ void Renderer::allocateCommandBuffer() {
       .commandBufferCount = 1,
   };
   VK(vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo, &commandBuffer_));
-}
+  log().trace("Renderer command buffer created/allocated.");
 
-void Renderer::createSyncObjects() {
+  // Descriptor Pool
+  VkDescriptorPoolSize poolSizes[] = {
+      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 512},          // Many UBOs for per-frame, per-object data
+      {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024}, // Many textures
+      {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 256},          // Some storage buffers for compute/large data
+      {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256},           // If you separate images/samplers
+      {VK_DESCRIPTOR_TYPE_SAMPLER, 64},                  // Reused samplers
+      {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 32},            // For render targets or compute images
+      // Add other types as needed (e.g., INVOCATION_GRAPHICS_NV, ACCELERATION_STRUCTURE_KHR)
+  };
+  VkDescriptorPoolCreateInfo descPoolInfo{
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+      .maxSets = 512,
+      .poolSizeCount = sizeof(poolSizes) / sizeof(VkDescriptorPoolSize),
+      .pPoolSizes = &poolSizes[0],
+  };
+  VK(vkCreateDescriptorPool(vulkanContext_.getDevice(), &descPoolInfo, nullptr, &descriptorPool_));
+  log().trace("Renderer descriptor pool created.");
+
   constexpr VkSemaphoreCreateInfo semaphoreInfo{.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
   for (auto& semaphore : imageAvailableSemaphores_)
     VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &semaphore));
@@ -78,29 +67,24 @@ void Renderer::createSyncObjects() {
                                         .flags = VK_FENCE_CREATE_SIGNALED_BIT};
   VK(vkCreateFence(vulkanContext_.getDevice(), &fenceInfo, nullptr, &inFlightFence_));
   log().trace("Renderer sync objects created.");
+
+  createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
+  createPerFrameDataResources();
+
+  log().trace("Renderer initialized.");
 }
 
-VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
-  const VkShaderModuleCreateInfo createInfo{
-      .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = code.size(),
-      .pCode = reinterpret_cast<const u32*>(code.data()),
-  };
-  VkShaderModule shaderModule;
-  VK(vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr, &shaderModule));
-  return shaderModule;
-}
+Renderer::~Renderer() {
+  // Ensure GPU is idle before destroying resources
+  deviceWaitIdle();
 
-void Renderer::cleanupCommandPool() {
-  if (commandPool_ != VK_NULL_HANDLE) {
-    // Command buffers allocated from this pool are implicitly freed
-    vkDestroyCommandPool(vulkanContext_.getDevice(), commandPool_, nullptr);
-    commandPool_ = VK_NULL_HANDLE;
-    commandBuffer_ = VK_NULL_HANDLE; // It's freed with the pool
-  }
-}
+  cleanupSwapchainDepthResources(); // Destroy depth buffer
 
-void Renderer::cleanupSyncObjects() {
+  vkDestroyDescriptorPool(vulkanContext_.getDevice(), descriptorPool_, nullptr);
+
+  vkDestroyDescriptorSetLayout(vulkanContext_.getDevice(), perFrameDescriptorSetLayout_, nullptr);
+
+  // Clean up sync objects
   for (auto& semaphore : imageAvailableSemaphores_) {
     if (semaphore != VK_NULL_HANDLE)
       vkDestroySemaphore(vulkanContext_.getDevice(), semaphore, nullptr);
@@ -114,15 +98,33 @@ void Renderer::cleanupSyncObjects() {
   if (inFlightFence_ != VK_NULL_HANDLE)
     vkDestroyFence(vulkanContext_.getDevice(), inFlightFence_, nullptr);
   inFlightFence_ = VK_NULL_HANDLE;
-}
-void Renderer::createPerFrameUniformBuffer() {
-  BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
-                                             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                             .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
-  perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto);
+
+  // Cleaning up the command pool frees its command buffers too
+  if (commandPool_ != VK_NULL_HANDLE) {
+    // Command buffers allocated from this pool are implicitly freed
+    vkDestroyCommandPool(vulkanContext_.getDevice(), commandPool_, nullptr);
+    commandPool_ = VK_NULL_HANDLE;
+    commandBuffer_ = VK_NULL_HANDLE; // It's freed with the pool
+  }
+
+  // Swapchain and VulkanContext are destroyed automatically by their destructors
+  // Order: Swapchain (uses the device), VulkanContext (owns the device)
+  log().info("Renderer destroyed.");
 }
 
-void Renderer::createPerFrameDescriptorSetLayout() {
+VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
+  const VkShaderModuleCreateInfo createInfo{
+      .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+      .codeSize = code.size(),
+      .pCode = reinterpret_cast<const u32*>(code.data()),
+  };
+  VkShaderModule shaderModule;
+  VK(vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr, &shaderModule));
+  return shaderModule;
+}
+
+void Renderer::createPerFrameDataResources() {
+  // Descriptor Set Layout
   VkDescriptorSetLayoutBinding layoutBinding{
       .binding = 0,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -130,48 +132,29 @@ void Renderer::createPerFrameDescriptorSetLayout() {
       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
       .pImmutableSamplers = nullptr,
   };
-
   VkDescriptorSetLayoutCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
       .bindingCount = 1,
       .pBindings = &layoutBinding,
   };
-
   VK(vkCreateDescriptorSetLayout(vulkanContext_.getDevice(), &createInfo, nullptr,
                                  &perFrameDescriptorSetLayout_));
-}
 
-void Renderer::createDescriptorPool() {
-  VkDescriptorPoolSize poolSizes[] = {
-      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 512},          // Many UBOs for per-frame, per-object data
-      {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024}, // Many textures
-      {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 256},          // Some storage buffers for compute/large data
-      {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256},           // If you separate images/samplers
-      {VK_DESCRIPTOR_TYPE_SAMPLER, 64},                  // Reused samplers
-      {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 32},            // For render targets or compute images
-      // Add other types as needed (e.g., INVOCATION_GRAPHICS_NV, ACCELERATION_STRUCTURE_KHR)
-  };
-
-  VkDescriptorPoolCreateInfo poolInfo{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-      .maxSets = 512,
-      .poolSizeCount = sizeof(poolSizes) / sizeof(VkDescriptorPoolSize),
-      .pPoolSizes = &poolSizes[0],
-  };
-
-  VK(vkCreateDescriptorPool(vulkanContext_.getDevice(), &poolInfo, nullptr, &descriptorPool_));
-}
-
-void Renderer::createPerFrameDescriptorSets() {
+  // Descriptor Set
   VkDescriptorSetAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
       .descriptorPool = descriptorPool_,
       .descriptorSetCount = 1,
       .pSetLayouts = &perFrameDescriptorSetLayout_,
   };
-
   if (vkAllocateDescriptorSets(vulkanContext_.getDevice(), &allocInfo, &perFrameDescriptorSet_) != VK_SUCCESS)
     log().fatal("Failed to allocate descriptor sets!");
+
+  // Uniform Buffer
+  BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
+                                             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                             .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
+  perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto);
 
   // Now, link our buffer to the allocated descriptor set
   VkDescriptorBufferInfo bufferInfo{
@@ -179,7 +162,6 @@ void Renderer::createPerFrameDescriptorSets() {
       .offset = 0,
       .range = sizeof(PerFrameData),
   };
-
   VkWriteDescriptorSet descriptorWrite{
       .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
       .dstSet = perFrameDescriptorSet_,
@@ -189,7 +171,6 @@ void Renderer::createPerFrameDescriptorSets() {
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .pBufferInfo = &bufferInfo,
   };
-
   vkUpdateDescriptorSets(vulkanContext_.getDevice(), 1, &descriptorWrite, 0, nullptr);
 }
 
@@ -491,19 +472,10 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageView_ = VK_NULL_HANDLE;
   depthImage_ = VK_NULL_HANDLE;
   depthImageMemory_ = VK_NULL_HANDLE;
-  log().debug("Depth resources cleaned up.");
 }
 
 Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo) const {
   return {allocator_.getHandle(), createInfo};
-}
-
-void Renderer::cleanupPerFrameDescriptorSetLayout() const {
-  vkDestroyDescriptorSetLayout(vulkanContext_.getDevice(), perFrameDescriptorSetLayout_, nullptr);
-}
-
-void Renderer::cleanupDescriptorPool() const {
-  vkDestroyDescriptorPool(vulkanContext_.getDevice(), descriptorPool_, nullptr);
 }
 
 } // namespace aur
