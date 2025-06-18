@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include "AppContext.h"
 #include "GlfwUtils.h"
 #include "Logger.h"
 #include "Pipelines.h"
@@ -25,6 +26,7 @@ Application::Application(u32 initialWidth, u32 initialHeight, const char* appNam
   log().info("Application starting... Build Type: {}", static_cast<uint8_t>(kBuildType));
   log().info("App Name: {}, Initial Dimensions: {}x{}", appName_, initialWidth, initialHeight);
 
+  AppContext::initialize(renderer_);
   log().trace("Application constructed successfully.");
 }
 

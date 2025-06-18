@@ -98,6 +98,7 @@ add_executable(Aurorae
         Allocator.h Allocator.cpp
         Pipelines.h Pipelines.cpp
         Pipeline.h
+        AppContext.h AppContext.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
