@@ -93,7 +93,6 @@ Pipeline Pipelines::createTrianglePipeline() const {
       .pAttachments = &colorBlendAttachment,
   };
 
-  ;
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                                                       .setLayoutCount = 1,
                                                       .pSetLayouts =
@@ -231,10 +230,19 @@ Pipeline Pipelines::createCubePipeline() const {
       .pAttachments = &colorBlendAttachment,
   };
 
+  // WorldFromObject / Model matrix
+  VkPushConstantRange pushConstantRange{
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+      .offset = 0,
+      .size = sizeof(glm::mat4),
+  };
+  std::array<VkPushConstantRange, 1> pushConstantRanges{pushConstantRange};
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                                                       .setLayoutCount = 1,
                                                       .pSetLayouts =
-                                                          &renderer_.getPerFrameDescriptorSetLayout()};
+                                                          &renderer_.getPerFrameDescriptorSetLayout(),
+                                                      .pushConstantRangeCount = pushConstantRanges.size(),
+                                                      .pPushConstantRanges = pushConstantRanges.data()};
   VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
   VK(vkCreatePipelineLayout(renderer_.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
 

@@ -5,6 +5,9 @@
 #include "Logger.h"
 #include "Pipelines.h"
 
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace aur {
 
 Application::Initializer::Initializer() {
@@ -58,8 +61,19 @@ void Application::run() {
 
     if (renderer_.beginFrame()) {
       renderer_.setClearColor(0.25f, 0.25f, 0.25f);
-      renderer_.drawWithoutVertexInput(trianglePipeline, 3);
-      renderer_.drawWithoutVertexInput(cubePipeline, 36);
+      renderer_.drawWithoutVertexInput(trianglePipeline, 3, {});
+      // glm::mat4 worldFromObject = glm::rotate(glm::mat4(1.0f), 0.5f, glm::vec3(0, 1, 0));
+      glm::mat4 worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
+      VkPushConstantsInfoKHR pushConstantsInfo{
+          .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
+          .pNext = nullptr,
+          .layout = cubePipeline.pipelineLayout,
+          .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+          .offset = 0,
+          .size = sizeof(glm::mat4),
+          .pValues = glm::value_ptr(worldFromObject),
+      };
+      renderer_.drawWithoutVertexInput(cubePipeline, 36, &pushConstantsInfo);
       renderer_.endFrame();
     }
     // If beginFrame() returns false, it means it handled a situation like

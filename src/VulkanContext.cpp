@@ -33,7 +33,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   vkb::InstanceBuilder vkbInstanceBuilder;
   vkbInstanceBuilder.set_app_name(appName)
       .enable_extension(VK_KHR_SURFACE_EXTENSION_NAME) // not necessary
-      .require_api_version(VK_MAKE_API_VERSION(0, 1, 3, 0));
+      .require_api_version(VK_MAKE_API_VERSION(0, 1, 4, 313));
   if constexpr (kEnableValidationLayers) {
     PFN_vkDebugUtilsMessengerCallbackEXT debugCallback =
         [](VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -115,7 +115,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
       .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR};
   vkb::Result<vkb::PhysicalDevice> vkbPhysicalDeviceResult =
       selector
-          .set_minimum_version(1, 3) // Explicitly target Vulkan 1.3
+          .set_minimum_version(1, 4) // Explicitly target Vulkan 1.3
           .set_surface(surface_)
           .prefer_gpu_device_type(vkb::PreferredDeviceType::discrete)
           // vug: I guess it requires a graphics queue by default?
@@ -141,6 +141,9 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           })
           .add_required_extensions({
               VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+              // Needed for vkCmdPushConstants2KHR. Ideally, this shouldn't be needed because that function
+              // is part of Vulkan 1.4, but apparently my laptop graphics drivers do not support it yet.
+              VK_KHR_MAINTENANCE_6_EXTENSION_NAME,
           })
           .add_required_extensions(
               kEnableGpuAssistedValidation
@@ -152,6 +155,12 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   if (!vkbPhysicalDeviceResult)
     log().fatal("Failed to select Vulkan Physical Device: {}", vkbPhysicalDeviceResult.error().message());
   vkbPhysicalDevice_ = vkbPhysicalDeviceResult.value();
+  log().trace("Selected Physical Device Name: {}", vkbPhysicalDevice_.properties.deviceName);
+  log().trace("Selected Physical Device Driver Version: {}", vkbPhysicalDevice_.properties.driverVersion);
+  log().trace("Selected Physical Device Vulkan API Version: {}.{}.{}",
+              VK_API_VERSION_MAJOR(vkbPhysicalDevice_.properties.apiVersion),
+              VK_API_VERSION_MINOR(vkbPhysicalDevice_.properties.apiVersion),
+              VK_API_VERSION_PATCH(vkbPhysicalDevice_.properties.apiVersion));
 
   // Create logical device
   vkb::DeviceBuilder deviceBuilder(vkbPhysicalDevice_);

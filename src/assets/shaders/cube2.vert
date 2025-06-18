@@ -3,7 +3,11 @@
 
 // The vertices are hard-coded in the draw command, so we use gl_VertexIndex
 // to generate the cube vertices on the fly.
-layout (location = 0) out vec3 vColor;
+
+layout(push_constant) uniform PushConstants {
+    mat4 modelFromObject;
+} pc;
+
 
 // --- Uniform Buffer for Scene Data ---
 // "scalar" layout makes this struct match C++ memory layout exactly.
@@ -46,6 +50,8 @@ vec3(1.0, 1.0, 1.0), // White
 vec3(0.0, 0.0, 0.0)  // Black
 );
 
+layout (location = 0) out vec3 vColor;
+
 void main() {
     // Get the vertex position and color for the current index
     int vertex_idx = indices[gl_VertexIndex];
@@ -53,5 +59,5 @@ void main() {
     vColor = colors[vertex_idx];
 
     // Note: We don't have a model matrix yet, just view and projection.
-    gl_Position = perFrame.projectionFromView * perFrame.viewFromModel * vec4(position, 1.0);
+    gl_Position = perFrame.projectionFromView * perFrame.viewFromModel * pc.modelFromObject * vec4(position, 1.0);
 }

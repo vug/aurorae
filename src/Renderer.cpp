@@ -395,9 +395,12 @@ void Renderer::bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSe
   vkCmdBindDescriptorSets(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                           &descriptorSet, 0, nullptr);
 }
-void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt) const {
+void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
+                                      VkPushConstantsInfo* pushConstantsInfo) const {
   vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
   bindDescriptorSet(pipeline.pipelineLayout, perFrameDescriptorSet_);
+  if (pushConstantsInfo)
+    vkCmdPushConstants2KHR(commandBuffer_, pushConstantsInfo);
 
   const VkViewport viewport{
       .x = 0.0f,
