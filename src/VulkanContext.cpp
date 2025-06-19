@@ -45,6 +45,8 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
                       // used in debugging only.
           0x24b5c69f, // GPU validation:
           0x0, // Layer name GalaxyOverlayVkLayer does not conform to naming standard (Policy #LLP_LAYER_3)
+          -0x257d9f46, // enabling a deprecated extension that has been promoted to main Vulkan. triggered
+                       // because of VK_KHR_maintenance6 for vkCmdPushConstants2KHR [issue #7]
       };
       for (const auto& msgId : ignoredMessageIds) {
         if (pCallbackData->messageIdNumber == msgId)
@@ -141,7 +143,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           })
           .add_required_extensions({
               VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-              // Needed for vkCmdPushConstants2KHR. Ideally, this shouldn't be needed because that function
+              // Needed for vkCmdPushConstants2KHR [issue #7]. Ideally, this shouldn't be needed because that function
               // is part of Vulkan 1.4, but apparently my laptop graphics drivers do not support it yet.
               VK_KHR_MAINTENANCE_6_EXTENSION_NAME,
           })

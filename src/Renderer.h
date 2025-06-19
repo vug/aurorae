@@ -59,7 +59,7 @@ public:
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
   void bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) const;
   void drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
-                              const VkPushConstantsInfo* pushConstantsInfo = {}) const;
+                              const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo = {}) const;
   void deviceWaitIdle() const;
 
   // Must be called after draw commands

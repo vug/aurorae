@@ -89,10 +89,10 @@ public:
   DescriptorSetLayout(DescriptorSetLayout&& other) noexcept;
   DescriptorSetLayout& operator=(DescriptorSetLayout&& other) noexcept;
 
-  inline bool isValid() const { return handle != VK_NULL_HANDLE; }
+  [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
 
   const DescriptorSetLayoutCreateInfo createInfo;
-  const VkDescriptorSetLayout handle{};
+  const VkDescriptorSetLayout handle{VK_NULL_HANDLE};
 
 private:
   VkDevice device_{VK_NULL_HANDLE};

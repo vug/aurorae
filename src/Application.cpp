@@ -64,7 +64,7 @@ void Application::run() {
       renderer_.drawWithoutVertexInput(trianglePipeline, 3, {});
       // glm::mat4 worldFromObject = glm::rotate(glm::mat4(1.0f), 0.5f, glm::vec3(0, 1, 0));
       glm::mat4 worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
-      VkPushConstantsInfoKHR pushConstantsInfo{
+      VkPushConstantsInfoKHR /* [issue #7] */ pushConstantsInfo{
           .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
           .pNext = nullptr,
           .layout = cubePipeline.pipelineLayout,
