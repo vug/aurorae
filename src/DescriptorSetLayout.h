@@ -96,5 +96,8 @@ public:
 
 private:
   VkDevice device_{VK_NULL_HANDLE};
+
+  void invalidate();
+  void destroy();
 };
 } // namespace aur

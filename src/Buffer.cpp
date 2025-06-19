@@ -71,7 +71,7 @@ void Buffer::invalidate() {
 }
 
 void Buffer::destroy() {
-  if (handle != VK_NULL_HANDLE && allocation_ != VK_NULL_HANDLE && allocator_ != VK_NULL_HANDLE)
+  if (isValid() && allocation_ != VK_NULL_HANDLE && allocator_ != VK_NULL_HANDLE)
     vmaDestroyBuffer(allocator_, handle, allocation_);
   invalidate();
 }

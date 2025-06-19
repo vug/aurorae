@@ -39,26 +39,19 @@ DescriptorSetLayout::DescriptorSetLayout(VkDevice device,
     , device_(device) {}
 
 DescriptorSetLayout::~DescriptorSetLayout() {
-  if (!isValid())
-    return;
-  vkDestroyDescriptorSetLayout(device_, handle, nullptr);
+  destroy();
 }
 
 DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
     : createInfo(std::move(other.createInfo))
     , handle(other.handle)
     , device_(other.device_) {
-  // Invalidate the other object so its destructor doesn't destroy the handle
-  const_cast<VkDescriptorSetLayout&>(other.handle) = VK_NULL_HANDLE;
-  other.device_ = VK_NULL_HANDLE;
+  other.invalidate();
 }
 
 DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& other) noexcept {
   if (this != &other) {
-    // Destroy the existing resource before taking ownership of the new one
-    if (device_ != VK_NULL_HANDLE && handle != VK_NULL_HANDLE) {
-      vkDestroyDescriptorSetLayout(device_, handle, nullptr);
-    }
+    destroy();
 
     // Pilfer resources from other object
     const_cast<DescriptorSetLayoutCreateInfo&>(createInfo) = std::move(other.createInfo);
@@ -66,10 +59,19 @@ DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& other)
     device_ = other.device_;
 
     // Invalidate the other object
-    const_cast<VkDescriptorSetLayout&>(other.handle) = VK_NULL_HANDLE;
-    other.device_ = VK_NULL_HANDLE;
+    other.invalidate();
   }
   return *this;
+}
+void DescriptorSetLayout::invalidate() {
+  const_cast<VkDescriptorSetLayout&>(handle) = VK_NULL_HANDLE;
+  // not needed because device_ is not owned by DescriptorSetLayout
+  device_ = VK_NULL_HANDLE;
+}
+void DescriptorSetLayout::destroy() {
+  if (isValid() && device_ != VK_NULL_HANDLE)
+    vkDestroyDescriptorSetLayout(device_, handle, nullptr);
+  invalidate();
 }
 
 } // namespace aur
