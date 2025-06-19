@@ -130,7 +130,7 @@ void Renderer::createPerFrameDataResources() {
       .stages = {ShaderStage::Vertex},
   }};
   const DescriptorSetLayoutCreateInfo createInfo{.bindings = bindings};
-  perFrameDescriptorSetLayout_ = DescriptorSetLayout(getDevice(), createInfo);
+  perFrameDescriptorSetLayout_ = createDescriptorSetLayout(createInfo);
 
   // Descriptor Set
   VkDescriptorSetAllocateInfo allocInfo{
@@ -473,6 +473,10 @@ void Renderer::cleanupSwapchainDepthResources() {
 
 Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo) const {
   return {allocator_.getHandle(), createInfo};
+}
+DescriptorSetLayout
+Renderer::createDescriptorSetLayout(const DescriptorSetLayoutCreateInfo& createInfo) const {
+  return {getDevice(), createInfo};
 }
 
 } // namespace aur

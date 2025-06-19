@@ -69,6 +69,8 @@ public:
   void notifyResize(u32 newWidth, u32 newHeight);
 
   [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo) const;
+  [[nodiscard]] DescriptorSetLayout
+  createDescriptorSetLayout(const DescriptorSetLayoutCreateInfo& createInfo) const;
   [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
 
 private:
