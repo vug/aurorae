@@ -1,5 +1,7 @@
-// TODO(vug): introduce DescriptorSet abstraction. Have layout comparison (isEqual and isCompatible):
+// TODO(vug): DescriptorLayoutSet comparison (isEqual and isCompatible)
 // https://gemini.google.com/app/b54463a6f7ddbb82
+//            PipelineLayout abstraction
+//            DescriptorSet abstraction. Allocated via pool for a layout. check whether it's compatible with the layout.
 // TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?
 // TODO(vug): upload geometry data via Vertex/Index Buffers
 // TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
