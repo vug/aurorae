@@ -1,4 +1,5 @@
-# Checks: '-*,modernize-*'
+Checks: '-*'
+#Checks: '-*,modernize-*'
 # WarningsAsErrors: ''
 # HeaderFileExtensions: ['h']
 # ImplementationFileExtensions: ['cpp']

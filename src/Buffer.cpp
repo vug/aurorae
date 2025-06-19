@@ -6,22 +6,25 @@
 
 namespace aur {
 
-Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& createInfo)
+Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& bufferCreateInfo)
     : allocator_{allocator}
-    , createInfo_{createInfo} {
-  const VkBufferCreateInfo bufferInfo{
-      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-      .size = createInfo.size,
-      .usage = createInfo.usage,
-      // For now, we'll stick to exclusive access from the graphics queue.
-      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-  };
-  const VmaAllocationCreateInfo allocInfo{
-      .usage = createInfo.memoryUsage,
-  };
+    , createInfo{bufferCreateInfo}
+    , handle([this]() {
+      const VkBufferCreateInfo bufferInfo{
+          .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+          .size = createInfo.size,
+          .usage = createInfo.usage,
+          // For now, we'll stick to exclusive access from the graphics queue.
+          .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      };
+      const VmaAllocationCreateInfo allocInfo{
+          .usage = createInfo.memoryUsage,
+      };
 
-  VK(vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer_, &allocation_, nullptr));
-}
+      VkBuffer hnd;
+      VK(vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &hnd, &allocation_, nullptr));
+      return hnd;
+    }()) {}
 
 Buffer::~Buffer() {
   destroy();
@@ -30,12 +33,9 @@ Buffer::~Buffer() {
 Buffer::Buffer(Buffer&& other) noexcept
     : allocator_{other.allocator_}
     , allocation_{other.allocation_}
-    , buffer_{other.buffer_}
-    , createInfo_{other.createInfo_} {
-  // Invalidate the other object so its destructor doesn't double-free
-  other.allocator_ = VK_NULL_HANDLE;
-  other.allocation_ = VK_NULL_HANDLE;
-  other.buffer_ = VK_NULL_HANDLE;
+    , handle{other.handle}
+    , createInfo{other.createInfo} {
+  other.invalidate();
 }
 
 Buffer& Buffer::operator=(Buffer&& other) noexcept {
@@ -46,13 +46,10 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept {
     // Pilfer the resources from the other object
     allocator_ = other.allocator_;
     allocation_ = other.allocation_;
-    buffer_ = other.buffer_;
-    createInfo_ = other.createInfo_;
+    const_cast<VkBuffer&>(handle) = other.handle;
+    const_cast<BufferCreateInfo&>(createInfo) = other.createInfo;
 
-    // Invalidate the other object
-    other.allocator_ = VK_NULL_HANDLE;
-    other.allocation_ = VK_NULL_HANDLE;
-    other.buffer_ = VK_NULL_HANDLE;
+    other.invalidate();
   }
   return *this;
 }
@@ -66,15 +63,17 @@ void* Buffer::map() const {
 void Buffer::unmap() const {
   vmaUnmapMemory(allocator_, allocation_);
 }
+void Buffer::invalidate() {
+  const_cast<VkBuffer&>(handle) = VK_NULL_HANDLE;
+  allocation_ = VK_NULL_HANDLE;
+  // not needed because not owned by Buffer
+  allocator_ = VK_NULL_HANDLE;
+}
 
 void Buffer::destroy() {
-  if (buffer_ != VK_NULL_HANDLE && allocation_ != VK_NULL_HANDLE && allocator_ != VK_NULL_HANDLE) {
-    vmaDestroyBuffer(allocator_, buffer_, allocation_);
-    buffer_ = VK_NULL_HANDLE;
-    allocation_ = VK_NULL_HANDLE;
-    // We don't null out the allocator_ because it's owned by the Renderer,
-    // but we can null the other handles to be safe.
-  }
+  if (handle != VK_NULL_HANDLE && allocation_ != VK_NULL_HANDLE && allocator_ != VK_NULL_HANDLE)
+    vmaDestroyBuffer(allocator_, handle, allocation_);
+  invalidate();
 }
 
 } // namespace aur

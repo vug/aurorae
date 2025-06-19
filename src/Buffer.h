@@ -30,21 +30,22 @@ public:
   Buffer& operator=(const Buffer&) = delete;
   Buffer(Buffer&& other) noexcept;
   Buffer& operator=(Buffer&& other) noexcept;
-  [[nodiscard]] bool isValid() const { return buffer_ != VK_NULL_HANDLE; }
+  [[nodiscard]] bool isValid() const { return handle != VK_NULL_HANDLE; }
 
-  [[nodiscard]] VkBuffer getHandle() const { return buffer_; }
-  [[nodiscard]] const BufferCreateInfo& getCreateInfo() const { return createInfo_; }
+private:
+  VmaAllocator allocator_{VK_NULL_HANDLE};
+  VmaAllocation allocation_{VK_NULL_HANDLE};
+
+public:
+  const BufferCreateInfo createInfo{};
+  const VkBuffer handle{VK_NULL_HANDLE};
 
   void* map() const;
   void unmap() const;
 
 private:
+  void invalidate();
   void destroy();
-
-  VmaAllocator allocator_{VK_NULL_HANDLE};
-  VmaAllocation allocation_{VK_NULL_HANDLE};
-  VkBuffer buffer_{VK_NULL_HANDLE};
-  BufferCreateInfo createInfo_{};
 };
 
 } // namespace aur

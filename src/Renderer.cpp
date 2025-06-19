@@ -150,7 +150,7 @@ void Renderer::createPerFrameDataResources() {
 
   // Now, link our buffer to the allocated descriptor set
   VkDescriptorBufferInfo bufferInfo{
-      .buffer = perFrameUniformBuffer_.getHandle(),
+      .buffer = perFrameUniformBuffer_.handle,
       .offset = 0,
       .range = sizeof(PerFrameData),
   };
