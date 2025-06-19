@@ -237,12 +237,12 @@ Pipeline Pipelines::createCubePipeline() const {
       .size = sizeof(glm::mat4),
   };
   std::array<VkPushConstantRange, 1> pushConstantRanges{pushConstantRange};
-  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-                                                      .setLayoutCount = 1,
-                                                      .pSetLayouts =
-                                                          &renderer_.getPerFrameDescriptorSetLayout(),
-                                                      .pushConstantRangeCount = pushConstantRanges.size(),
-                                                      .pPushConstantRanges = pushConstantRanges.data()};
+  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &renderer_.getPerFrameDescriptorSetLayout(),
+      .pushConstantRangeCount = static_cast<u32>(pushConstantRanges.size()),
+      .pPushConstantRanges = pushConstantRanges.data()};
   VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
   VK(vkCreatePipelineLayout(renderer_.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
 

@@ -1,5 +1,4 @@
-// TODO(vug): Can I use VMA allocator at other places too? Check the objects before I introduced VMA.
-// TODO(vug): introduce DescriptorSet abstraction. Have layout comparison:
+// TODO(vug): introduce DescriptorSet abstraction. Have layout comparison (isEqual and isCompatible):
 // https://gemini.google.com/app/b54463a6f7ddbb82
 // TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?
 // TODO(vug): upload geometry data via Vertex/Index Buffers
@@ -32,6 +31,8 @@
 // TODO(vug): normal maps
 // TODO(vug): Indirect rendering (various brush shapes for painterly render), 2D/3D gaussian splats,
 //            order independent transparency, differential rendering, bring Mitsuba, PBRT etc
+// TODO(vug): Whenever updating GPU drivers, check whether `vkCmdPushConstants2` is now available
+
 #include "Application.h"
 
 namespace aur {

@@ -1,12 +1,14 @@
-#include "Allocator.h"
+// clang-format off
+#include <volk/volk.h>
+#include "Renderer.h"
+#include <VulkanMemoryAllocator/vk_mem_alloc.h>
+// clang-format on
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <volk/volk.h> // For Vulkan functions
-
-#include "Renderer.h"
 
 #include <array>
 
+#include "Allocator.h"
 #include "Logger.h"
 #include "Pipeline.h"
 #include "Utils.h"
@@ -396,7 +398,7 @@ void Renderer::bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSe
                           &descriptorSet, 0, nullptr);
 }
 void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
-                                      VkPushConstantsInfo* pushConstantsInfo) const {
+                                      const VkPushConstantsInfo* pushConstantsInfo) const {
   vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
   bindDescriptorSet(pipeline.pipelineLayout, perFrameDescriptorSet_);
   if (pushConstantsInfo)

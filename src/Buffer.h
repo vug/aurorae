@@ -1,16 +1,20 @@
 #pragma once
 
-// clang-format off
-#include <volk/volk.h>
-#include <VulkanMemoryAllocator/vk_mem_alloc.h>
-// clang-format on
+#include "Utils.h"
+
+using VkDeviceSize = aur::u64;
+using VkBufferUsageFlags = aur::u32;
+enum VmaMemoryUsage : int;
+FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
+FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
+FORWARD_DEFINE_VK_HANDLE(VkBuffer)
 
 namespace aur {
 
 struct BufferCreateInfo {
   VkDeviceSize size{};
   VkBufferUsageFlags usage{};
-  VmaMemoryUsage memoryUsage{VMA_MEMORY_USAGE_UNKNOWN};
+  VmaMemoryUsage memoryUsage{}; // VMA_MEMORY_USAGE_UNKNOWN
 };
 
 class Buffer {
