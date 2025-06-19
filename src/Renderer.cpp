@@ -84,8 +84,6 @@ Renderer::~Renderer() {
 
   vkDestroyDescriptorPool(vulkanContext_.getDevice(), descriptorPool_, nullptr);
 
-  vkDestroyDescriptorSetLayout(vulkanContext_.getDevice(), perFrameDescriptorSetLayout_, nullptr);
-
   // Clean up sync objects
   for (auto& semaphore : imageAvailableSemaphores_) {
     if (semaphore != VK_NULL_HANDLE)
@@ -126,28 +124,20 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
 }
 
 void Renderer::createPerFrameDataResources() {
-  // Descriptor Set Layout
-  VkDescriptorSetLayoutBinding layoutBinding{
-      .binding = 0,
-      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-      .pImmutableSamplers = nullptr,
-  };
-  VkDescriptorSetLayoutCreateInfo createInfo{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-      .bindingCount = 1,
-      .pBindings = &layoutBinding,
-  };
-  VK(vkCreateDescriptorSetLayout(vulkanContext_.getDevice(), &createInfo, nullptr,
-                                 &perFrameDescriptorSetLayout_));
+  const std::vector<DescriptorSetLayoutBinding> bindings = {{
+      .index = 0,
+      .type = DescriptorType::UniformBuffer,
+      .stages = {ShaderStage::Vertex},
+  }};
+  const DescriptorSetLayoutCreateInfo createInfo{.bindings = bindings};
+  perFrameDescriptorSetLayout_ = DescriptorSetLayout(getDevice(), createInfo);
 
   // Descriptor Set
   VkDescriptorSetAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
       .descriptorPool = descriptorPool_,
       .descriptorSetCount = 1,
-      .pSetLayouts = &perFrameDescriptorSetLayout_,
+      .pSetLayouts = &perFrameDescriptorSetLayout_.handle,
   };
   if (vkAllocateDescriptorSets(vulkanContext_.getDevice(), &allocInfo, &perFrameDescriptorSet_) != VK_SUCCESS)
     log().fatal("Failed to allocate descriptor sets!");

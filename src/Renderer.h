@@ -4,6 +4,7 @@
 
 #include "Allocator.h"
 #include "Buffer.h"
+#include "DescriptorSetLayout.h"
 #include "FileIO.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
@@ -40,7 +41,7 @@ public:
   [[nodiscard]] inline const VkDescriptorSet& getPerFrameDescriptorSet() const {
     return perFrameDescriptorSet_;
   }
-  [[nodiscard]] inline const VkDescriptorSetLayout& getPerFrameDescriptorSetLayout() const {
+  [[nodiscard]] inline const DescriptorSetLayout& getPerFrameDescriptorSetLayout() const {
     return perFrameDescriptorSetLayout_;
   }
   [[nodiscard]] inline const VkDevice& getDevice() const { return vulkanContext_.getDevice(); }
@@ -99,7 +100,7 @@ private:
   VkFence inFlightFence_{VK_NULL_HANDLE};
   u32 currentSwapchainImageIx_{};
 
-  VkDescriptorSetLayout perFrameDescriptorSetLayout_{VK_NULL_HANDLE};
+  DescriptorSetLayout perFrameDescriptorSetLayout_;
   VkDescriptorPool descriptorPool_{VK_NULL_HANDLE};
   VkDescriptorSet perFrameDescriptorSet_{VK_NULL_HANDLE};
   Buffer perFrameUniformBuffer_;

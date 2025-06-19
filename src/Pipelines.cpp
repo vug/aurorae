@@ -96,7 +96,7 @@ Pipeline Pipelines::createTrianglePipeline() const {
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
                                                       .setLayoutCount = 1,
                                                       .pSetLayouts =
-                                                          &renderer_.getPerFrameDescriptorSetLayout()};
+                                                          &renderer_.getPerFrameDescriptorSetLayout().handle};
   VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
   VK(vkCreatePipelineLayout(renderer_.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
 
@@ -240,7 +240,7 @@ Pipeline Pipelines::createCubePipeline() const {
   const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .setLayoutCount = 1,
-      .pSetLayouts = &renderer_.getPerFrameDescriptorSetLayout(),
+      .pSetLayouts = &renderer_.getPerFrameDescriptorSetLayout().handle,
       .pushConstantRangeCount = static_cast<u32>(pushConstantRanges.size()),
       .pPushConstantRanges = pushConstantRanges.data()};
   VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
