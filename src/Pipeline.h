@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PipelineLayout.h"
 #include "Utils.h"
 
 FORWARD_DEFINE_VK_HANDLE(VkPipeline)
@@ -11,7 +12,7 @@ struct Pipeline {
   PathBuffer vertexPath;
   PathBuffer fragmentPath;
   VkPipeline pipeline{VK_NULL_HANDLE};
-  VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
+  PipelineLayout pipelineLayout;
 };
 
 } // namespace aur

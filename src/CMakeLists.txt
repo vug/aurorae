@@ -100,6 +100,7 @@ add_executable(Aurorae
         Pipeline.h
         AppContext.h AppContext.cpp
         DescriptorSetLayout.h DescriptorSetLayout.cpp
+        PipelineLayout.h PipelineLayout.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)

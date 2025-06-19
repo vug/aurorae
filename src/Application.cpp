@@ -67,7 +67,7 @@ void Application::run() {
       VkPushConstantsInfoKHR /* [issue #7] */ pushConstantsInfo{
           .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
           .pNext = nullptr,
-          .layout = cubePipeline.pipelineLayout,
+          .layout = cubePipeline.pipelineLayout.handle,
           .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
           .offset = 0,
           .size = sizeof(glm::mat4),

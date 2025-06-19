@@ -6,6 +6,7 @@
 
 #include "FileIO.h"
 #include "Logger.h"
+#include "PipelineLayout.h"
 #include "Renderer.h"
 
 namespace aur {
@@ -93,12 +94,10 @@ Pipeline Pipelines::createTrianglePipeline() const {
       .pAttachments = &colorBlendAttachment,
   };
 
-  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-                                                      .setLayoutCount = 1,
-                                                      .pSetLayouts =
-                                                          &renderer_.getPerFrameDescriptorSetLayout().handle};
-  VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
-  VK(vkCreatePipelineLayout(renderer_.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
+  PipelineLayoutCreateInfo layoutCreateInfo{
+      .setLayouts = {renderer_.getPerFrameDescriptorSetLayout().handle},
+  };
+  PipelineLayout pipelineLayout{renderer_.getDevice(), layoutCreateInfo};
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
@@ -131,7 +130,7 @@ Pipeline Pipelines::createTrianglePipeline() const {
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = pipelineLayout,
+      .layout = pipelineLayout.handle,
       .renderPass = VK_NULL_HANDLE, // Must be null for dynamic rendering
       .subpass = 0,
   };
@@ -148,7 +147,7 @@ Pipeline Pipelines::createTrianglePipeline() const {
       .vertexPath = std::move(vertexPath),
       .fragmentPath = std::move(fragmentPath),
       .pipeline = pipeline,
-      .pipelineLayout = pipelineLayout,
+      .pipelineLayout = std::move(pipelineLayout),
   };
 }
 
@@ -231,20 +230,17 @@ Pipeline Pipelines::createCubePipeline() const {
   };
 
   // WorldFromObject / Model matrix
-  VkPushConstantRange pushConstantRange{
+  PushConstantRange pushConstantRange{
       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
       .offset = 0,
       .size = sizeof(glm::mat4),
   };
-  std::array<VkPushConstantRange, 1> pushConstantRanges{pushConstantRange};
-  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 1,
-      .pSetLayouts = &renderer_.getPerFrameDescriptorSetLayout().handle,
-      .pushConstantRangeCount = static_cast<u32>(pushConstantRanges.size()),
-      .pPushConstantRanges = pushConstantRanges.data()};
-  VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
-  VK(vkCreatePipelineLayout(renderer_.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
+  PipelineLayoutCreateInfo layoutCreateInfo{
+      .setLayouts = {renderer_.getPerFrameDescriptorSetLayout().handle},
+      .pushConstantRanges = {pushConstantRange},
+  };
+
+  PipelineLayout pipelineLayout{renderer_.getDevice(), layoutCreateInfo};
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
@@ -275,7 +271,7 @@ Pipeline Pipelines::createCubePipeline() const {
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = pipelineLayout,
+      .layout = pipelineLayout.handle,
       .renderPass = VK_NULL_HANDLE,
       .subpass = 0,
   };
@@ -291,17 +287,13 @@ Pipeline Pipelines::createCubePipeline() const {
       .vertexPath = std::move(vertexPath),
       .fragmentPath = std::move(fragmentPath),
       .pipeline = pipeline,
-      .pipelineLayout = pipelineLayout,
+      .pipelineLayout = std::move(pipelineLayout),
   };
 }
 void Pipelines::cleanupPipeline(Pipeline& pipeline) const {
   if (pipeline.pipeline != VK_NULL_HANDLE) {
     vkDestroyPipeline(renderer_.getDevice(), pipeline.pipeline, nullptr);
     pipeline.pipeline = VK_NULL_HANDLE;
-  }
-  if (pipeline.pipelineLayout != VK_NULL_HANDLE) { // Only destroy if not shared by cube
-    vkDestroyPipelineLayout(renderer_.getDevice(), pipeline.pipelineLayout, nullptr);
-    pipeline.pipelineLayout = VK_NULL_HANDLE;
   }
 }
 } // namespace aur
