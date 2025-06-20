@@ -12,6 +12,8 @@ struct DescriptorSetLayoutBinding {
   DescriptorType type;
   u32 descriptorCount{1};
   std::vector<ShaderStage> stages;
+
+  bool operator==(const DescriptorSetLayoutBinding& other_binding) const = default;
 };
 
 struct DescriptorSetLayoutCreateInfo {
@@ -33,6 +35,9 @@ public:
 
   const DescriptorSetLayoutCreateInfo createInfo;
   const VkDescriptorSetLayout handle{VK_NULL_HANDLE};
+
+  bool isEqual(const DescriptorSetLayout& other) const { return handle == other.handle; }
+  bool isCompatible(const DescriptorSetLayout& other) const;
 
 private:
   VkDevice device_{VK_NULL_HANDLE};

@@ -61,6 +61,20 @@ DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& other)
   }
   return *this;
 }
+bool DescriptorSetLayout::isCompatible(const DescriptorSetLayout& other) const {
+  const u32 bindingCnt = createInfo.bindings.size();
+  if (bindingCnt != other.createInfo.bindings.size())
+    return false;
+
+  for (u32 i = 0; i < bindingCnt; ++i) {
+    const auto& thisBinding = createInfo.bindings[i];
+    const auto& otherBinding = other.createInfo.bindings[i];
+    if (thisBinding != otherBinding)
+      return false;
+  }
+  return true;
+}
+
 void DescriptorSetLayout::invalidate() {
   const_cast<VkDescriptorSetLayout&>(handle) = VK_NULL_HANDLE;
   // not needed because device_ is not owned by DescriptorSetLayout
