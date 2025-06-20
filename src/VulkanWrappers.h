@@ -11,6 +11,7 @@ FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
 FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
 FORWARD_DEFINE_VK_HANDLE(VkBuffer)
 FORWARD_DEFINE_VK_HANDLE(VkDescriptorSetLayout)
+FORWARD_DEFINE_VK_HANDLE(VkDescriptorPool)
 FORWARD_DEFINE_VK_HANDLE(VkPipelineLayout)
 using VkDeviceSize = uint64_t;
 using VkBufferUsageFlags = uint32_t;
