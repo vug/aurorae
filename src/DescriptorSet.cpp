@@ -12,7 +12,6 @@ DescriptorSet::DescriptorSet(VkDevice device, VkDescriptorPool pool,
                              const DescriptorSetCreateInfo& setCreateInfo)
     : createInfo(setCreateInfo)
     , handle([this, device, pool]() -> VkDescriptorSet {
-      // Define the allocation information
       VkDescriptorSetAllocateInfo allocInfo{
           .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
           .descriptorPool = pool,
@@ -31,18 +30,7 @@ DescriptorSet::DescriptorSet(VkDevice device, VkDescriptorPool pool,
 }
 
 DescriptorSet::~DescriptorSet() {
-  // TODO(vug): temporarily turning off RAII destruction until DescriptorPool abstraction is introduced.
-  // destroy();
-}
-
-void DescriptorSet::invalidate() {
-  const_cast<VkDescriptorSet&>(handle) = VK_NULL_HANDLE;
-}
-
-void DescriptorSet::destroy() {
-  if (isValid() && device_ != VK_NULL_HANDLE && pool_ != VK_NULL_HANDLE) {
-    VK(vkFreeDescriptorSets(device_, pool_, 1, &handle));
-  }
+  destroy();
 }
 
 DescriptorSet::DescriptorSet(DescriptorSet&& other) noexcept
@@ -66,6 +54,15 @@ DescriptorSet& DescriptorSet::operator=(DescriptorSet&& other) noexcept {
     other.invalidate();
   }
   return *this;
+}
+
+void DescriptorSet::invalidate() {
+  const_cast<VkDescriptorSet&>(handle) = VK_NULL_HANDLE;
+}
+
+void DescriptorSet::destroy() {
+  if (isValid() && device_ != VK_NULL_HANDLE && pool_ != VK_NULL_HANDLE)
+    VK(vkFreeDescriptorSets(device_, pool_, 1, &handle));
 }
 
 void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) {

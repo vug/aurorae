@@ -50,18 +50,18 @@ public:
 
   [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
 
-  // This method is called to actually bind resources to the descriptor set.
-  void update(const std::vector<WriteDescriptorSet>& writes);
-
   const DescriptorSetCreateInfo createInfo{};
   const VkDescriptorSet handle{VK_NULL_HANDLE};
 
-private:
-  VkDevice device_{VK_NULL_HANDLE};
-  VkDescriptorPool pool_{VK_NULL_HANDLE};
+  // This method is called to actually bind resources to the descriptor set.
+  void update(const std::vector<WriteDescriptorSet>& writes);
 
+private:
   void invalidate();
   void destroy();
+
+  VkDevice device_{VK_NULL_HANDLE};
+  VkDescriptorPool pool_{VK_NULL_HANDLE};
 };
 
 } // namespace aur

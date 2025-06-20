@@ -102,8 +102,8 @@ add_executable(Aurorae
         DescriptorSetLayout.h DescriptorSetLayout.cpp
         PipelineLayout.h PipelineLayout.cpp
         VulkanWrappers.h VulkanWrappers.cpp
-        DescriptorSet.cpp
-        DescriptorSet.h
+        DescriptorSet.h DescriptorSet.cpp
+        DescriptorPool.h DescriptorPool.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)

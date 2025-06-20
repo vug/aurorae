@@ -4,6 +4,7 @@
 
 #include "Allocator.h"
 #include "Buffer.h"
+#include "DescriptorPool.h"
 #include "DescriptorSet.h"
 #include "DescriptorSetLayout.h"
 #include "FileIO.h"
@@ -103,7 +104,7 @@ private:
   VkFence inFlightFence_{VK_NULL_HANDLE};
   u32 currentSwapchainImageIx_{};
 
-  VkDescriptorPool descriptorPool_{VK_NULL_HANDLE};
+  DescriptorPool descriptorPool_;
   DescriptorSetLayout perFrameDescriptorSetLayout_;
   DescriptorSet perFrameDescriptorSet_;
   Buffer perFrameUniformBuffer_;

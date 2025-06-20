@@ -9,6 +9,7 @@
 #include <array>
 
 #include "Allocator.h"
+#include "DescriptorPool.h"
 #include "DescriptorSet.h"
 #include "Logger.h"
 #include "Pipeline.h"
@@ -41,25 +42,18 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   VK(vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo, &commandBuffer_));
   log().trace("Renderer command buffer created/allocated.");
 
-  // Descriptor Pool
-  VkDescriptorPoolSize poolSizes[] = {
-      {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 512},          // Many UBOs for per-frame, per-object data
-      {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024}, // Many textures
-      {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 256},          // Some storage buffers for compute/large data
-      {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256},           // If you separate images/samplers
-      {VK_DESCRIPTOR_TYPE_SAMPLER, 64},                  // Reused samplers
-      {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 32},            // For render targets or compute images
-      // Add other types as needed (e.g., INVOCATION_GRAPHICS_NV, ACCELERATION_STRUCTURE_KHR)
-  };
-  VkDescriptorPoolCreateInfo descPoolInfo{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-      .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+  const DescriptorPoolCreateInfo descPoolInfo{
       .maxSets = 512,
-      .poolSizeCount = sizeof(poolSizes) / sizeof(VkDescriptorPoolSize),
-      .pPoolSizes = &poolSizes[0],
-  };
-  VK(vkCreateDescriptorPool(vulkanContext_.getDevice(), &descPoolInfo, nullptr, &descriptorPool_));
-  log().trace("Renderer descriptor pool created.");
+      .poolSizes = {
+          {DescriptorType::UniformBuffer, 512}, // Many UBOs for per-frame, per-object data
+          // {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024}, // Many textures
+          // {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 256},          // Some storage buffers for compute/large data
+          // {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256},           // If you separate images/samplers
+          // {VK_DESCRIPTOR_TYPE_SAMPLER, 64},                  // Reused samplers
+          // {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 32},            // For render targets or compute images
+          // Add other types as needed (e.g., INVOCATION_GRAPHICS_NV, ACCELERATION_STRUCTURE_KHR)
+      }};
+  descriptorPool_ = DescriptorPool(getDevice(), descPoolInfo);
 
   constexpr VkSemaphoreCreateInfo semaphoreInfo{.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
   for (auto& semaphore : imageAvailableSemaphores_)
@@ -83,8 +77,6 @@ Renderer::~Renderer() {
   deviceWaitIdle();
 
   cleanupSwapchainDepthResources(); // Destroy depth buffer
-
-  vkDestroyDescriptorPool(vulkanContext_.getDevice(), descriptorPool_, nullptr);
 
   // Clean up sync objects
   for (auto& semaphore : imageAvailableSemaphores_) {
@@ -137,7 +129,7 @@ void Renderer::createPerFrameDataResources() {
   const DescriptorSetCreateInfo setCreateInfo{
       .layout = &perFrameDescriptorSetLayout_,
   };
-  perFrameDescriptorSet_ = DescriptorSet(getDevice(), descriptorPool_, setCreateInfo);
+  perFrameDescriptorSet_ = DescriptorSet(getDevice(), descriptorPool_.handle, setCreateInfo);
 
   // Uniform Buffer
   BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
