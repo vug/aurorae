@@ -1,5 +1,5 @@
 /*
-TODO(vug): DescriptorSet abstraction. Allocated via pool for a layout. (see chat on resource abstractions)
+TODO(vug): Introduce DescriptorPool abstraction (uncomment DescriptorSet destructor)
 TODO(vug): When a DescriptorSet is bound check whether it's compatible with the pipeline's layout.
            (https://gemini.google.com/app/b54463a6f7ddbb82)
 TODO(vug): Give vulkan objects debug names. Label CommandBuffer regions. (See chat)

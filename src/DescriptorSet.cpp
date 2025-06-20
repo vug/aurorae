@@ -41,7 +41,7 @@ void DescriptorSet::invalidate() {
 
 void DescriptorSet::destroy() {
   if (isValid() && device_ != VK_NULL_HANDLE && pool_ != VK_NULL_HANDLE) {
-    vkFreeDescriptorSets(device_, pool_, 1, &handle);
+    VK(vkFreeDescriptorSets(device_, pool_, 1, &handle));
   }
 }
 
@@ -78,7 +78,8 @@ void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) {
     const DescriptorBufferInfo& bufferInfo = *write.bufferInfo;
     const VkDescriptorBufferInfo& vkBufferInfo =
         vkBufferInfos.emplace_back(bufferInfo.buffer.handle, bufferInfo.offset, bufferInfo.range);
-    vkWrites.push_back({.dstSet = write.dstSet.handle,
+    vkWrites.push_back({.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                        .dstSet = write.dstSet.handle,
                         .dstBinding = write.binding,
                         .descriptorCount = write.descriptorCnt,
                         .descriptorType = static_cast<VkDescriptorType>(write.descriptorType),

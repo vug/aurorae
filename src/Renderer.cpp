@@ -146,21 +146,19 @@ void Renderer::createPerFrameDataResources() {
   perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto);
 
   // Now, link our buffer to the allocated descriptor set
-  VkDescriptorBufferInfo bufferInfo{
-      .buffer = perFrameUniformBuffer_.handle,
+  DescriptorBufferInfo bufferInfo{
+      .buffer = perFrameUniformBuffer_,
       .offset = 0,
       .range = sizeof(PerFrameData),
   };
-  VkWriteDescriptorSet descriptorWrite{
-      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-      .dstSet = perFrameDescriptorSet_.handle,
-      .dstBinding = 0,
-      .dstArrayElement = 0,
-      .descriptorCount = 1,
-      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .pBufferInfo = &bufferInfo,
+  WriteDescriptorSet write{
+      .dstSet = perFrameDescriptorSet_,
+      .binding = 0,
+      .descriptorCnt = 1,
+      .descriptorType = DescriptorType::UniformBuffer,
+      .bufferInfo = &bufferInfo,
   };
-  vkUpdateDescriptorSets(vulkanContext_.getDevice(), 1, &descriptorWrite, 0, nullptr);
+  perFrameDescriptorSet_.update({write});
 }
 
 void Renderer::notifyResize(u32 newWidth, u32 newHeight) {
