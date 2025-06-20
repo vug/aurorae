@@ -4,6 +4,18 @@
 
 #include "Utils.h"
 
+// Forward definitions of vulkan handles and types so that we don't have to include vulkan headers in Aurorae
+// headers
+FORWARD_DEFINE_VK_HANDLE(VkDevice)
+FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
+FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
+FORWARD_DEFINE_VK_HANDLE(VkBuffer)
+FORWARD_DEFINE_VK_HANDLE(VkDescriptorSetLayout)
+FORWARD_DEFINE_VK_HANDLE(VkPipelineLayout)
+using VkDeviceSize = uint64_t;
+using VkBufferUsageFlags = uint32_t;
+enum VmaMemoryUsage : int32_t;
+
 namespace aur {
 
 // sync with VkDescriptorType

@@ -1,29 +1,23 @@
 #pragma once
 
 #include "Utils.h"
-
-using VkDeviceSize = aur::u64;
-using VkBufferUsageFlags = aur::u32;
-enum VmaMemoryUsage : int;
-FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
-FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
-FORWARD_DEFINE_VK_HANDLE(VkBuffer)
+#include "VulkanWrappers.h"
 
 namespace aur {
 
 struct BufferCreateInfo {
   VkDeviceSize size{};
   VkBufferUsageFlags usage{};
-  VmaMemoryUsage memoryUsage{}; // VMA_MEMORY_USAGE_UNKNOWN
+  VmaMemoryUsage memoryUsage{}; // default 0 is VMA_MEMORY_USAGE_UNKNOWN
 };
 
 class Buffer {
 public:
-  // Default constructor for an empty buffer
+  // Create an empty / invalid buffer
   Buffer() = default;
-  // Constructor to create and allocate the buffer
+  // Create and allocate the buffer
   Buffer(VmaAllocator allocator, const BufferCreateInfo& createInfo);
-  // Destructor to clean up resources
+  // Clean up resources and invalidate
   ~Buffer();
 
   Buffer(const Buffer&) = delete;
@@ -44,7 +38,9 @@ public:
   void unmap() const;
 
 private:
+  // nullify the handle (and other states)
   void invalidate();
+  // destroy the resource
   void destroy();
 };
 

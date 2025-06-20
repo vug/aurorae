@@ -5,11 +5,6 @@
 #include "Utils.h"
 #include "VulkanWrappers.h"
 
-FORWARD_DEFINE_VK_HANDLE(VkDescriptorSetLayout)
-FORWARD_DEFINE_VK_HANDLE(VkDevice)
-
-using VkShaderStageFlags = unsigned int;
-
 namespace aur {
 
 struct DescriptorSetLayoutBinding {
