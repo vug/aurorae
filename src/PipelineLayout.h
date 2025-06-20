@@ -11,6 +11,8 @@ using VkShaderStageFlags = unsigned int;
 
 namespace aur {
 
+class DescriptorSetLayout;
+
 struct PushConstantRange {
   VkShaderStageFlags stageFlags;
   uint32_t offset;
@@ -18,7 +20,8 @@ struct PushConstantRange {
 };
 
 struct PipelineLayoutCreateInfo {
-  std::vector<VkDescriptorSetLayout> setLayouts;
+  // Pipeline layout does not own descriptor set layouts, just refers to them
+  std::vector<const DescriptorSetLayout*> descriptorSetLayouts;
   std::vector<PushConstantRange> pushConstantRanges;
 };
 

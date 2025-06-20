@@ -1,5 +1,6 @@
 #include "PipelineLayout.h"
 
+#include "DescriptorSetLayout.h"
 #include "Logger.h"
 #include <volk/volk.h>
 
@@ -17,10 +18,16 @@ PipelineLayout::PipelineLayout(VkDevice device, const PipelineLayoutCreateInfo& 
         });
       }
 
+      std::vector<VkDescriptorSetLayout> vkDescriptorSetLayouts;
+      for (const DescriptorSetLayout* dsl : createInfo.descriptorSetLayouts) {
+        if (!dsl)
+          log().fatal("DescriptorSetLayout* given to PipelineLayoutCreateInfo is null.");
+        vkDescriptorSetLayouts.push_back(dsl->handle);
+      }
       const VkPipelineLayoutCreateInfo vkCreateInfo{
           .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-          .setLayoutCount = static_cast<u32>(createInfo.setLayouts.size()),
-          .pSetLayouts = createInfo.setLayouts.data(),
+          .setLayoutCount = static_cast<u32>(vkDescriptorSetLayouts.size()),
+          .pSetLayouts = vkDescriptorSetLayouts.data(),
           .pushConstantRangeCount = static_cast<u32>(vkPushConstantRanges.size()),
           .pPushConstantRanges = vkPushConstantRanges.data(),
       };

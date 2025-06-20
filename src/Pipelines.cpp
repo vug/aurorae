@@ -95,7 +95,7 @@ Pipeline Pipelines::createTrianglePipeline() const {
   };
 
   PipelineLayoutCreateInfo layoutCreateInfo{
-      .setLayouts = {renderer_.getPerFrameDescriptorSetLayout().handle},
+      .descriptorSetLayouts = {&renderer_.getPerFrameDescriptorSetLayout()},
   };
   PipelineLayout pipelineLayout{renderer_.getDevice(), layoutCreateInfo};
 
@@ -236,7 +236,7 @@ Pipeline Pipelines::createCubePipeline() const {
       .size = sizeof(glm::mat4),
   };
   PipelineLayoutCreateInfo layoutCreateInfo{
-      .setLayouts = {renderer_.getPerFrameDescriptorSetLayout().handle},
+      .descriptorSetLayouts = {&renderer_.getPerFrameDescriptorSetLayout()},
       .pushConstantRanges = {pushConstantRange},
   };
 
