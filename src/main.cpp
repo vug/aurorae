@@ -1,6 +1,7 @@
 /*
 TODO(vug): DescriptorSet abstraction. Allocated via pool for a layout. (see chat on resource abstractions)
 TODO(vug): When a DescriptorSet is bound check whether it's compatible with the pipeline's layout.
+           (https://gemini.google.com/app/b54463a6f7ddbb82)
 TODO(vug): Give vulkan objects debug names. Label CommandBuffer regions. (See chat)
 TODO(vug): upload geometry data via Vertex/Index Buffers
 TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
