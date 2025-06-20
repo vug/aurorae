@@ -1,9 +1,6 @@
-// TODO(vug): a AuroraeVulkanStructs file, that has static_asserts about enum value comparisons (in a CPP
-// file?)
-// TODO(vug): convert PushConstantRanges to Aurorae
 // TODO(vug): DescriptorLayoutSet comparison (isEqual and isCompatible)
 // https://gemini.google.com/app/b54463a6f7ddbb82
-//            DescriptorSet abstraction. Allocated via pool for a layout. check whether it's compatible with
+// TODO(vug): DescriptorSet abstraction. Allocated via pool for a layout. check whether it's compatible with
 //            the layout.
 // TODO(vug): Give vulkan objects debug names. Label CommandBuffer regions. (See chat)
 // TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?
