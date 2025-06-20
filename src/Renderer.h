@@ -4,6 +4,7 @@
 
 #include "Allocator.h"
 #include "Buffer.h"
+#include "DescriptorSet.h"
 #include "DescriptorSetLayout.h"
 #include "FileIO.h"
 #include "Swapchain.h"
@@ -38,7 +39,7 @@ public:
 
   [[nodiscard]] inline const VkCommandBuffer& getCommandBuffer() const { return commandBuffer_; }
   [[nodiscard]] inline u32 getCurrentImageIndex() const { return currentSwapchainImageIx_; }
-  [[nodiscard]] inline const VkDescriptorSet& getPerFrameDescriptorSet() const {
+  [[nodiscard]] inline const DescriptorSet& getPerFrameDescriptorSet() const {
     return perFrameDescriptorSet_;
   }
   [[nodiscard]] inline const DescriptorSetLayout& getPerFrameDescriptorSetLayout() const {
@@ -102,9 +103,9 @@ private:
   VkFence inFlightFence_{VK_NULL_HANDLE};
   u32 currentSwapchainImageIx_{};
 
-  DescriptorSetLayout perFrameDescriptorSetLayout_;
   VkDescriptorPool descriptorPool_{VK_NULL_HANDLE};
-  VkDescriptorSet perFrameDescriptorSet_{VK_NULL_HANDLE};
+  DescriptorSetLayout perFrameDescriptorSetLayout_;
+  DescriptorSet perFrameDescriptorSet_;
   Buffer perFrameUniformBuffer_;
 
   bool framebufferWasResized_{false};

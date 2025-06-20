@@ -34,14 +34,12 @@ struct WriteDescriptorSet {
 struct DescriptorSetCreateInfo {
   // This layout defines the structure of the descriptor set being allocated.
   // The DescriptorSet itself doesn't own the layout, just references it.
-  const DescriptorSetLayout& layout;
+  const DescriptorSetLayout* layout;
 };
 
 class DescriptorSet {
 public:
-  // Default constructor for an invalid/empty descriptor set.
   DescriptorSet() = default;
-  // Constructor for allocating the descriptor set.
   DescriptorSet(VkDevice device, VkDescriptorPool pool, const DescriptorSetCreateInfo& createInfo);
   ~DescriptorSet();
 
@@ -55,8 +53,8 @@ public:
   // This method is called to actually bind resources to the descriptor set.
   void update(const std::vector<WriteDescriptorSet>& writes);
 
-  const DescriptorSetCreateInfo createInfo;
-  const VkDescriptorSet handle;
+  const DescriptorSetCreateInfo createInfo{};
+  const VkDescriptorSet handle{VK_NULL_HANDLE};
 
 private:
   VkDevice device_{VK_NULL_HANDLE};

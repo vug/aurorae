@@ -1,7 +1,5 @@
 #include "DescriptorSetLayout.h"
 
-#include <bitset>
-
 #include <volk/volk.h>
 
 #include "Logger.h"
@@ -62,7 +60,7 @@ DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& other)
   return *this;
 }
 bool DescriptorSetLayout::isCompatible(const DescriptorSetLayout& other) const {
-  const u32 bindingCnt = createInfo.bindings.size();
+  const u32 bindingCnt = static_cast<u32>(createInfo.bindings.size());
   if (bindingCnt != other.createInfo.bindings.size())
     return false;
 

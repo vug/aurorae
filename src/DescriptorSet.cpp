@@ -1,5 +1,6 @@
 #include "DescriptorSet.h"
 
+#include "Buffer.h"
 #include "DescriptorSetLayout.h"
 #include "Logger.h"
 
@@ -10,13 +11,13 @@ namespace aur {
 DescriptorSet::DescriptorSet(VkDevice device, VkDescriptorPool pool,
                              const DescriptorSetCreateInfo& setCreateInfo)
     : createInfo(setCreateInfo)
-    , handle([this, &device]() -> VkDescriptorSet {
+    , handle([this, device, pool]() -> VkDescriptorSet {
       // Define the allocation information
       VkDescriptorSetAllocateInfo allocInfo{
           .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-          .descriptorPool = pool_,
+          .descriptorPool = pool,
           .descriptorSetCount = 1,
-          .pSetLayouts = &createInfo.layout.handle,
+          .pSetLayouts = &createInfo.layout->handle,
       };
 
       VkDescriptorSet dset = VK_NULL_HANDLE;
@@ -30,7 +31,8 @@ DescriptorSet::DescriptorSet(VkDevice device, VkDescriptorPool pool,
 }
 
 DescriptorSet::~DescriptorSet() {
-  destroy();
+  // TODO(vug): temporarily turning off RAII destruction until DescriptorPool abstraction is introduced.
+  // destroy();
 }
 
 void DescriptorSet::invalidate() {
@@ -38,47 +40,56 @@ void DescriptorSet::invalidate() {
 }
 
 void DescriptorSet::destroy() {
-  if (isValid()) {
+  if (isValid() && device_ != VK_NULL_HANDLE && pool_ != VK_NULL_HANDLE) {
     vkFreeDescriptorSets(device_, pool_, 1, &handle);
   }
 }
 
-DescriptorSet::DescriptorSet(DescriptorSet&& other) noexcept {}
+DescriptorSet::DescriptorSet(DescriptorSet&& other) noexcept
+    : createInfo(std::move(other.createInfo))
+    , handle(other.handle)
+    , device_(other.device_)
+    , pool_(other.pool_) {
+  other.invalidate();
+}
 
-DescriptorSet& DescriptorSet::operator=(DescriptorSet&& other) noexcept {}
+DescriptorSet& DescriptorSet::operator=(DescriptorSet&& other) noexcept {
+  if (this != &other) {
+    destroy();
 
-// void DescriptorSet::update(const std::vector<VkWriteDescriptorSet>& writes) {
-//   if (!isValid() || context_ == VK_NULL_HANDLE) {
-//     aur::log().warn("Attempted to update an invalid or uninitialized DescriptorSet.");
-//     return;
-//   }
-//
-//   // A temporary vector to ensure `dstSet` points to *this* descriptor set.
-//   // It's a common pattern to ensure the caller doesn't accidentally
-//   // provide writes for a different set.
-//   std::vector<VkWriteDescriptorSet> actualWrites = writes;
-//   for (auto& write : actualWrites) {
-//     write.dstSet = handle; // Ensure the write is applied to *this* descriptor set
-//   }
-//
-//   // Perform the Vulkan API call to update the descriptor set.
-//   // The last two parameters (dstSetCount, pDstSets) are for copying, not writing.
-//   vkUpdateDescriptorSets(context_, static_cast<uint32_t>(actualWrites.size()), actualWrites.data(),
-//                          0,        // No VkCopyDescriptorSet structures
-//                          nullptr); // No VkCopyDescriptorSet structures
-// }
+    // Pilfer resources from other object
+    const_cast<DescriptorSetCreateInfo&>(createInfo) = std::move(other.createInfo);
+    const_cast<VkDescriptorSet&>(handle) = other.handle;
+    device_ = other.device_;
+    pool_ = other.pool_;
 
-// void DescriptorSet::destroy() {
-//   // Check if the handle and context are valid before attempting to free.
-//   // The pool_ must also be valid, as descriptor sets are freed from their pool.
-//   if (isValid() && pool_ != VK_NULL_HANDLE && context_ != VK_NULL_HANDLE) {
-//     // Free the descriptor set back to its pool.
-//     // vkFreeDescriptorSets takes an array, so we pass a pointer to our single handle.
-//     vkFreeDescriptorSets(context_, pool_, 1, &handle);
-//   }
-//   // Invalidate the base class's members (handle, createInfo) and our own pool_ reference.
-//   invalidate_base_members();
-//   pool_ = VK_NULL_HANDLE;
-// }
+    other.invalidate();
+  }
+  return *this;
+}
+
+void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) {
+  // A temporary vector to ensure `dstSet` points to *this* descriptor set.
+  // It's a common pattern to ensure the caller doesn't accidentally
+  // provide writes for a different set.
+  std::vector<VkDescriptorBufferInfo> vkBufferInfos;
+  std::vector<VkWriteDescriptorSet> vkWrites;
+  for (const auto& write : writes) {
+    const DescriptorBufferInfo& bufferInfo = *write.bufferInfo;
+    const VkDescriptorBufferInfo& vkBufferInfo =
+        vkBufferInfos.emplace_back(bufferInfo.buffer.handle, bufferInfo.offset, bufferInfo.range);
+    vkWrites.push_back({.dstSet = write.dstSet.handle,
+                        .dstBinding = write.binding,
+                        .descriptorCount = write.descriptorCnt,
+                        .descriptorType = static_cast<VkDescriptorType>(write.descriptorType),
+                        .pBufferInfo = &vkBufferInfo});
+  }
+
+  // Perform the Vulkan API call to update the descriptor set.
+  // The last two parameters (dstSetCount, pDstSets) are for copying, not writing.
+  vkUpdateDescriptorSets(device_, static_cast<uint32_t>(vkWrites.size()), vkWrites.data(),
+                         0,        // No VkCopyDescriptorSet structures
+                         nullptr); // No VkCopyDescriptorSet structures
+}
 
 } // namespace aur

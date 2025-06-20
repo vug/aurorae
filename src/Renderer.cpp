@@ -9,6 +9,7 @@
 #include <array>
 
 #include "Allocator.h"
+#include "DescriptorSet.h"
 #include "Logger.h"
 #include "Pipeline.h"
 #include "Utils.h"
@@ -52,6 +53,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   };
   VkDescriptorPoolCreateInfo descPoolInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+      .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
       .maxSets = 512,
       .poolSizeCount = sizeof(poolSizes) / sizeof(VkDescriptorPoolSize),
       .pPoolSizes = &poolSizes[0],
@@ -132,15 +134,10 @@ void Renderer::createPerFrameDataResources() {
   const DescriptorSetLayoutCreateInfo createInfo{.bindings = bindings};
   perFrameDescriptorSetLayout_ = createDescriptorSetLayout(createInfo);
 
-  // Descriptor Set
-  VkDescriptorSetAllocateInfo allocInfo{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-      .descriptorPool = descriptorPool_,
-      .descriptorSetCount = 1,
-      .pSetLayouts = &perFrameDescriptorSetLayout_.handle,
+  const DescriptorSetCreateInfo setCreateInfo{
+      .layout = &perFrameDescriptorSetLayout_,
   };
-  if (vkAllocateDescriptorSets(vulkanContext_.getDevice(), &allocInfo, &perFrameDescriptorSet_) != VK_SUCCESS)
-    log().fatal("Failed to allocate descriptor sets!");
+  perFrameDescriptorSet_ = DescriptorSet(getDevice(), descriptorPool_, setCreateInfo);
 
   // Uniform Buffer
   BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
@@ -156,7 +153,7 @@ void Renderer::createPerFrameDataResources() {
   };
   VkWriteDescriptorSet descriptorWrite{
       .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-      .dstSet = perFrameDescriptorSet_,
+      .dstSet = perFrameDescriptorSet_.handle,
       .dstBinding = 0,
       .dstArrayElement = 0,
       .descriptorCount = 1,
@@ -391,7 +388,7 @@ void Renderer::drawWithoutVertexInput(
     const Pipeline& pipeline, u32 vertexCnt,
     const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo) const {
   vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
-  bindDescriptorSet(pipeline.pipelineLayout.handle, perFrameDescriptorSet_);
+  bindDescriptorSet(pipeline.pipelineLayout.handle, perFrameDescriptorSet_.handle);
   if (pushConstantsInfo)
     /* [issue #7] */
     vkCmdPushConstants2KHR(commandBuffer_, pushConstantsInfo); // [issue #7]
