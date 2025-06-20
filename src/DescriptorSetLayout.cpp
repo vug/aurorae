@@ -14,14 +14,12 @@ DescriptorSetLayout::DescriptorSetLayout(VkDevice device,
     , handle([this, device]() {
       std::vector<VkDescriptorSetLayoutBinding> vkBindings;
       for (const auto& binding : createInfo.bindings) {
-        std::bitset<32> stageFlags;
-        for (const auto& stage : binding.stages)
-          stageFlags |= std::bitset<32>(static_cast<u32>(stage));
+
         vkBindings.push_back({
             .binding = binding.index,
             .descriptorType = static_cast<VkDescriptorType>(binding.type),
             .descriptorCount = binding.descriptorCount,
-            .stageFlags = static_cast<u32>(stageFlags.to_ulong()),
+            .stageFlags = toStageFlags(binding.stages),
             .pImmutableSamplers = nullptr,
         });
       }

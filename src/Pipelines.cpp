@@ -230,14 +230,13 @@ Pipeline Pipelines::createCubePipeline() const {
   };
 
   // WorldFromObject / Model matrix
-  PushConstantRange pushConstantRange{
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-      .offset = 0,
+  const PushConstant pushConstant{
+      .stages = {ShaderStage::Vertex},
       .size = sizeof(glm::mat4),
   };
   PipelineLayoutCreateInfo layoutCreateInfo{
       .descriptorSetLayouts = {&renderer_.getPerFrameDescriptorSetLayout()},
-      .pushConstantRanges = {pushConstantRange},
+      .pushConstants = {pushConstant},
   };
 
   PipelineLayout pipelineLayout{renderer_.getDevice(), layoutCreateInfo};

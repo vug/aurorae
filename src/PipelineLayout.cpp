@@ -10,12 +10,14 @@ PipelineLayout::PipelineLayout(VkDevice device, const PipelineLayoutCreateInfo& 
     : createInfo(layoutCreateInfo)
     , handle([this, device]() {
       std::vector<VkPushConstantRange> vkPushConstantRanges;
-      for (const auto& range : createInfo.pushConstantRanges) {
+      for (const PushConstant& pc : createInfo.pushConstants) {
+        u32 offset{};
         vkPushConstantRanges.push_back({
-            .stageFlags = range.stageFlags,
-            .offset = range.offset,
-            .size = range.size,
+            .stageFlags = toStageFlags(pc.stages),
+            .offset = offset,
+            .size = pc.size,
         });
+        offset += pc.size;
       }
 
       std::vector<VkDescriptorSetLayout> vkDescriptorSetLayouts;

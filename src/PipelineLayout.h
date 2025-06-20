@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Utils.h"
+#include "VulkanWrappers.h"
 
 FORWARD_DEFINE_VK_HANDLE(VkPipelineLayout)
 FORWARD_DEFINE_VK_HANDLE(VkDevice)
@@ -13,16 +14,10 @@ namespace aur {
 
 class DescriptorSetLayout;
 
-struct PushConstantRange {
-  VkShaderStageFlags stageFlags;
-  uint32_t offset;
-  uint32_t size;
-};
-
 struct PipelineLayoutCreateInfo {
   // Pipeline layout does not own descriptor set layouts, just refers to them
   std::vector<const DescriptorSetLayout*> descriptorSetLayouts;
-  std::vector<PushConstantRange> pushConstantRanges;
+  std::vector<PushConstant> pushConstants;
 };
 
 class PipelineLayout {
