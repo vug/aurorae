@@ -14,6 +14,7 @@ TODO(vug): use slang as the shader language, and import global and per-frame uni
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): generate layouts from shader reflection
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, Image(?)
+TODO(vug): Put all resource abstractions into a VulkanResources folder
 .
 TODO(vug): macros: MOVE_ONLY, COPY_ONLY, NOT_MOVABLE_NOT_COPIABLE
 TODO(vug): try out C++ modules, but don't obsess if it does not work well

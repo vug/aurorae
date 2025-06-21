@@ -371,9 +371,20 @@ void Renderer::endFrame() {
 }
 
 void Renderer::bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) const {
-  vkCmdBindDescriptorSets(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                          &descriptorSet, 0, nullptr);
+  VkBindDescriptorSetsInfo bindDescriptorSetsInfo{
+      .sType = VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO,
+      .pNext = nullptr,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+      .layout = pipelineLayout,
+      .firstSet = 0,
+      .descriptorSetCount = 1,
+      .pDescriptorSets = &descriptorSet,
+      .dynamicOffsetCount = 0,
+      .pDynamicOffsets = nullptr,
+  };
+  vkCmdBindDescriptorSets2KHR(commandBuffer_, &bindDescriptorSetsInfo); // [issue #7]
 }
+
 void Renderer::drawWithoutVertexInput(
     const Pipeline& pipeline, u32 vertexCnt,
     const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo) const {
