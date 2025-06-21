@@ -6,8 +6,8 @@
 
 #include "FileIO.h"
 #include "Logger.h"
-#include "PipelineLayout.h"
 #include "Renderer.h"
+#include "Resources/PipelineLayout.h"
 
 namespace aur {
 Pipelines::Pipelines(const Renderer& renderer)

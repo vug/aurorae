@@ -8,11 +8,11 @@
 
 #include <array>
 
-#include "Allocator.h"
-#include "DescriptorPool.h"
-#include "DescriptorSet.h"
 #include "Logger.h"
 #include "Pipeline.h"
+#include "Resources/Allocator.h"
+#include "Resources/DescriptorPool.h"
+#include "Resources/DescriptorSet.h"
 #include "Utils.h"
 
 namespace aur {

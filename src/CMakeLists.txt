@@ -85,25 +85,24 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 add_executable(Aurorae
         main.cpp
         Utils.h Utils.cpp
-        GlfwUtils.h GlfwUtils.cpp
         Logger.h Logger.cpp
         FileIO.h FileIO.cpp
         Application.h Application.cpp
+        GlfwUtils.h GlfwUtils.cpp
         Window.h Window.cpp
         VulkanContext.h VulkanContext.cpp
+        VulkanWrappers.h VulkanWrappers.cpp
         Swapchain.h Swapchain.cpp
         Renderer.h Renderer.cpp
-        Buffer.h
-        Buffer.cpp
-        Allocator.h Allocator.cpp
+        AppContext.h AppContext.cpp
         Pipelines.h Pipelines.cpp
         Pipeline.h
-        AppContext.h AppContext.cpp
-        DescriptorSetLayout.h DescriptorSetLayout.cpp
-        PipelineLayout.h PipelineLayout.cpp
-        VulkanWrappers.h VulkanWrappers.cpp
-        DescriptorSet.h DescriptorSet.cpp
-        DescriptorPool.h DescriptorPool.cpp
+        Resources/Allocator.h Resources/Allocator.cpp
+        Resources/Buffer.h Resources/Buffer.cpp
+        Resources/DescriptorPool.h Resources/DescriptorPool.cpp
+        Resources/DescriptorSet.h Resources/DescriptorSet.cpp
+        Resources/DescriptorSetLayout.h Resources/DescriptorSetLayout.cpp
+        Resources/PipelineLayout.h Resources/PipelineLayout.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)

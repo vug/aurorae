@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PipelineLayout.h"
+#include "Resources/PipelineLayout.h"
 #include "Utils.h"
 
 FORWARD_DEFINE_VK_HANDLE(VkPipeline)

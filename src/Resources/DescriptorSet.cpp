@@ -1,8 +1,8 @@
 #include "DescriptorSet.h"
 
+#include "../Logger.h"
 #include "Buffer.h"
 #include "DescriptorSetLayout.h"
-#include "Logger.h"
 
 namespace aur {
 

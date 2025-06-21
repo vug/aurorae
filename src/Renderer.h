@@ -2,12 +2,12 @@
 
 #include <glm/mat4x4.hpp>
 
-#include "Allocator.h"
-#include "Buffer.h"
-#include "DescriptorPool.h"
-#include "DescriptorSet.h"
-#include "DescriptorSetLayout.h"
 #include "FileIO.h"
+#include "Resources/Allocator.h"
+#include "Resources/Buffer.h"
+#include "Resources/DescriptorPool.h"
+#include "Resources/DescriptorSet.h"
+#include "Resources/DescriptorSetLayout.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
 
