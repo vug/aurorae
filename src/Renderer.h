@@ -12,12 +12,18 @@
 #include "VulkanContext.h"
 
 struct GLFWwindow;
-FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
-FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
 
 namespace aur {
 
 struct Pipeline;
+class PipelineLayout;
+
+struct BindDescriptorSetInfo {
+  const PipelineLayout* pipelineLayout{};
+  const DescriptorSet* descriptorSet{};
+  u32 setNo{};
+  std::vector<ShaderStage> stages;
+};
 
 struct PerFrameData {
   glm::mat4 viewFromObject{};
@@ -59,7 +65,7 @@ public:
   bool beginFrame();
 
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
-  void bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) const;
+  void bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const;
   void drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
                               const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo = {}) const;
   void deviceWaitIdle() const;

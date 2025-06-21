@@ -370,15 +370,21 @@ void Renderer::endFrame() {
   currentInFlightImageIx_ = (currentInFlightImageIx_ + 1) % kMaxImagesInFlight;
 }
 
-void Renderer::bindDescriptorSet(VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) const {
-  VkBindDescriptorSetsInfo bindDescriptorSetsInfo{
+void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
+  const DescriptorSetLayout& layout1 =
+      *bindInfo.pipelineLayout->createInfo.descriptorSetLayouts[bindInfo.setNo];
+  const DescriptorSetLayout& layout2 = *bindInfo.descriptorSet->createInfo.layout;
+  if (!layout1.isEqual(layout2) || !layout1.isCompatible(layout2))
+    log().fatal("Incompatible pipeline layout and descriptor set's layout are not compatible.");
+
+  const VkBindDescriptorSetsInfo bindDescriptorSetsInfo{
       .sType = VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO,
       .pNext = nullptr,
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-      .layout = pipelineLayout,
-      .firstSet = 0,
+      .stageFlags = toStageFlags(bindInfo.stages),
+      .layout = bindInfo.pipelineLayout->handle,
+      .firstSet = bindInfo.setNo,
       .descriptorSetCount = 1,
-      .pDescriptorSets = &descriptorSet,
+      .pDescriptorSets = &bindInfo.descriptorSet->handle,
       .dynamicOffsetCount = 0,
       .pDynamicOffsets = nullptr,
   };
@@ -389,9 +395,14 @@ void Renderer::drawWithoutVertexInput(
     const Pipeline& pipeline, u32 vertexCnt,
     const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo) const {
   vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
-  bindDescriptorSet(pipeline.pipelineLayout.handle, perFrameDescriptorSet_.handle);
+  const BindDescriptorSetInfo bindInfo{
+      .pipelineLayout = &pipeline.pipelineLayout,
+      .descriptorSet = &perFrameDescriptorSet_,
+      .setNo = 0,
+      .stages = {ShaderStage::Vertex},
+  };
+  bindDescriptorSet(bindInfo);
   if (pushConstantsInfo)
-    /* [issue #7] */
     vkCmdPushConstants2KHR(commandBuffer_, pushConstantsInfo); // [issue #7]
 
   const VkViewport viewport{
