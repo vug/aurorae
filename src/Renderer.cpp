@@ -400,8 +400,8 @@ void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
   if (!layout1.isEqual(layout2) || !layout1.isCompatible(layout2))
     log().fatal("Incompatible pipeline layout and descriptor set's layout are not compatible.");
 
-  const VkBindDescriptorSetsInfo bindDescriptorSetsInfo{
-      .sType = VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO,
+  const VkBindDescriptorSetsInfoKHR bindDescriptorSetsInfo{
+      .sType = VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO_KHR,
       .pNext = nullptr,
       .stageFlags = toStageFlags(bindInfo.stages),
       .layout = bindInfo.pipelineLayout->handle,
