@@ -97,7 +97,8 @@ Pipeline Pipelines::createTrianglePipeline() const {
   PipelineLayoutCreateInfo layoutCreateInfo{
       .descriptorSetLayouts = {&renderer_.getPerFrameDescriptorSetLayout()},
   };
-  PipelineLayout pipelineLayout{renderer_.getDevice(), layoutCreateInfo};
+  PipelineLayout pipelineLayout =
+      renderer_.createPipelineLayout(layoutCreateInfo, "Triangle Pipeline Layout");
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
@@ -239,7 +240,7 @@ Pipeline Pipelines::createCubePipeline() const {
       .pushConstants = {pushConstant},
   };
 
-  PipelineLayout pipelineLayout{renderer_.getDevice(), layoutCreateInfo};
+  PipelineLayout pipelineLayout = renderer_.createPipelineLayout(layoutCreateInfo, "Cube Pipeline Layout");
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};

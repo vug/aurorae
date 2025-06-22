@@ -124,18 +124,19 @@ void Renderer::createPerFrameDataResources() {
       .stages = {ShaderStage::Vertex},
   }};
   const DescriptorSetLayoutCreateInfo createInfo{.bindings = bindings};
-  perFrameDescriptorSetLayout_ = createDescriptorSetLayout(createInfo);
+  perFrameDescriptorSetLayout_ =
+      createDescriptorSetLayout(createInfo, "Per-Frame Data Descriptor Set Layout");
 
   const DescriptorSetCreateInfo setCreateInfo{
       .layout = &perFrameDescriptorSetLayout_,
   };
-  perFrameDescriptorSet_ = DescriptorSet(getDevice(), descriptorPool_.handle, setCreateInfo);
+  perFrameDescriptorSet_ = createDescriptorSet(setCreateInfo, "Per-Frame Data Descriptor Set");
 
   // Uniform Buffer
   BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
                                              .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                              .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
-  perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto);
+  perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto, "Per-Frame Data Uniform Buffer");
 
   // Now, link our buffer to the allocated descriptor set
   DescriptorBufferInfo bufferInfo{
@@ -394,6 +395,9 @@ void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
 void Renderer::drawWithoutVertexInput(
     const Pipeline& pipeline, u32 vertexCnt,
     const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo) const {
+  // TODO(vug): introduce Renderer::bindPipeline that keeps currently bound pipeline state, so that later
+  // bindDescriptorSet can use it. Maybe it can have two variants... if pipeline is not provided it'll use
+  // bound pipeline
   vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
   const BindDescriptorSetInfo bindInfo{
       .pipelineLayout = &pipeline.pipelineLayout,
@@ -480,12 +484,28 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageMemory_ = VK_NULL_HANDLE;
 }
 
-Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo) const {
-  return {allocator_.getHandle(), createInfo};
+Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo, std::string_view debugName) const {
+  Buffer obj{allocator_.getHandle(), createInfo};
+  setDebugName(obj, debugName);
+  return obj;
 }
-DescriptorSetLayout
-Renderer::createDescriptorSetLayout(const DescriptorSetLayoutCreateInfo& createInfo) const {
-  return {getDevice(), createInfo};
+DescriptorSetLayout Renderer::createDescriptorSetLayout(const DescriptorSetLayoutCreateInfo& createInfo,
+                                                        std::string_view debugName) const {
+  DescriptorSetLayout obj{getDevice(), createInfo};
+  setDebugName(obj, debugName);
+  return obj;
+}
+DescriptorSet Renderer::createDescriptorSet(const DescriptorSetCreateInfo& createInfo,
+                                            std::string_view debugName) const {
+  DescriptorSet obj{getDevice(), descriptorPool_.handle, createInfo};
+  setDebugName(obj, debugName);
+  return obj;
+}
+PipelineLayout Renderer::createPipelineLayout(const PipelineLayoutCreateInfo& createInfo,
+                                              std::string_view debugName) const {
+  PipelineLayout obj{getDevice(), createInfo};
+  setDebugName(obj, debugName);
+  return obj;
 }
 
 } // namespace aur

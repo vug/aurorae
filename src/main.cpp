@@ -1,10 +1,11 @@
 /*
-TODO(vug): Give vulkan objects debug names. Label CommandBuffer regions. (See chat)
+TODO(vug): Label CommandBuffer regions. (See chat)
 TODO(vug): upload geometry data via Vertex/Index Buffers
-TODO(Vug): put Allocator into common resource format too
+TODO(Vug): put Allocator and ShaderModule into common resource format too
 TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
 TODO(vug): Introduce more resource abstractions (Image/Texture, Sampler... Concrete Buffer types?) then
-           introduce CRTP base class generalization. (See chat)
+           introduce CRTP base class generalization. (See chat) I can give VulkanContext as context so that
+           everything necessary will be available for creation
 TODO(vug): add Renderer Texture, Depth/Stencil Image, Offscreen Render Target creation via VMA
            methods
 TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?

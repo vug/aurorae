@@ -17,6 +17,7 @@ namespace aur {
 
 struct Pipeline;
 class PipelineLayout;
+struct PipelineLayoutCreateInfo;
 
 struct BindDescriptorSetInfo {
   const PipelineLayout* pipelineLayout{};
@@ -76,9 +77,34 @@ public:
   // Call this when the window framebuffer size has changed.
   void notifyResize(u32 newWidth, u32 newHeight);
 
-  [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo) const;
-  [[nodiscard]] DescriptorSetLayout
-  createDescriptorSetLayout(const DescriptorSetLayoutCreateInfo& createInfo) const;
+  template <typename TObject>
+  void setDebugName(const TObject& obj, const std::string_view name) const {
+    VkObjectType objType = VK_OBJECT_TYPE_UNKNOWN;
+    if constexpr (std::is_same_v<TObject, Buffer>)
+      objType = VK_OBJECT_TYPE_BUFFER;
+    else if constexpr (std::is_same_v<TObject, DescriptorSetLayout>)
+      objType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+    else if constexpr (std::is_same_v<TObject, DescriptorSet>)
+      objType = VK_OBJECT_TYPE_DESCRIPTOR_SET;
+    else if constexpr (std::is_same_v<TObject, PipelineLayout>)
+      objType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
+    else
+      static_assert("Unsupported type TObject for setting debug name");
+    VkDebugUtilsObjectNameInfoEXT nameInfo{};
+    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    nameInfo.objectType = objType;
+    nameInfo.objectHandle = reinterpret_cast<u64>(obj.handle);
+    nameInfo.pObjectName = name.data();
+    vkSetDebugUtilsObjectNameEXT(getDevice(), &nameInfo);
+  }
+  [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo,
+                                    std::string_view debugName = "") const;
+  [[nodiscard]] DescriptorSetLayout createDescriptorSetLayout(const DescriptorSetLayoutCreateInfo& createInfo,
+                                                              std::string_view debugName = "") const;
+  [[nodiscard]] DescriptorSet createDescriptorSet(const DescriptorSetCreateInfo& createInfo,
+                                                  std::string_view debugName = "") const;
+  [[nodiscard]] PipelineLayout createPipelineLayout(const PipelineLayoutCreateInfo& createInfo,
+                                                    std::string_view debugName = "") const;
   [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
 
 private:
