@@ -64,15 +64,17 @@ public:
   // Returns false if the swapchain was recreated (or another non-fatal issue) and the caller should skip
   // drawing and try the next frame. Must be called before any other draw commands
   bool beginFrame();
+  // Must be called after draw commands
+  void endFrame();
 
+  void beginDebugLabel(std::string_view label) const;
+  void beginDebugLabel(std::string_view label, const f32 color[4]) const;
+  void endDebugLabel() const;
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
   void bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const;
   void drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
                               const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo = {}) const;
   void deviceWaitIdle() const;
-
-  // Must be called after draw commands
-  void endFrame();
 
   // Call this when the window framebuffer size has changed.
   void notifyResize(u32 newWidth, u32 newHeight);

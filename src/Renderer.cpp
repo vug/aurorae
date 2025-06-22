@@ -224,6 +224,7 @@ bool Renderer::beginFrame() {
   };
   VK(vkBeginCommandBuffer(commandBuffer_, &beginInfo));
 
+  beginDebugLabel("Initial Swapchain Image Transition");
   // Transition depth image from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL
   constexpr VkImageSubresourceRange depthSubresourceRange{
       .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
@@ -274,6 +275,7 @@ bool Renderer::beginFrame() {
   vkCmdPipelineBarrier(commandBuffer_, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1,
                        &barrierToColorAttachment);
+  endDebugLabel();
 
   // Begin dynamic rendering (which includes the clear operation)
   const VkRenderingAttachmentInfoKHR colorAttachmentInfo{
@@ -311,6 +313,7 @@ bool Renderer::beginFrame() {
 void Renderer::endFrame() {
   vkCmdEndRendering(commandBuffer_); // End the dynamic rendering pass
 
+  beginDebugLabel("Final Swapchain Image Transition for Presentation");
   // Transition swapchain image from COLOR_ATTACHMENT_OPTIMAL to PRESENT_SRC_KHR
   constexpr VkImageSubresourceRange subresourceRange{
       .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -332,7 +335,7 @@ void Renderer::endFrame() {
   };
   vkCmdPipelineBarrier(commandBuffer_, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToPresent);
-
+  endDebugLabel();
   VK(vkEndCommandBuffer(commandBuffer_));
 
   const std::array<VkSemaphore, 1> waitSemaphores{imageAvailableSemaphores_[currentInFlightImageIx_]};
@@ -370,6 +373,25 @@ void Renderer::endFrame() {
 
   currentInFlightImageIx_ = (currentInFlightImageIx_ + 1) % kMaxImagesInFlight;
 }
+void Renderer::beginDebugLabel(std::string_view label) const {
+  constexpr f32 color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  beginDebugLabel(label, color);
+}
+
+void Renderer::beginDebugLabel(std::string_view label, const f32 color[4]) const {
+  // TODO(vug): mechanism to ensure this is called from inside command buffer recording
+  VkDebugUtilsLabelEXT vkLabel{
+      .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
+      .pLabelName = label.data(),
+      .color = {color[0], color[1], color[2], color[3]},
+  };
+  vkCmdBeginDebugUtilsLabelEXT(commandBuffer_, &vkLabel);
+}
+void Renderer::endDebugLabel() const {
+  // TODO(vug): mechanism to ensure this is called from inside command buffer recording, and after a
+  //            beginLabel
+  vkCmdEndDebugUtilsLabelEXT(commandBuffer_);
+}
 
 void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
   const DescriptorSetLayout& layout1 =
@@ -398,6 +420,7 @@ void Renderer::drawWithoutVertexInput(
   // TODO(vug): introduce Renderer::bindPipeline that keeps currently bound pipeline state, so that later
   // bindDescriptorSet can use it. Maybe it can have two variants... if pipeline is not provided it'll use
   // bound pipeline
+  beginDebugLabel("Draw without vertex input. Material setup.");
   vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
   const BindDescriptorSetInfo bindInfo{
       .pipelineLayout = &pipeline.pipelineLayout,
@@ -408,7 +431,9 @@ void Renderer::drawWithoutVertexInput(
   bindDescriptorSet(bindInfo);
   if (pushConstantsInfo)
     vkCmdPushConstants2KHR(commandBuffer_, pushConstantsInfo); // [issue #7]
+  endDebugLabel();
 
+  beginDebugLabel("Draw without vertex input. Setting dynamic parameters.");
   const VkViewport viewport{
       .x = 0.0f,
       .y = 0.0f,
@@ -420,6 +445,7 @@ void Renderer::drawWithoutVertexInput(
   vkCmdSetViewport(commandBuffer_, 0, 1, &viewport);
   const VkRect2D scissor{{0, 0}, swapchain_.getImageExtent()};
   vkCmdSetScissor(commandBuffer_, 0, 1, &scissor);
+  endDebugLabel();
 
   vkCmdDraw(commandBuffer_, vertexCnt, 1, 0, 0);
 }

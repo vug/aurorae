@@ -1,7 +1,7 @@
 /*
-TODO(vug): Label CommandBuffer regions. (See chat)
 TODO(vug): upload geometry data via Vertex/Index Buffers
 TODO(Vug): put Allocator and ShaderModule into common resource format too
+TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
 TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
 TODO(vug): Introduce more resource abstractions (Image/Texture, Sampler... Concrete Buffer types?) then
            introduce CRTP base class generalization. (See chat) I can give VulkanContext as context so that
@@ -13,7 +13,6 @@ TODO(vug): use slang as the shader language, and import global and per-frame uni
            attributes etc. from there
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): generate layouts from shader reflection
-TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, Image(?)
 .
 TODO(vug): macros: MOVE_ONLY, COPY_ONLY, NOT_MOVABLE_NOT_COPIABLE
 TODO(vug): try out C++ modules, but don't obsess if it does not work well
