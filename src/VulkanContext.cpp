@@ -109,7 +109,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   volkLoadInstance(vkbInstance_); // loads Vulkan instance-level function pointers
 
   // Create Vulkan surface
-  GlfwUtils::createWindowSurface(vkbInstance_.instance, window, &surface_);
+  GlfwUtils::createWindowSurface(vkbInstance_.instance, window, &vkbInstance_.surface);
 
   // Select physical device
   vkb::PhysicalDeviceSelector selector(vkbInstance_);
@@ -118,7 +118,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   vkb::Result<vkb::PhysicalDevice> vkbPhysicalDeviceResult =
       selector
           .set_minimum_version(1, 4) // Explicitly target Vulkan 1.3
-          .set_surface(surface_)
+          .set_surface(vkbInstance_.surface)
           .prefer_gpu_device_type(vkb::PreferredDeviceType::discrete)
           // vug: I guess it requires a graphics queue by default?
           .require_separate_compute_queue()
@@ -143,8 +143,9 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           })
           .add_required_extensions({
               VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-              // Needed for vkCmdPushConstants2KHR [issue #7]. Ideally, this shouldn't be needed because that function
-              // is part of Vulkan 1.4, but apparently my laptop graphics drivers do not support it yet.
+              // Needed for vkCmdPushConstants2KHR [issue #7]. Ideally, this shouldn't be needed because that
+              // function is part of Vulkan 1.4, but apparently my laptop graphics drivers do not support it
+              // yet.
               VK_KHR_MAINTENANCE_6_EXTENSION_NAME,
           })
           .add_required_extensions(
@@ -182,12 +183,12 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
               presentQueueFamilyIndex_);
   graphicsQueue_ = vkbDevice_.get_queue(vkb::QueueType::graphics).value();
   presentQueue_ = vkbDevice_.get_queue(vkb::QueueType::present).value();
-}
 
-VulkanContext::~VulkanContext() {
-  vkb::destroy_device(vkbDevice_);              // Destroys VkDevice, VkCommandPools, etc.
-  vkb::destroy_surface(vkbInstance_, surface_); // Destroys VkSurfaceKHR
-  vkb::destroy_instance(vkbInstance_);          // Destroys VkInstance, debug messenger, etc.
+  // vulkanApiVersion >= VK_API_VERSION_1_4 but required Vulkan version is disabled by preprocessor macros.
+  const AllocatorCreateInfo allocatorCreateInfo{
+      .vulkanApiVersion = VK_MAKE_VERSION(1, 3, 0),
+  };
+  allocator_ = Allocator(getInstance(), getPhysicalDevice(), getDevice(), allocatorCreateInfo);
 }
 
 } // namespace aur

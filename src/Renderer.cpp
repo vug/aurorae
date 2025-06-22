@@ -19,7 +19,6 @@ namespace aur {
 
 Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u32 initialHeight)
     : vulkanContext_(window, appName)
-    , allocator_{vulkanContext_}
     , swapchain_(vulkanContext_.getVkbDevice(), initialWidth, initialHeight)
     , currentWidth_(initialWidth)
     , currentHeight_(initialHeight) {
@@ -478,7 +477,7 @@ void Renderer::createSwapchainDepthResources() {
       .usage = VMA_MEMORY_USAGE_GPU_ONLY, // Depth buffer is device local
       .requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
 
-  VK(vmaCreateImage(allocator_.getHandle(), &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_,
+  VK(vmaCreateImage(getAllocator().handle, &imageInfo, &allocInfo, &depthImage_, &depthImageMemory_,
                     nullptr));
 
   const VkImageViewCreateInfo viewInfo{
@@ -504,14 +503,14 @@ void Renderer::cleanupSwapchainDepthResources() {
   if (depthImageView_ != VK_NULL_HANDLE)
     vkDestroyImageView(vulkanContext_.getDevice(), depthImageView_, nullptr);
   if (depthImage_ != VK_NULL_HANDLE) // Memory is freed with vmaDestroyImage
-    vmaDestroyImage(allocator_.getHandle(), depthImage_, depthImageMemory_);
+    vmaDestroyImage(getAllocator().handle, depthImage_, depthImageMemory_);
   depthImageView_ = VK_NULL_HANDLE;
   depthImage_ = VK_NULL_HANDLE;
   depthImageMemory_ = VK_NULL_HANDLE;
 }
 
 Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo, std::string_view debugName) const {
-  Buffer obj{allocator_.getHandle(), createInfo};
+  Buffer obj{getAllocator().handle, createInfo};
   setDebugName(obj, debugName);
   return obj;
 }

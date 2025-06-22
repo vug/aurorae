@@ -3,6 +3,8 @@
 #define VK_NO_PROTOTYPES
 #include <vk-bootstrap/VkBootstrap.h>
 
+#include "Resources/Allocator.h"
+
 struct GLFWwindow;
 
 namespace aur {
@@ -10,7 +12,6 @@ namespace aur {
 class VulkanContext {
 public:
   VulkanContext(GLFWwindow* window, const char* appName);
-  ~VulkanContext();
 
   // Delete copy/move constructors to prevent accidental duplication
   VulkanContext(const VulkanContext&) = delete;
@@ -20,11 +21,12 @@ public:
 
   // Public getters for raw Vulkan handles
   [[nodiscard]] inline const VkInstance& getInstance() const { return vkbInstance_.instance; }
-  [[nodiscard]] inline const VkDevice& getDevice() const { return vkbDevice_.device; }
   [[nodiscard]] inline const VkPhysicalDevice& getPhysicalDevice() const {
     return vkbPhysicalDevice_.physical_device;
   }
-  [[nodiscard]] inline const VkSurfaceKHR& getSurface() const { return surface_; }
+  [[nodiscard]] inline const VkDevice& getDevice() const { return vkbDevice_.device; }
+  [[nodiscard]] inline const Allocator& getAllocator() const { return allocator_; }
+  [[nodiscard]] inline const VkSurfaceKHR& getSurface() const { return vkbInstance_.surface; }
 
   [[nodiscard]] VkQueue getGraphicsQueue() const { return graphicsQueue_; }
   [[nodiscard]] VkQueue getPresentQueue() const { return presentQueue_; }
@@ -36,11 +38,38 @@ public:
   [[nodiscard]] const vkb::Device& getVkbDevice() const { return vkbDevice_; }
 
 private:
-  vkb::Instance vkbInstance_;
-  vkb::PhysicalDevice vkbPhysicalDevice_;
-  vkb::Device vkbDevice_;
+  // RAIIify vkb Instance
+  class VkbInstanceWrapper : public vkb::Instance {
+  public:
+    ~VkbInstanceWrapper() {
+      vkb::destroy_surface(*this, surface);
+      vkb::destroy_instance(*this);
+    };
 
-  VkSurfaceKHR surface_{VK_NULL_HANDLE};
+    VkbInstanceWrapper& operator=(const vkb::Instance& otherInstance) {
+      vkb::Instance::operator=(otherInstance);
+      return *this;
+    };
+
+    VkSurfaceKHR surface{VK_NULL_HANDLE};
+  };
+
+  // RAIIify vkb Device
+  class VkbDeviceWrapper : public vkb::Device {
+  public:
+    ~VkbDeviceWrapper() { vkb::destroy_device(*this); };
+
+    VkbDeviceWrapper& operator=(const vkb::Device& otherDevice) {
+      vkb::Device::operator=(otherDevice);
+      return *this;
+    };
+  };
+
+  VkbInstanceWrapper vkbInstance_;
+  vkb::PhysicalDevice vkbPhysicalDevice_;
+  VkbDeviceWrapper vkbDevice_;
+  Allocator allocator_;
+
   VkQueue graphicsQueue_{VK_NULL_HANDLE};
   VkQueue presentQueue_{VK_NULL_HANDLE};
   u32 graphicsQueueFamilyIndex_{};

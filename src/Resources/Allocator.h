@@ -1,16 +1,21 @@
 #pragma once
 
 #include "../Utils.h"
-
-FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
+#include "../VulkanWrappers.h"
 
 namespace aur {
 
 class VulkanContext;
 
+struct AllocatorCreateInfo {
+  u32 vulkanApiVersion{};
+};
+
 class Allocator {
 public:
-  explicit Allocator(const VulkanContext& context);
+  Allocator() = default;
+  Allocator(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device,
+            const AllocatorCreateInfo& createInfo);
   ~Allocator();
 
   // move-only
@@ -19,11 +24,15 @@ public:
   Allocator(Allocator&& other) noexcept;
   Allocator& operator=(Allocator&& other) noexcept;
 
-  // Getter for the raw VMA handle
-  [[nodiscard]] VmaAllocator getHandle() const { return handle_; }
+  [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
+
+  const AllocatorCreateInfo createInfo;
+  const VmaAllocator handle{VK_NULL_HANDLE};
 
 private:
-  VmaAllocator handle_{VK_NULL_HANDLE};
+  friend class VulkanContext;
+  void destroy();
+  void invalidate();
 };
 
 } // namespace aur

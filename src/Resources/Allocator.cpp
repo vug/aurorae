@@ -8,43 +8,55 @@
 #include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
 namespace aur {
-Allocator::Allocator(const aur::VulkanContext& context) {
+Allocator::Allocator(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device,
+                     const AllocatorCreateInfo& allocatorCreateInfo)
+    : createInfo(allocatorCreateInfo) {
   VmaVulkanFunctions vmaVulkanFunctions = {
       .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
       .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
   };
 
-  const VmaAllocatorCreateInfo createInfo = {
-      .physicalDevice = context.getPhysicalDevice(),
-      .device = context.getDevice(),
+  const VmaAllocatorCreateInfo vkCreateInfo = {
+      .physicalDevice = physicalDevice,
+      .device = device,
       .pVulkanFunctions = &vmaVulkanFunctions,
-      .instance = context.getInstance(),
-      .vulkanApiVersion = VK_API_VERSION_1_3,
+      .instance = instance,
+      .vulkanApiVersion = createInfo.vulkanApiVersion,
   };
 
-  VK(vmaCreateAllocator(&createInfo, &handle_));
+  VmaAllocator hnd;
+  VK(vmaCreateAllocator(&vkCreateInfo, &hnd));
+  const_cast<VmaAllocator&>(handle) = hnd;
+
   log().trace("VMA allocator created.");
 }
 
 Allocator::~Allocator() {
-  if (handle_ != VK_NULL_HANDLE)
-    vmaDestroyAllocator(handle_);
+  destroy();
 }
 
 Allocator::Allocator(Allocator&& other) noexcept
-    : handle_(other.handle_) {
-  other.handle_ = VK_NULL_HANDLE;
+    : handle(other.handle) {
+  other.invalidate();
 }
 
 Allocator& Allocator::operator=(Allocator&& other) noexcept {
   if (this != &other) {
-    if (handle_ != VK_NULL_HANDLE) {
-      vmaDestroyAllocator(handle_);
-    }
-    handle_ = other.handle_;
-    other.handle_ = VK_NULL_HANDLE;
+    destroy();
+
+    const_cast<VmaAllocator&>(handle) = other.handle;
+    other.invalidate();
   }
   return *this;
+}
+void Allocator::destroy() {
+  if (isValid())
+    vmaDestroyAllocator(handle);
+  invalidate();
+}
+
+void Allocator::invalidate() {
+  const_cast<VmaAllocator&>(handle) = VK_NULL_HANDLE;
 }
 
 } // namespace aur

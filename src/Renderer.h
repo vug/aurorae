@@ -3,7 +3,6 @@
 #include <glm/mat4x4.hpp>
 
 #include "FileIO.h"
-#include "Resources/Allocator.h"
 #include "Resources/Buffer.h"
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
@@ -54,6 +53,7 @@ public:
     return perFrameDescriptorSetLayout_;
   }
   [[nodiscard]] inline const VkDevice& getDevice() const { return vulkanContext_.getDevice(); }
+  [[nodiscard]] inline const Allocator& getAllocator() const { return vulkanContext_.getAllocator(); }
   [[nodiscard]] inline u32 getSwapchainImageCount() const { return swapchain_.getImageCount(); }
   [[nodiscard]] inline const VkFormat& getSwapchainColorImageFormat() const {
     return swapchain_.getImageFormat();
@@ -118,10 +118,8 @@ private:
   void createSwapchainDepthResources();
   void cleanupSwapchainDepthResources();
 
-  // Context -> Allocator -> Swapchain needs to be created in that order.
+  // Context -> Swapchain needs to be created in that order.
   VulkanContext vulkanContext_;
-  // The Allocator must be declared before any resources (buffers, images) that use it
-  Allocator allocator_;
   Swapchain swapchain_;
 
   VkCommandPool commandPool_{VK_NULL_HANDLE};

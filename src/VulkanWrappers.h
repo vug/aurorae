@@ -6,6 +6,8 @@
 
 // Forward definitions of vulkan handles and types so that we don't have to include vulkan headers in Aurorae
 // headers
+FORWARD_DEFINE_VK_HANDLE(VkInstance)
+FORWARD_DEFINE_VK_HANDLE(VkPhysicalDevice)
 FORWARD_DEFINE_VK_HANDLE(VkDevice)
 FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
 FORWARD_DEFINE_VK_HANDLE(VmaAllocation)
