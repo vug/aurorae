@@ -1,7 +1,5 @@
 #include "VulkanWrappers.h"
 
-#include <bitset>
-
 #include <volk/volk.h>
 
 namespace aur {
@@ -10,10 +8,14 @@ static_assert(static_cast<u32>(DescriptorType::UniformBuffer) == VK_DESCRIPTOR_T
 static_assert(static_cast<u32>(ShaderStage::Vertex) == VK_SHADER_STAGE_VERTEX_BIT);
 static_assert(static_cast<u32>(ShaderStage::Fragment) == VK_SHADER_STAGE_FRAGMENT_BIT);
 
-u32 toStageFlags(const std::vector<ShaderStage>& stages) {
-  std::bitset<32> stageFlags;
-  for (const auto& stage : stages)
-    stageFlags |= std::bitset<32>(static_cast<u32>(stage));
-  return static_cast<u32>(stageFlags.to_ulong());
+template <typename TEnum>
+u32 toVkFlags(const std::vector<TEnum>& enums) {
+  u32 flags{};
+  for (const auto& enm : enums)
+    flags |= static_cast<u32>(enm);
+  return flags;
 }
+
+template u32 toVkFlags(const std::vector<ShaderStage>& enums);
+
 } // namespace aur

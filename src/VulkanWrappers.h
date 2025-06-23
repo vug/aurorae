@@ -77,7 +77,15 @@ enum class ShaderStage : u32 {
   // VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-u32 toStageFlags(const std::vector<ShaderStage>& stages);
+template <typename TEnum>
+u32 toVkFlags(const std::vector<TEnum>& enums);
+
+// template <typename... TEnums>
+// u32 toFlagsFold(TEnums... enums) {
+//   u32 flags{};
+//   ((flags |= static_cast<u32>(enums)), ...);
+//   return flags;
+// }
 
 struct PushConstant {
   std::vector<ShaderStage> stages;

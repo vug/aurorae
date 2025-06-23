@@ -17,7 +17,7 @@ DescriptorSetLayout::DescriptorSetLayout(VkDevice device,
             .binding = binding.index,
             .descriptorType = static_cast<VkDescriptorType>(binding.type),
             .descriptorCount = binding.descriptorCount,
-            .stageFlags = toStageFlags(binding.stages),
+            .stageFlags = toVkFlags(binding.stages),
             .pImmutableSamplers = nullptr,
         });
       }

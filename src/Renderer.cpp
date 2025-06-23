@@ -402,7 +402,7 @@ void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
   const VkBindDescriptorSetsInfoKHR bindDescriptorSetsInfo{
       .sType = VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO_KHR,
       .pNext = nullptr,
-      .stageFlags = toStageFlags(bindInfo.stages),
+      .stageFlags = toVkFlags(bindInfo.stages),
       .layout = bindInfo.pipelineLayout->handle,
       .firstSet = bindInfo.setNo,
       .descriptorSetCount = 1,

@@ -1,7 +1,10 @@
 /*
 TODO(vug): upload geometry data via Vertex/Index Buffers
+           can I do better than `vkQueueWaitIdle` for uploading buffer data
 TODO(Vug): put Allocator and ShaderModule into common resource format too
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
+TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
+           methods.
 TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
 TODO(vug): Introduce more resource abstractions (Image/Texture, Sampler... Concrete Buffer types?) then
            introduce CRTP base class generalization. (See chat) I can give VulkanContext as context so that
@@ -14,6 +17,7 @@ TODO(vug): use slang as the shader language, and import global and per-frame uni
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): generate layouts from shader reflection
 .
+TODO(vug): headless vulkan for image based testing.
 TODO(vug): macros: MOVE_ONLY, COPY_ONLY, NOT_MOVABLE_NOT_COPIABLE
 TODO(vug): try out C++ modules, but don't obsess if it does not work well
            https://gemini.google.com/app/31dc373a7f5b3005

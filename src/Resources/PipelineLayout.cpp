@@ -13,7 +13,7 @@ PipelineLayout::PipelineLayout(VkDevice device, const PipelineLayoutCreateInfo& 
       for (const PushConstant& pc : createInfo.pushConstants) {
         u32 offset{};
         vkPushConstantRanges.push_back({
-            .stageFlags = toStageFlags(pc.stages),
+            .stageFlags = toVkFlags(pc.stages),
             .offset = offset,
             .size = pc.size,
         });
