@@ -103,6 +103,8 @@ add_executable(Aurorae
         Resources/DescriptorSet.h Resources/DescriptorSet.cpp
         Resources/DescriptorSetLayout.h Resources/DescriptorSetLayout.cpp
         Resources/PipelineLayout.h Resources/PipelineLayout.cpp
+        Vertex.h Vertex.cpp
+        Mesh.h Mesh.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
