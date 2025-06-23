@@ -84,6 +84,19 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
   createPerFrameDataResources();
 
+  triangleMesh.vertices = {
+      {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}}, // Bottom vertex (Red)
+      {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},  // Right top vertex (Green)
+      {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}  // Left top vertex (Blue)
+  };
+  triangleMesh.indices = {0, 1, 2}; // Triangle indices
+  triangleMesh.vertexBuffer =
+      createBufferAndUploadData(triangleMesh.vertices.data(), triangleMesh.vertices.size(),
+                                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, "Triangle Mesh Vertex Buffer");
+  triangleMesh.indexBuffer =
+      createBufferAndUploadData(triangleMesh.indices.data(), triangleMesh.indices.size(),
+                                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, "Triangle Mesh Index Buffer");
+
   log().trace("Renderer initialized.");
 }
 
@@ -134,6 +147,55 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
   VkShaderModule shaderModule;
   VK(vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr, &shaderModule));
   return shaderModule;
+}
+Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, VkBufferUsageFlags usage,
+                                           std::string_view debugName) const {
+  // host visible, host coherent
+  Buffer stagingBuffer = createBuffer(
+      {
+          .size = size,
+          .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+          .memoryUsage = VMA_MEMORY_USAGE_CPU_ONLY,
+      },
+      std::string{debugName} + " Staging");
+
+  void* mappedData = stagingBuffer.map();
+  memcpy(mappedData, data, size);
+  stagingBuffer.unmap();
+
+  // Create the device-local buffer (optimal for GPU access)
+  Buffer deviceBuffer = createBuffer(
+      {
+          .size = size,
+          .usage = usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+          .memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY,
+      },
+      std::string{debugName} + " Device");
+
+  constexpr VkCommandBufferBeginInfo beginInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+  };
+  VK(vkBeginCommandBuffer(commandBufferOneShot_, &beginInfo));
+  const VkBufferCopy copyRegion{
+      .srcOffset = 0,
+      .dstOffset = 0,
+      .size = size,
+  };
+  vkCmdCopyBuffer(commandBufferOneShot_, stagingBuffer.handle, deviceBuffer.handle, 1, &copyRegion);
+  VK(vkEndCommandBuffer(commandBufferOneShot_));
+
+  const VkSubmitInfo submitInfo{
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .commandBufferCount = 1,
+      .pCommandBuffers = &commandBufferOneShot_,
+  };
+  VK(vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+  VK(vkQueueWaitIdle(vulkanContext_.getGraphicsQueue())); // Simple synchronization
+  // VkCommandBufferResetFlags;
+  // VK(vkResetCommandBuffer(commandBufferOneShot_, 0));
+
+  return deviceBuffer;
 }
 
 void Renderer::createPerFrameDataResources() {
