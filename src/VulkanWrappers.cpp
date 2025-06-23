@@ -8,6 +8,9 @@ static_assert(static_cast<u32>(DescriptorType::UniformBuffer) == VK_DESCRIPTOR_T
 static_assert(static_cast<u32>(ShaderStage::Vertex) == VK_SHADER_STAGE_VERTEX_BIT);
 static_assert(static_cast<u32>(ShaderStage::Fragment) == VK_SHADER_STAGE_FRAGMENT_BIT);
 
+static_assert(static_cast<u32>(VertexInputRate::Vertex) == VK_VERTEX_INPUT_RATE_VERTEX);
+static_assert(static_cast<u32>(VertexInputRate::Instance) == VK_VERTEX_INPUT_RATE_INSTANCE);
+
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums) {
   u32 flags{};

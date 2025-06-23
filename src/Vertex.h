@@ -3,11 +3,27 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include "Utils.h"
+#include "VulkanWrappers.h"
+
 namespace aur {
+
+struct VertexInputBindingDescription {
+  u32 binding{0};
+  u32 stride{};
+  VertexInputRate inputRate{VertexInputRate::Vertex};
+};
 
 struct Vertex {
   glm::vec3 position;
   glm::vec4 color;
+
+  static VertexInputBindingDescription getVertexInputRate() {
+    return {
+        .stride = sizeof(Vertex),
+        .inputRate = VertexInputRate::Vertex,
+    };
+  }
   /*
     static VkVertexInputBindingDescription getBindingDescription() {
       VkVertexInputBindingDescription bindingDescription{};

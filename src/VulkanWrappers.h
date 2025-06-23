@@ -77,6 +77,12 @@ enum class ShaderStage : u32 {
   // VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
+// sync with VkVertexInputRate
+enum class VertexInputRate {
+  Vertex = 0,
+  Instance = 1,
+};
+
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums);
 
