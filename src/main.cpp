@@ -1,8 +1,5 @@
 /*
-TODO(vug): upload geometry data via Vertex/Index Buffers
-           VertexInputBindingDescription that takes stride and vector<Format>. uses binding=0, location
-           increments, offsets calculated from formats can I do better than `vkQueueWaitIdle` for uploading
-           buffer data
+TODO(vug): can I do better than `vkQueueWaitIdle` for uploading buffer data. Update shaders.
 TODO(vug): don't forget to use the debug names in debug callback
 TODO(Vug): put Allocator and ShaderModule into common resource format too
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)

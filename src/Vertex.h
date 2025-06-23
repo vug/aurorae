@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
@@ -14,26 +16,42 @@ struct VertexInputBindingDescription {
   VertexInputRate inputRate{VertexInputRate::Vertex};
 };
 
+struct VertexInputAttributeDescription {
+  u32 location{};
+  u32 binding{};
+  Format format{};
+  u32 offset{};
+};
+
 struct Vertex {
   glm::vec3 position;
   glm::vec4 color;
 
-  static VertexInputBindingDescription getVertexInputRate() {
-    return {
+  static std::array<VertexInputBindingDescription, 1> getVertexInputBindingDescription() {
+    return {VertexInputBindingDescription{
         .stride = sizeof(Vertex),
         .inputRate = VertexInputRate::Vertex,
+    }};
+  }
+
+  static std::array<VertexInputAttributeDescription, 2> getVertexInputAttributeDescription() {
+    return {
+        VertexInputAttributeDescription{
+            .location = 0,
+            .binding = 0,
+            .format = Format::R32G32B32_SFLOAT,
+            .offset = offsetof(Vertex, position),
+        },
+        VertexInputAttributeDescription{
+            .location = 1,
+            .binding = 0,
+            .format = Format::R32G32B32A32_SFLOAT,
+            .offset = offsetof(Vertex, color),
+        },
     };
   }
+
   /*
-    static VkVertexInputBindingDescription getBindingDescription() {
-      VkVertexInputBindingDescription bindingDescription{};
-      bindingDescription.binding = 0; // The index of the binding in the array of bindings
-      bindingDescription.stride = sizeof(FatVertex); // The byte stride between consecutive vertices
-      bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; // Move to the next vertex after each vertex
-
-      return bindingDescription;
-    }
-
     static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
       std::vector<VkVertexInputAttributeAttributeDescription> attributeDescriptions{};
 
@@ -48,7 +66,7 @@ struct Vertex {
       attributeDescriptions.push_back({});
       attributeDescriptions[1].binding = 0;
       attributeDescriptions[1].location = 1; // Corresponds to `layout(location = 1)` in shader
-      attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT; // glm::vec3 is 3 floats
+      attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT; // glm::vec3 is 3 floats
       attributeDescriptions[1].offset = offsetof(FatVertex, color); // Offset within the vertex structure
 
       return attributeDescriptions;

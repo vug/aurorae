@@ -13,6 +13,28 @@ namespace aur {
 Pipelines::Pipelines(const Renderer& renderer)
     : renderer_(renderer) {}
 
+VkVertexInputBindingDescription toVkVertexInputBindingDescription(const VertexInputBindingDescription& desc) {
+  const VkVertexInputBindingDescription vkBindingDescription{
+      .binding = desc.binding, // The index of the binding in the array of bindings
+      .stride = desc.stride,   // The byte stride between consecutive vertices
+      .inputRate =
+          static_cast<VkVertexInputRate>(desc.inputRate), // Move to the next vertex after each vertex
+  };
+
+  return vkBindingDescription;
+}
+
+VkVertexInputAttributeDescription
+toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc) {
+  const VkVertexInputAttributeDescription vkAttributeDescription{
+      .location = desc.location,
+      .binding = desc.binding,
+      .format = static_cast<VkFormat>(desc.format),
+      .offset = desc.offset,
+  };
+  return vkAttributeDescription;
+}
+
 Pipeline Pipelines::createTrianglePipeline() const {
   PathBuffer vertexPath{pathJoin(kShadersFolder, "triangle.vert.spv")};
   PathBuffer fragmentPath{pathJoin(kShadersFolder, "triangle.frag.spv")};
@@ -37,10 +59,18 @@ Pipeline Pipelines::createTrianglePipeline() const {
   };
   std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
 
-  // For hardcoded vertices, the vertex input state is empty
-  constexpr VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+  std::vector<VkVertexInputBindingDescription> vkInputBindingDescriptions;
+  for (const auto& desc : Vertex::getVertexInputBindingDescription())
+    vkInputBindingDescriptions.push_back(toVkVertexInputBindingDescription(desc));
+  std::vector<VkVertexInputAttributeDescription> vkVertexInputAttributeDescriptions;
+  for (const auto& desc : Vertex::getVertexInputAttributeDescription())
+    vkVertexInputAttributeDescriptions.push_back(toVkVertexInputAttributeDescription(desc));
+  const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-      // No vertex bindings or attributes
+      // .vertexBindingDescriptionCount = static_cast<u32>(vkInputBindingDescriptions.size()),
+      // .pVertexBindingDescriptions = vkInputBindingDescriptions.data(),
+      // .vertexAttributeDescriptionCount = static_cast<u32>(vkVertexInputAttributeDescriptions.size()),
+      // .pVertexAttributeDescriptions = vkVertexInputAttributeDescriptions.data(),
   };
 
   constexpr VkPipelineInputAssemblyStateCreateInfo inputAssembly{
