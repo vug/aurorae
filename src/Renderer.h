@@ -124,7 +124,9 @@ private:
   Swapchain swapchain_;
 
   VkCommandPool commandPool_{VK_NULL_HANDLE};
+  VkCommandPool commandPoolOneShot_{VK_NULL_HANDLE};
   VkCommandBuffer commandBuffer_{VK_NULL_HANDLE};
+  VkCommandBuffer commandBufferOneShot_{VK_NULL_HANDLE};
 
   VkImage depthImage_{VK_NULL_HANDLE};
   VmaAllocation depthImageMemory_{VK_NULL_HANDLE};

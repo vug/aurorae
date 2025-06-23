@@ -47,6 +47,8 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           0x0, // Layer name GalaxyOverlayVkLayer does not conform to naming standard (Policy #LLP_LAYER_3)
           -0x257d9f46, // enabling a deprecated extension that has been promoted to main Vulkan. triggered
                        // because of VK_KHR_maintenance6 for vkCmdPushConstants2KHR [issue #7]
+          0x86974c1,   // perf warning that says don't use VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+                       // reset entire pool instead.
       };
       for (const auto& msgId : ignoredMessageIds) {
         if (pCallbackData->messageIdNumber == msgId)

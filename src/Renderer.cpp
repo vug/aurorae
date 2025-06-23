@@ -26,12 +26,21 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   // Command Pool
   const VkCommandPoolCreateInfo cmdPoolInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      .flags = 0,
       .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
   };
   VK(vkCreateCommandPool(vulkanContext_.getDevice(), &cmdPoolInfo, nullptr, &commandPool_));
-  log().trace("Renderer command pool created.");
+  log().trace("Renderer main command pool created.");
 
-  // Command Buffer
+  const VkCommandPoolCreateInfo cmdPoolOneShotInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+      .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
+  };
+  VK(vkCreateCommandPool(vulkanContext_.getDevice(), &cmdPoolOneShotInfo, nullptr, &commandPoolOneShot_));
+  log().trace("Renderer one shot command pool created.");
+
+  // Command Buffers
   const VkCommandBufferAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = commandPool_,
@@ -39,7 +48,14 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
       .commandBufferCount = 1,
   };
   VK(vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo, &commandBuffer_));
-  log().trace("Renderer command buffer created/allocated.");
+  const VkCommandBufferAllocateInfo allocInfoOneShot{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = commandPoolOneShot_,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = 1,
+  };
+  VK(vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfoOneShot, &commandBufferOneShot_));
+  log().trace("Renderer main and one-shot command buffers are created/allocated.");
 
   const DescriptorPoolCreateInfo descPoolInfo{
       .maxSets = 512,
@@ -92,12 +108,16 @@ Renderer::~Renderer() {
     vkDestroyFence(vulkanContext_.getDevice(), inFlightFence_, nullptr);
   inFlightFence_ = VK_NULL_HANDLE;
 
-  // Cleaning up the command pool frees its command buffers too
   if (commandPool_ != VK_NULL_HANDLE) {
     // Command buffers allocated from this pool are implicitly freed
     vkDestroyCommandPool(vulkanContext_.getDevice(), commandPool_, nullptr);
     commandPool_ = VK_NULL_HANDLE;
-    commandBuffer_ = VK_NULL_HANDLE; // It's freed with the pool
+    commandBuffer_ = VK_NULL_HANDLE;
+  }
+  if (commandPoolOneShot_ != VK_NULL_HANDLE) {
+    vkDestroyCommandPool(vulkanContext_.getDevice(), commandPoolOneShot_, nullptr);
+    commandPoolOneShot_ = VK_NULL_HANDLE;
+    commandBufferOneShot_ = VK_NULL_HANDLE;
   }
 
   // Swapchain and VulkanContext are destroyed automatically by their destructors
