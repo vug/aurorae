@@ -78,9 +78,17 @@ enum class ShaderStage : u32 {
 };
 
 // sync with VkVertexInputRate
-enum class VertexInputRate {
+enum class VertexInputRate : u32 {
   Vertex = 0,
   Instance = 1,
+};
+
+// sync with VkFormat
+enum class Format : u32 {
+  R32_SFLOAT = 100,
+  R32G32_SFLOAT = 103,
+  R32G32B32_SFLOAT = 106,
+  R32G32B32A32_SFLOAT = 109,
 };
 
 template <typename TEnum>
