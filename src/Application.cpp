@@ -63,9 +63,8 @@ void Application::run() {
 
     if (renderer_.beginFrame()) {
       renderer_.setClearColor(0.25f, 0.25f, 0.25f);
-      // renderer_.drawVertices(trianglePipeline, renderer_.triangleMesh.vertexBuffer, {});
-      renderer_.drawIndexed(trianglePipeline, renderer_.triangleMesh.vertexBuffer,
-                            renderer_.triangleMesh.indexBuffer, {});
+      renderer_.drawIndexed(trianglePipeline, renderer_.meshes.triangle.vertexBuffer,
+                            renderer_.meshes.triangle.indexBuffer, {});
 
       glm::mat4 worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
       PushConstantsInfo pcInfo{

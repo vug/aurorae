@@ -85,18 +85,15 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
   createPerFrameDataResources();
 
-  triangleMesh.vertices = {
-      {{0.0f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}}, // Bottom vertex (Red)
-      {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}},  // Right top vertex (Green)
-      {{-0.5f, 0.5f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}  // Left top vertex (Blue)
-  };
-  triangleMesh.indices = {0, 1, 2}; // Triangle indices
-  triangleMesh.vertexBuffer =
-      createBufferAndUploadData(triangleMesh.vertices.data(), triangleMesh.vertices.size() * sizeof(Vertex),
-                                BufferUsage::Vertex, "Triangle Mesh Vertex Buffer");
-  triangleMesh.indexBuffer =
-      createBufferAndUploadData(triangleMesh.indices.data(), triangleMesh.indices.size() * sizeof(u32),
-                                BufferUsage::Index, "Triangle Mesh Index Buffer");
+  meshes.triangle = {.vertices =
+                         {
+                             {{0.0f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}}, // Bottom vertex (Red)
+                             {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}},  // Right top vertex (Green)
+                             {{-0.5f, 0.5f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}  // Left top vertex (Blue)
+                         },
+                     .indices = {0, 1, 2},
+                     .debugName = "Triangle"};
+  upload(meshes.triangle);
 
   log().trace("Renderer initialized.");
 }
@@ -629,6 +626,13 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImage_ = VK_NULL_HANDLE;
   depthImageMemory_ = VK_NULL_HANDLE;
 }
+void Renderer::upload(Mesh& mesh) const {
+  mesh.vertexBuffer = createBufferAndUploadData(mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex),
+                                                BufferUsage::Vertex, mesh.debugName + " Vertex Buffer");
+  mesh.indexBuffer = createBufferAndUploadData(mesh.indices.data(), mesh.indices.size() * sizeof(u32),
+                                               BufferUsage::Index, mesh.debugName + " Index Buffer");
+}
+
 void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {
   VK(vkSetDebugUtilsObjectNameEXT(getDevice(), &nameInfo));
 }

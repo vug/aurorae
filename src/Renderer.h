@@ -130,6 +130,8 @@ private:
   void createSwapchainDepthResources();
   void cleanupSwapchainDepthResources();
 
+  void upload(Mesh& mesh) const;
+
   // to prevent inclusion of volk/vulkan headers
   void setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const;
 
@@ -170,7 +172,12 @@ private:
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
 
 public:
-  Mesh triangleMesh;
+  class Meshes {
+  public:
+    Mesh triangle;
+    Mesh cube;
+  };
+  Meshes meshes;
 };
 
 } // namespace aur

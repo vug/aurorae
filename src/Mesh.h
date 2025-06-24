@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "Resources/Buffer.h"
@@ -14,6 +15,7 @@ public:
   std::vector<u32> indices;
   Buffer vertexBuffer;
   Buffer indexBuffer;
+  std::string debugName;
 };
 
 } // namespace aur
