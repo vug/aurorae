@@ -68,18 +68,14 @@ void Application::run() {
                              &offset);
       renderer_.drawWithoutVertexInput(trianglePipeline, 3, {});
 
-      // glm::mat4 worldFromObject = glm::rotate(glm::mat4(1.0f), 0.5f, glm::vec3(0, 1, 0));
       glm::mat4 worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
-      VkPushConstantsInfoKHR /* [issue #7] */ pushConstantsInfo{
-          .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
-          .pNext = nullptr,
-          .layout = cubePipeline.pipelineLayout.handle,
-          .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-          .offset = 0,
-          .size = sizeof(glm::mat4),
-          .pValues = glm::value_ptr(worldFromObject),
+      PushConstantsInfo pcInfo{
+          .pipelineLayout = trianglePipeline.pipelineLayout,
+          .stages = {ShaderStage::Vertex},
+          .sizeBytes = sizeof(worldFromObject),
+          .data = glm::value_ptr(worldFromObject),
       };
-      renderer_.drawWithoutVertexInput(cubePipeline, 36, &pushConstantsInfo);
+      renderer_.drawWithoutVertexInput(cubePipeline, 36, &pcInfo);
       renderer_.endFrame();
     }
     // If beginFrame() returns false, it means it handled a situation like

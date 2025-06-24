@@ -102,9 +102,4 @@ u32 toVkFlags(const std::vector<TEnum>& enums);
 //   return flags;
 // }
 
-struct PushConstant {
-  std::vector<ShaderStage> stages;
-  u32 size;
-};
-
 } // namespace aur

@@ -493,9 +493,8 @@ void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
   vkCmdBindDescriptorSets2KHR(commandBuffer_, &bindDescriptorSetsInfo); // [issue #7]
 }
 
-void Renderer::drawWithoutVertexInput(
-    const Pipeline& pipeline, u32 vertexCnt,
-    const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo) const {
+void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
+                                      const PushConstantsInfo* pushConstantInfoOpt) const {
   // TODO(vug): introduce Renderer::bindPipeline that keeps currently bound pipeline state, so that later
   // bindDescriptorSet can use it. Maybe it can have two variants... if pipeline is not provided it'll use
   // bound pipeline
@@ -508,8 +507,19 @@ void Renderer::drawWithoutVertexInput(
       .stages = {ShaderStage::Vertex},
   };
   bindDescriptorSet(bindInfo);
-  if (pushConstantsInfo)
-    vkCmdPushConstants2KHR(commandBuffer_, pushConstantsInfo); // [issue #7]
+
+  if (pushConstantInfoOpt) {
+    VkPushConstantsInfoKHR /* [issue #7] */ vkPushConstantsInfo{
+        .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
+        .pNext = nullptr,
+        .layout = pipeline.pipelineLayout.handle,
+        .stageFlags = toVkFlags(pushConstantInfoOpt->stages),
+        .offset = 0,
+        .size = pushConstantInfoOpt->sizeBytes,
+        .pValues = pushConstantInfoOpt->data,
+    };
+    vkCmdPushConstants2KHR /* [issue #7] */ (commandBuffer_, &vkPushConstantsInfo);
+  }
   endDebugLabel();
 
   beginDebugLabel("Draw without vertex input. Setting dynamic parameters.");

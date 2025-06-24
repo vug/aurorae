@@ -18,6 +18,7 @@ namespace aur {
 struct Pipeline;
 class PipelineLayout;
 struct PipelineLayoutCreateInfo;
+struct PushConstantsInfo;
 
 struct BindDescriptorSetInfo {
   const PipelineLayout* pipelineLayout{};
@@ -74,7 +75,7 @@ public:
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
   void bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const;
   void drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
-                              const VkPushConstantsInfoKHR* /* [issue #7] */ pushConstantsInfo = {}) const;
+                              const PushConstantsInfo* pushConstantInfoOpt = {}) const;
   void deviceWaitIdle() const;
 
   // Call this when the window framebuffer size has changed.
