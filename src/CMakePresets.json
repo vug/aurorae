@@ -21,7 +21,19 @@
       "inherits": "app-common",
       "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "SUBFOLDER": "Debug"
+      }
+    },
+    {
+      "name": "app-debug-asan",
+      "displayName": "Aurorae App (Debug & Asan)",
+      "inherits": "app-common",
+      "binaryDir": "${sourceDir}/build/debugAsan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "SUBFOLDER": "DebugAsan",
+        "CMAKE_CXX_FLAGS": "/fsanitize=address"
       }
     },
     {
@@ -30,7 +42,8 @@
       "inherits": "app-common",
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "SUBFOLDER": "Release"
       }
     }
   ],
@@ -39,14 +52,27 @@
       "name": "build-app-debug",
       "displayName": "Build Aurorae App (Debug)",
       "configurePreset": "app-debug",
-      "targets": ["Aurorae"],
+      "targets": [
+        "Aurorae"
+      ],
+      "configuration": "Debug"
+    },
+    {
+      "name": "build-app-debug-asan",
+      "displayName": "Build Aurorae App (Debug & Asan)",
+      "configurePreset": "app-debug-asan",
+      "targets": [
+        "Aurorae"
+      ],
       "configuration": "Debug"
     },
     {
       "name": "build-app-release",
       "displayName": "Build Aurorae App (Release)",
       "configurePreset": "app-release",
-      "targets": ["Aurorae"],
+      "targets": [
+        "Aurorae"
+      ],
       "configuration": "Release"
     }
   ]

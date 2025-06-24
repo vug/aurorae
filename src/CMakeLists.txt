@@ -27,17 +27,22 @@ message(STATUS "Generator is multi-config: ${is_multi_config}")
 if (NOT CMAKE_BUILD_TYPE)
     # This check is a fallback. Presets should ensure CMAKE_BUILD_TYPE is set.
     # If it's not set, we cannot reliably find dependencies installed in config-specific dirs.
-    message(FATAL_ERROR "CMAKE_BUILD_TYPE is not set. It is required to locate dependencies "
-            "in configuration-specific subdirectories (e.g., Debug, Release). "
+    message(FATAL_ERROR "CMAKE_BUILD_TYPE is not set."
             "Please ensure your CMake preset or command line sets CMAKE_BUILD_TYPE "
             "(e.g., -DCMAKE_BUILD_TYPE=Debug).")
 endif ()
 
+if (NOT SUBFOLDER)
+    message(FATAL_ERROR "SUBFOLDER is not set. It is required to locate dependencies "
+            "in configuration-specific subdirectories (e.g., Debug, DebugAsan, Release). "
+            "Please ensure your CMake Preset or CMake CLI command sets SUBFOLDER, e.g. -DSUBFOLDER=DebugAsan")
+endif ()
+
 # Add the path to the specific configuration's installation directory.
-# For example, if AURORAE_DEPENDENCIES_DIR is ".../dependencies-install" and CMAKE_BUILD_TYPE is "Debug",
+# For example, if AURORAE_DEPENDENCIES_DIR is ".../dependencies-install" and SUBFOLDER is "Debug",
 # this adds ".../dependencies-install/Debug" to CMAKE_PREFIX_PATH.
 # find_package(Volk) will then search in paths like ".../dependencies-install/Debug/lib/cmake/volk".
-list(APPEND CMAKE_PREFIX_PATH "${AURORAE_DEPENDENCIES_DIR}/${CMAKE_BUILD_TYPE}")
+list(APPEND CMAKE_PREFIX_PATH "${AURORAE_DEPENDENCIES_DIR}/${SUBFOLDER}")
 message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 # --- Find Dependencies ---
@@ -132,6 +137,30 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 else ()
     message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}. "
             "Add macro for this build type .")
+endif ()
+
+if (SUBFOLDER STREQUAL "DebugAsan")
+    message(STATUS "AddressSanitizer is enabled, configuring post-build step to copy runtime DLL.")
+
+    # Find the directory where the MSVC compiler (cl.exe) is located.
+    get_filename_component(MSVC_COMPILER_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    message(STATUS "Compiler directory: ${MSVC_COMPILER_DIR}")
+    # C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64
+
+    # The ASan runtime DLL is in the same directory as the compiler.
+    set(ASAN_RUNTIME_DLL "${MSVC_COMPILER_DIR}/clang_rt.asan_dynamic-x86_64.dll")
+
+    # Add a custom command that runs after the 'Aurorae' executable is built.
+    # This command copies the ASan DLL to the same directory as the executable.
+    add_custom_command(
+            TARGET Aurorae
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${ASAN_RUNTIME_DLL}"
+            "$<TARGET_FILE_DIR:Aurorae>"
+            COMMENT "Copying MSVC AddressSanitizer runtime DLL to output directory..."
+    )
+
 endif ()
 
 target_compile_definitions(Aurorae PRIVATE ASSETS_FOLDER="${PROJECT_SOURCE_DIR}/assets")

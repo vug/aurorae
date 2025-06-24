@@ -3,7 +3,7 @@ project(AuroraeSuperbuild NONE) # NONE indicates no languages for this project i
 
 include(ExternalProject) # Required for ExternalProject_Add
 
-set(SUPERBUILD_CONFIGS "Debug" "Release") # "RelWithDebInfo")
+set(SUPERBUILD_CONFIGS "Debug" "DebugAsan" "Release") # "RelWithDebInfo")
 # Where dependencies will be installed for each configuration
 set(DEP_INSTALL_BASE_DIR ${CMAKE_BINARY_DIR}/dependencies-install)
 message("DEP_INSTALL_BASE_DIR: ${DEP_INSTALL_BASE_DIR}")
@@ -12,7 +12,6 @@ message("DEP_INSTALL_BASE_DIR: ${DEP_INSTALL_BASE_DIR}")
 # SOURCE_DIR: The subdirectory in dependencies/ (e.g., spdlog)
 # LIST_OF_DEFINITIONS: A CMake list (semicolon-separated string) of definitions like "KEY=VALUE" or "KEY"
 function(add_external_dependency NAME SOURCE_DIR LIST_OF_DEFINITIONS)
-
   set(FORMATTED_DEFINITIONS "")
   foreach(DEFINITION_ITEM ${LIST_OF_DEFINITIONS})
     # Prepend -D to each definition item
@@ -20,8 +19,19 @@ function(add_external_dependency NAME SOURCE_DIR LIST_OF_DEFINITIONS)
   endforeach()
 
   foreach(CONFIG ${SUPERBUILD_CONFIGS})
+    set(DEP_CXX_FLAGS "")
+    set(DEP_C_FLAGS "")
+    set(INNER_BUILD_CONFIG ${CONFIG}) # Default to the loop's config name
+
+    # If the config is our special Asan one, set flags and use "Debug" for the actual build tool.
+    if(CONFIG STREQUAL "DebugAsan")
+      set(DEP_CXX_FLAGS "/fsanitize=address")
+      set(DEP_C_FLAGS "/fsanitize=address") # Also apply to C files, as some dependencies might use them
+      set(INNER_BUILD_CONFIG "Debug")
+    endif()
+    
     set(INSTALL_DIR "${DEP_INSTALL_BASE_DIR}/${CONFIG}")
-    # message("${NAME}_${CONFIG} INSTALL_DIR: ${INSTALL_DIR}")
+    message("${NAME}_${CONFIG} INSTALL_DIR: ${INSTALL_DIR}")
 
     set(COMMON_EP_ARGS
         -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} # where the dependency will install its files
@@ -37,18 +47,18 @@ function(add_external_dependency NAME SOURCE_DIR LIST_OF_DEFINITIONS)
       SOURCE_DIR "${CMAKE_SOURCE_DIR}/../dependencies/${SOURCE_DIR}" # when dependency is in the repo (maybe via submodules)
       # use GIT_REPOSITORY to make ExternalProject to clone the repo itself
       INSTALL_DIR "${INSTALL_DIR}"
-      CMAKE_ARGS ${COMMON_EP_ARGS} ${FORMATTED_DEFINITIONS}
-      BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config ${CONFIG}
-      INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR> --config ${CONFIG} --prefix ${INSTALL_DIR}
+      CMAKE_ARGS ${COMMON_EP_ARGS} ${FORMATTED_DEFINITIONS} -DCMAKE_CXX_FLAGS=${DEP_CXX_FLAGS} -DCMAKE_C_FLAGS=${DEP_C_FLAGS}
+      BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config ${INNER_BUILD_CONFIG}
+      INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR> --config ${INNER_BUILD_CONFIG} --prefix ${INSTALL_DIR}
       BUILD_ALWAYS OFF # Only rebuild if source changes
     )
 
     set(${NAME}_INSTALL_DIR_${CONFIG} ${INSTALL_DIR} PARENT_SCOPE)
 
-    if(CONFIG STREQUAL "Debug" OR CONFIG STREQUAL "RelWithDebInfo")
+    if(INNER_BUILD_CONFIG STREQUAL "Debug" OR INNER_BUILD_CONFIG STREQUAL "RelWithDebInfo")
       ExternalProject_Add_Step(${NAME}_${CONFIG} copy_pdb
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/copy_pdb.cmake
-          "<BINARY_DIR>/${CONFIG}"
+          "<BINARY_DIR>/${INNER_BUILD_CONFIG}"
           "${SOURCE_DIR}"
           "${INSTALL_DIR}/lib"
         DEPENDEES install
