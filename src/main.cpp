@@ -1,5 +1,7 @@
 /*
-TODO(vug): can I do better than `vkQueueWaitIdle` for uploading buffer data. Update shaders.
+TODO(vug): Bind Index buffer too and bring the drawIndexed command
+           Update cube shader too.
+           can I do better than `vkQueueWaitIdle` for uploading buffer data.
 TODO(vug): don't forget to use the debug names in debug callback
 TODO(Vug): put Allocator and ShaderModule into common resource format too
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
