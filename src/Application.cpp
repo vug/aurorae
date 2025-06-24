@@ -73,7 +73,8 @@ void Application::run() {
           .sizeBytes = sizeof(worldFromObject),
           .data = glm::value_ptr(worldFromObject),
       };
-      renderer_.drawWithoutVertexInput(cubePipeline, 36, &pcInfo);
+      renderer_.drawIndexed(cubePipeline, renderer_.meshes.cube.vertexBuffer,
+                            renderer_.meshes.cube.indexBuffer, &pcInfo);
       renderer_.endFrame();
     }
     // If beginFrame() returns false, it means it handled a situation like

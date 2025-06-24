@@ -57,7 +57,6 @@ void main() {
     int vertex_idx = indices[gl_VertexIndex];
     vec3 position = positions[vertex_idx];
     vColor = colors[vertex_idx];
-
-    // Note: We don't have a model matrix yet, just view and projection.
+    
     gl_Position = perFrame.projectionFromView * perFrame.viewFromModel * pc.modelFromObject * vec4(position, 1.0);
 }

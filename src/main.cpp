@@ -1,13 +1,14 @@
 /*
-TODO(vug): Update cube shader too.
-           can I do better than `vkQueueWaitIdle` for uploading buffer data.
+TODO(vug): can I do better than `vkQueueWaitIdle` for uploading buffer data.
 TODO(vug): don't forget to use the debug names in debug callback
+TODO(vug): Fix release mode on desktop
+TODO(vug): quit with ESC (or Ctrl+Q)
+TODO(vug): consolidate triangle and cube shaders into unlit shader
 TODO(Vug): put Allocator and ShaderModule into common resource format too
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
 TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
            methods.
-TODO(vug): quit with ESC (or Ctrl+Q)
-TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods
+TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods (?)
 TODO(vug): Introduce more resource abstractions (Image/Texture, Sampler... Concrete Buffer types?) then
            introduce CRTP base class generalization. (See chat) I can give VulkanContext as context so that
            everything necessary will be available for creation

@@ -57,7 +57,7 @@ Pipeline Pipelines::createTrianglePipeline() const {
       .module = fragShaderModule,
       .pName = "main",
   };
-  std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
+  std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
 
   std::vector<VkVertexInputBindingDescription> vkInputBindingDescriptions;
   for (const auto& desc : Vertex::getVertexInputBindingDescription())
@@ -183,8 +183,8 @@ Pipeline Pipelines::createTrianglePipeline() const {
 }
 
 Pipeline Pipelines::createCubePipeline() const {
-  PathBuffer vertexPath{pathJoin(kShadersFolder, "cube2.vert.spv")};
-  PathBuffer fragmentPath{pathJoin(kShadersFolder, "cube2.frag.spv")};
+  PathBuffer vertexPath{pathJoin(kShadersFolder, "cube3.vert.spv")};
+  PathBuffer fragmentPath{pathJoin(kShadersFolder, "cube3.frag.spv")};
   BinaryBlob vertShaderCode = readBinaryFile(vertexPath.c_str());
   BinaryBlob fragShaderCode = readBinaryFile(fragmentPath.c_str());
 
@@ -203,10 +203,20 @@ Pipeline Pipelines::createCubePipeline() const {
       .module = fragShaderModule,
       .pName = "main",
   };
-  std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
+  std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
 
-  constexpr VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+  std::vector<VkVertexInputBindingDescription> vkInputBindingDescriptions;
+  for (const auto& desc : Vertex::getVertexInputBindingDescription())
+    vkInputBindingDescriptions.push_back(toVkVertexInputBindingDescription(desc));
+  std::vector<VkVertexInputAttributeDescription> vkVertexInputAttributeDescriptions;
+  for (const auto& desc : Vertex::getVertexInputAttributeDescription())
+    vkVertexInputAttributeDescriptions.push_back(toVkVertexInputAttributeDescription(desc));
+  const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      .vertexBindingDescriptionCount = static_cast<u32>(vkInputBindingDescriptions.size()),
+      .pVertexBindingDescriptions = vkInputBindingDescriptions.data(),
+      .vertexAttributeDescriptionCount = static_cast<u32>(vkVertexInputAttributeDescriptions.size()),
+      .pVertexAttributeDescriptions = vkVertexInputAttributeDescriptions.data(),
   };
 
   constexpr VkPipelineInputAssemblyStateCreateInfo inputAssembly{
