@@ -36,8 +36,8 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
 }
 
 Pipeline Pipelines::createTrianglePipeline() const {
-  PathBuffer vertexPath{pathJoin(kShadersFolder, "triangle2.vert.spv")};
-  PathBuffer fragmentPath{pathJoin(kShadersFolder, "triangle2.frag.spv")};
+  PathBuffer vertexPath{pathJoin(kShadersFolder, "triangle.vert.spv")};
+  PathBuffer fragmentPath{pathJoin(kShadersFolder, "triangle.frag.spv")};
 
   BinaryBlob vertShaderCode = readBinaryFile(vertexPath.c_str());
   BinaryBlob fragShaderCode = readBinaryFile(fragmentPath.c_str());
@@ -67,10 +67,10 @@ Pipeline Pipelines::createTrianglePipeline() const {
     vkVertexInputAttributeDescriptions.push_back(toVkVertexInputAttributeDescription(desc));
   const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-      .vertexBindingDescriptionCount = static_cast<u32>(vkInputBindingDescriptions.size()),
-      .pVertexBindingDescriptions = vkInputBindingDescriptions.data(),
-      .vertexAttributeDescriptionCount = static_cast<u32>(vkVertexInputAttributeDescriptions.size()),
-      .pVertexAttributeDescriptions = vkVertexInputAttributeDescriptions.data(),
+      // .vertexBindingDescriptionCount = static_cast<u32>(vkInputBindingDescriptions.size()),
+      // .pVertexBindingDescriptions = vkInputBindingDescriptions.data(),
+      // .vertexAttributeDescriptionCount = static_cast<u32>(vkVertexInputAttributeDescriptions.size()),
+      // .pVertexAttributeDescriptions = vkVertexInputAttributeDescriptions.data(),
   };
 
   constexpr VkPipelineInputAssemblyStateCreateInfo inputAssembly{
