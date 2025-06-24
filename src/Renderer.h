@@ -78,6 +78,10 @@ public:
   void setDynamicPipelineState() const;
   void drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
                               const PushConstantsInfo* pushConstantInfoOpt = {}) const;
+  void drawVertices(const Pipeline& pipeline, const Buffer& vertexBuffer,
+                    const PushConstantsInfo* pushConstantInfoOpt) const;
+  void drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer, const Buffer& indexBuffer,
+                   const PushConstantsInfo* pushConstantInfoOpt) const;
   void deviceWaitIdle() const;
 
   // Call this when the window framebuffer size has changed.

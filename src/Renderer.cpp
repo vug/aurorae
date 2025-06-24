@@ -546,6 +546,29 @@ void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
 
   vkCmdDraw(commandBuffer_, vertexCnt, 1, 0, 0);
 }
+void Renderer::drawVertices(const Pipeline& pipeline, const Buffer& vertexBuffer,
+                            const PushConstantsInfo* pushConstantInfoOpt) const {
+  bindPipeline(pipeline, pushConstantInfoOpt);
+  setDynamicPipelineState();
+
+  VkDeviceSize offset = 0;
+  vkCmdBindVertexBuffers(getCommandBuffer(), 0, 1, &vertexBuffer.handle, &offset);
+  const u32 vertexCnt = static_cast<u32>(vertexBuffer.createInfo.sizeBytes / sizeof(Vertex));
+  vkCmdDraw(commandBuffer_, vertexCnt, 1, 0, 0);
+}
+
+void Renderer::drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer, const Buffer& indexBuffer,
+                           const PushConstantsInfo* pushConstantInfoOpt) const {
+  bindPipeline(pipeline, pushConstantInfoOpt);
+  setDynamicPipelineState();
+
+  VkDeviceSize offset = 0;
+  vkCmdBindVertexBuffers(getCommandBuffer(), 0, 1, &vertexBuffer.handle, &offset);
+  vkCmdBindIndexBuffer(getCommandBuffer(), indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32);
+  const u32 indexCnt = static_cast<u32>(indexBuffer.createInfo.sizeBytes / sizeof(u32));
+  vkCmdDrawIndexed(commandBuffer_, indexCnt, 1, 0, 0, 0);
+}
+
 void Renderer::deviceWaitIdle() const {
   VK(vkDeviceWaitIdle(vulkanContext_.getDevice()));
 }

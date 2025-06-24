@@ -63,10 +63,9 @@ void Application::run() {
 
     if (renderer_.beginFrame()) {
       renderer_.setClearColor(0.25f, 0.25f, 0.25f);
-      VkDeviceSize offset = 0;
-      vkCmdBindVertexBuffers(renderer_.getCommandBuffer(), 0, 1, &renderer_.triangleMesh.vertexBuffer.handle,
-                             &offset);
-      renderer_.drawWithoutVertexInput(trianglePipeline, 3, {});
+      // renderer_.drawVertices(trianglePipeline, renderer_.triangleMesh.vertexBuffer, {});
+      renderer_.drawIndexed(trianglePipeline, renderer_.triangleMesh.vertexBuffer,
+                            renderer_.triangleMesh.indexBuffer, {});
 
       glm::mat4 worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
       PushConstantsInfo pcInfo{
