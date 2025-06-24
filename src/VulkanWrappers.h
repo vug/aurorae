@@ -4,9 +4,16 @@
 
 #include "Utils.h"
 
+#define FORWARD_DEFINE_VK_HANDLE(object) typedef struct object##_T* object;
+#if !defined(VK_NULL_HANDLE)
+#define VK_NULL_HANDLE nullptr
+#endif
+
 // Forward definitions of vulkan handles and types so that we don't have to include vulkan headers in Aurorae
 // headers
+
 FORWARD_DEFINE_VK_HANDLE(VkInstance)
+FORWARD_DEFINE_VK_HANDLE(VkSurfaceKHR)
 FORWARD_DEFINE_VK_HANDLE(VkPhysicalDevice)
 FORWARD_DEFINE_VK_HANDLE(VkDevice)
 FORWARD_DEFINE_VK_HANDLE(VmaAllocator)
@@ -99,6 +106,15 @@ enum class BufferUsage {
   Uniform = 0x00000010,
   Index = 0x00000040,
   Vertex = 0x00000080,
+};
+
+// sync with VmaMemoryUsage
+enum class MemoryUsage {
+  Unknown = 0,
+  GpuOnly = 1,
+  CpuOnly = 2,
+  CpuToGpu = 3,
+  GpuToCpu = 4,
 };
 
 template <typename TEnum>

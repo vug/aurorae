@@ -156,7 +156,7 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
       {
           .sizeBytes = size,
           .usages = {BufferUsage::TransferSrc},
-          .memoryUsage = VMA_MEMORY_USAGE_CPU_ONLY,
+          .memoryUsage = MemoryUsage::CpuOnly,
       },
       std::string{debugName} + " Staging");
 
@@ -169,7 +169,7 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
       {
           .sizeBytes = size,
           .usages = {usage, BufferUsage::TransferDst},
-          .memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY,
+          .memoryUsage = MemoryUsage::GpuOnly,
       },
       std::string{debugName} + " Device");
 
@@ -215,7 +215,7 @@ void Renderer::createPerFrameDataResources() {
   // Uniform Buffer
   BufferCreateInfo perFrameUniformCreateInto{.sizeBytes = sizeof(PerFrameData),
                                              .usages = {BufferUsage::Uniform},
-                                             .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
+                                             .memoryUsage = MemoryUsage::CpuToGpu};
   perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto, "Per-Frame Data Uniform Buffer");
 
   // Now, link our buffer to the allocated descriptor set

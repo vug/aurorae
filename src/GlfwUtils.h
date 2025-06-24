@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Utils.h"
-
-FORWARD_DEFINE_VK_HANDLE(VkInstance)
-FORWARD_DEFINE_VK_HANDLE(VkSurfaceKHR)
+#include "VulkanWrappers.h"
 
 struct GLFWwindow;
 

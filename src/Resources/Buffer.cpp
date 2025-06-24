@@ -18,7 +18,7 @@ Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& bufferCreateInfo)
           .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
       };
       const VmaAllocationCreateInfo allocInfo{
-          .usage = createInfo.memoryUsage,
+          .usage = static_cast<VmaMemoryUsage>(createInfo.memoryUsage),
       };
 
       VkBuffer hnd;

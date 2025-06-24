@@ -1,6 +1,9 @@
 #include "VulkanWrappers.h"
 
+// clang-format off
 #include <volk/volk.h>
+#include <VulkanMemoryAllocator/vk_mem_alloc.h>
+// clang-format on
 
 namespace aur {
 static_assert(static_cast<u32>(DescriptorType::UniformBuffer) == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -21,6 +24,12 @@ static_assert(static_cast<u32>(BufferUsage::TransferDst) == VK_BUFFER_USAGE_TRAN
 static_assert(static_cast<u32>(BufferUsage::Uniform) == VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 static_assert(static_cast<u32>(BufferUsage::Index) == VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 static_assert(static_cast<u32>(BufferUsage::Vertex) == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+static_assert(static_cast<u32>(MemoryUsage::Unknown) == VMA_MEMORY_USAGE_UNKNOWN);
+static_assert(static_cast<u32>(MemoryUsage::GpuOnly) == VMA_MEMORY_USAGE_GPU_ONLY);
+static_assert(static_cast<u32>(MemoryUsage::CpuOnly) == VMA_MEMORY_USAGE_CPU_ONLY);
+static_assert(static_cast<u32>(MemoryUsage::CpuToGpu) == VMA_MEMORY_USAGE_CPU_TO_GPU);
+static_assert(static_cast<u32>(MemoryUsage::GpuToCpu) == VMA_MEMORY_USAGE_GPU_TO_CPU);
 
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums) {

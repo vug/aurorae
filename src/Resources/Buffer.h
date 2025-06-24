@@ -8,7 +8,7 @@ namespace aur {
 struct BufferCreateInfo {
   u64 sizeBytes{};
   std::vector<BufferUsage> usages;
-  VmaMemoryUsage memoryUsage{}; // default 0 is VMA_MEMORY_USAGE_UNKNOWN
+  MemoryUsage memoryUsage{}; // default 0 is VMA_MEMORY_USAGE_UNKNOWN
 };
 
 class Buffer {

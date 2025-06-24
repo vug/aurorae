@@ -1,10 +1,5 @@
 #pragma once
 
-#define FORWARD_DEFINE_VK_HANDLE(object) typedef struct object##_T* object;
-#if !defined(VK_NULL_HANDLE)
-#define VK_NULL_HANDLE nullptr
-#endif
-
 namespace aur {
 
 // Signed integers
