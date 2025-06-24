@@ -91,11 +91,11 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   };
   triangleMesh.indices = {0, 1, 2}; // Triangle indices
   triangleMesh.vertexBuffer =
-      createBufferAndUploadData(triangleMesh.vertices.data(), triangleMesh.vertices.size(),
+      createBufferAndUploadData(triangleMesh.vertices.data(), triangleMesh.vertices.size() * sizeof(Vertex),
                                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, "Triangle Mesh Vertex Buffer");
   triangleMesh.indexBuffer =
-      createBufferAndUploadData(triangleMesh.indices.data(), triangleMesh.indices.size(),
-                                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, "Triangle Mesh Index Buffer");
+      createBufferAndUploadData(triangleMesh.indices.data(), triangleMesh.indices.size() * sizeof(u32),
+                                VK_BUFFER_USAGE_INDEX_BUFFER_BIT, "Triangle Mesh Index Buffer");
 
   log().trace("Renderer initialized.");
 }
@@ -192,8 +192,6 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, VkBuff
   };
   VK(vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
   VK(vkQueueWaitIdle(vulkanContext_.getGraphicsQueue())); // Simple synchronization
-  // VkCommandBufferResetFlags;
-  // VK(vkResetCommandBuffer(commandBufferOneShot_, 0));
 
   return deviceBuffer;
 }
