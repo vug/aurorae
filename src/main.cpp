@@ -18,6 +18,7 @@ TODO(vug): use slang as the shader language, and import global and per-frame uni
            attributes etc. from there
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): generate layouts from shader reflection
+TODO(vug): basic geometry assets: triangle, quad, cube
 .
 TODO(vug): headless vulkan for image based testing.
 TODO(vug): macros: MOVE_ONLY, COPY_ONLY, NOT_MOVABLE_NOT_COPIABLE

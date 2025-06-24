@@ -1,10 +1,10 @@
-#version 450
+#version 460
 #extension GL_EXT_scalar_block_layout: require
 
 // The vertices are hard-coded in the draw command, so we use gl_VertexIndex
 // to generate the cube vertices on the fly.
 
-layout(push_constant) uniform PushConstants {
+layout (push_constant) uniform PushConstants {
     mat4 modelFromObject;
 } pc;
 
