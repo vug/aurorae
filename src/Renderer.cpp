@@ -493,20 +493,19 @@ void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
   vkCmdBindDescriptorSets2KHR(commandBuffer_, &bindDescriptorSetsInfo); // [issue #7]
 }
 
-void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
-                                      const PushConstantsInfo* pushConstantInfoOpt) const {
-  // TODO(vug): introduce Renderer::bindPipeline that keeps currently bound pipeline state, so that later
-  // bindDescriptorSet can use it. Maybe it can have two variants... if pipeline is not provided it'll use
-  // bound pipeline
-  beginDebugLabel("Draw without vertex input. Material setup.");
+void Renderer::bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* pushConstantInfoOpt) const {
+  // TODO(vug): introduce Renderer::boundPipeline member that keeps currently bound pipeline state, so that
+  //            later bindDescriptorSet can use it. Maybe it can have two variants... if pipeline is not
+  //            provided it'll use bound pipeline (?)
+  beginDebugLabel("Bind Pipeline, Upload Push Constants");
   vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
-  const BindDescriptorSetInfo bindInfo{
+  const BindDescriptorSetInfo perFrameBindDescriptorInfo{
       .pipelineLayout = &pipeline.pipelineLayout,
       .descriptorSet = &perFrameDescriptorSet_,
       .setNo = 0,
       .stages = {ShaderStage::Vertex},
   };
-  bindDescriptorSet(bindInfo);
+  bindDescriptorSet(perFrameBindDescriptorInfo);
 
   if (pushConstantInfoOpt) {
     VkPushConstantsInfoKHR /* [issue #7] */ vkPushConstantsInfo{
@@ -521,8 +520,10 @@ void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
     vkCmdPushConstants2KHR /* [issue #7] */ (commandBuffer_, &vkPushConstantsInfo);
   }
   endDebugLabel();
+}
 
-  beginDebugLabel("Draw without vertex input. Setting dynamic parameters.");
+void Renderer::setDynamicPipelineState() const {
+  beginDebugLabel("Set Dynamic Pipeline State");
   const VkViewport viewport{
       .x = 0.0f,
       .y = 0.0f,
@@ -535,6 +536,12 @@ void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
   const VkRect2D scissor{{0, 0}, swapchain_.getImageExtent()};
   vkCmdSetScissor(commandBuffer_, 0, 1, &scissor);
   endDebugLabel();
+}
+
+void Renderer::drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
+                                      const PushConstantsInfo* pushConstantInfoOpt) const {
+  bindPipeline(pipeline, pushConstantInfoOpt);
+  setDynamicPipelineState();
 
   vkCmdDraw(commandBuffer_, vertexCnt, 1, 0, 0);
 }

@@ -74,6 +74,8 @@ public:
   void endDebugLabel() const;
   inline void setClearColor(float r, float g, float b, float a = 1.0f) { clearColor_ = {r, g, b, a}; }
   void bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const;
+  void bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* pushConstantInfoOpt) const;
+  void setDynamicPipelineState() const;
   void drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
                               const PushConstantsInfo* pushConstantInfoOpt = {}) const;
   void deviceWaitIdle() const;
