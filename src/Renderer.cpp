@@ -85,9 +85,9 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   createPerFrameDataResources();
 
   triangleMesh.vertices = {
-      {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}}, // Bottom vertex (Red)
-      {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},  // Right top vertex (Green)
-      {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}}  // Left top vertex (Blue)
+      {{0.0f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}}, // Bottom vertex (Red)
+      {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}},  // Right top vertex (Green)
+      {{-0.5f, 0.5f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}  // Left top vertex (Blue)
   };
   triangleMesh.indices = {0, 1, 2}; // Triangle indices
   triangleMesh.vertexBuffer =
@@ -587,6 +587,9 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageView_ = VK_NULL_HANDLE;
   depthImage_ = VK_NULL_HANDLE;
   depthImageMemory_ = VK_NULL_HANDLE;
+}
+void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {
+  VK(vkSetDebugUtilsObjectNameEXT(getDevice(), &nameInfo));
 }
 
 Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo, std::string_view debugName) const {

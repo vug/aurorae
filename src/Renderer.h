@@ -93,12 +93,13 @@ public:
       objType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
     else
       static_assert("Unsupported type TObject for setting debug name");
-    VkDebugUtilsObjectNameInfoEXT nameInfo{};
-    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-    nameInfo.objectType = objType;
-    nameInfo.objectHandle = reinterpret_cast<u64>(obj.handle);
-    nameInfo.pObjectName = name.data();
-    vkSetDebugUtilsObjectNameEXT(getDevice(), &nameInfo);
+    VkDebugUtilsObjectNameInfoEXT nameInfo{
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        .objectType = objType,
+        .objectHandle = reinterpret_cast<u64>(obj.handle),
+        .pObjectName = name.data(),
+    };
+    setDebugNameWrapper(nameInfo);
   }
   [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo,
                                     std::string_view debugName = "") const;
@@ -121,6 +122,9 @@ private:
   void internalRecreateSwapchain();
   void createSwapchainDepthResources();
   void cleanupSwapchainDepthResources();
+
+  // to prevent inclusion of volk/vulkan headers
+  void setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const;
 
   // Context -> Swapchain needs to be created in that order.
   VulkanContext vulkanContext_;

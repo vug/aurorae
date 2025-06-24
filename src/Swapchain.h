@@ -1,5 +1,6 @@
 #pragma once
 
+#define VK_NO_PROTOTYPES
 #include <vk-bootstrap/VkBootstrap.h>
 
 #include <vector>

@@ -1,5 +1,7 @@
 #include "Application.h"
 
+#include <volk/volk.h>
+
 #include "AppContext.h"
 #include "GlfwUtils.h"
 #include "Logger.h"
@@ -61,7 +63,11 @@ void Application::run() {
 
     if (renderer_.beginFrame()) {
       renderer_.setClearColor(0.25f, 0.25f, 0.25f);
+      VkDeviceSize offset = 0;
+      vkCmdBindVertexBuffers(renderer_.getCommandBuffer(), 0, 1, &renderer_.triangleMesh.vertexBuffer.handle,
+                             &offset);
       renderer_.drawWithoutVertexInput(trianglePipeline, 3, {});
+
       // glm::mat4 worldFromObject = glm::rotate(glm::mat4(1.0f), 0.5f, glm::vec3(0, 1, 0));
       glm::mat4 worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
       VkPushConstantsInfoKHR /* [issue #7] */ pushConstantsInfo{
