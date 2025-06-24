@@ -12,8 +12,8 @@ Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& bufferCreateInfo)
     , handle([this]() {
       const VkBufferCreateInfo bufferInfo{
           .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-          .size = createInfo.size,
-          .usage = createInfo.usage,
+          .size = createInfo.sizeBytes,
+          .usage = toVkFlags(createInfo.usages),
           // For now, we'll stick to exclusive access from the graphics queue.
           .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
       };

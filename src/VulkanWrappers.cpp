@@ -16,6 +16,12 @@ static_assert(static_cast<u32>(Format::R32G32_SFLOAT) == VK_FORMAT_R32G32_SFLOAT
 static_assert(static_cast<u32>(Format::R32G32B32_SFLOAT) == VK_FORMAT_R32G32B32_SFLOAT);
 static_assert(static_cast<u32>(Format::R32G32B32A32_SFLOAT) == VK_FORMAT_R32G32B32A32_SFLOAT);
 
+static_assert(static_cast<u32>(BufferUsage::TransferSrc) == VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+static_assert(static_cast<u32>(BufferUsage::TransferDst) == VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+static_assert(static_cast<u32>(BufferUsage::Uniform) == VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+static_assert(static_cast<u32>(BufferUsage::Index) == VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+static_assert(static_cast<u32>(BufferUsage::Vertex) == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums) {
   u32 flags{};
@@ -25,5 +31,6 @@ u32 toVkFlags(const std::vector<TEnum>& enums) {
 }
 
 template u32 toVkFlags(const std::vector<ShaderStage>& enums);
+template u32 toVkFlags(const std::vector<BufferUsage>& enums);
 
 } // namespace aur

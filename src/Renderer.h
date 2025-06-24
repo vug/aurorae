@@ -114,7 +114,7 @@ public:
                                                     std::string_view debugName = "") const;
   [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
 
-  [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, VkBufferUsageFlags usage,
+  [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
                                                  std::string_view debugName) const;
 
 private:

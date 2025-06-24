@@ -14,6 +14,7 @@
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
 #include "Utils.h"
+#include "VulkanWrappers.h"
 
 namespace aur {
 
@@ -92,10 +93,10 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   triangleMesh.indices = {0, 1, 2}; // Triangle indices
   triangleMesh.vertexBuffer =
       createBufferAndUploadData(triangleMesh.vertices.data(), triangleMesh.vertices.size() * sizeof(Vertex),
-                                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, "Triangle Mesh Vertex Buffer");
+                                BufferUsage::Vertex, "Triangle Mesh Vertex Buffer");
   triangleMesh.indexBuffer =
       createBufferAndUploadData(triangleMesh.indices.data(), triangleMesh.indices.size() * sizeof(u32),
-                                VK_BUFFER_USAGE_INDEX_BUFFER_BIT, "Triangle Mesh Index Buffer");
+                                BufferUsage::Index, "Triangle Mesh Index Buffer");
 
   log().trace("Renderer initialized.");
 }
@@ -148,13 +149,13 @@ VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
   VK(vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr, &shaderModule));
   return shaderModule;
 }
-Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, VkBufferUsageFlags usage,
+Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
                                            std::string_view debugName) const {
   // host visible, host coherent
   Buffer stagingBuffer = createBuffer(
       {
-          .size = size,
-          .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+          .sizeBytes = size,
+          .usages = {BufferUsage::TransferSrc},
           .memoryUsage = VMA_MEMORY_USAGE_CPU_ONLY,
       },
       std::string{debugName} + " Staging");
@@ -166,8 +167,8 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, VkBuff
   // Create the device-local buffer (optimal for GPU access)
   Buffer deviceBuffer = createBuffer(
       {
-          .size = size,
-          .usage = usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+          .sizeBytes = size,
+          .usages = {usage, BufferUsage::TransferDst},
           .memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY,
       },
       std::string{debugName} + " Device");
@@ -212,8 +213,8 @@ void Renderer::createPerFrameDataResources() {
   perFrameDescriptorSet_ = createDescriptorSet(setCreateInfo, "Per-Frame Data Descriptor Set");
 
   // Uniform Buffer
-  BufferCreateInfo perFrameUniformCreateInto{.size = sizeof(PerFrameData),
-                                             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+  BufferCreateInfo perFrameUniformCreateInto{.sizeBytes = sizeof(PerFrameData),
+                                             .usages = {BufferUsage::Uniform},
                                              .memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU};
   perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto, "Per-Frame Data Uniform Buffer");
 

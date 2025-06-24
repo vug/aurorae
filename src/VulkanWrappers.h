@@ -92,6 +92,15 @@ enum class Format : u32 {
   R32G32B32A32_SFLOAT = 109,
 };
 
+// sync with VkBufferUsageFlagBits
+enum class BufferUsage {
+  TransferSrc = 0x00000001,
+  TransferDst = 0x00000002,
+  Uniform = 0x00000010,
+  Index = 0x00000040,
+  Vertex = 0x00000080,
+};
+
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums);
 
