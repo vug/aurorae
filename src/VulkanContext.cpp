@@ -158,35 +158,34 @@ VkBool32 VKAPI_PTR debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageS
       -0x257d9f46, // enabling a deprecated extension that has been promoted to main Vulkan. triggered
                    // because of VK_KHR_maintenance6 for vkCmdPushConstants2KHR [issue #7]
       0x86974c1,   // perf warning that says don't use VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-                   // reset entire pool instead.
+                   //  reset entire pool instead.
   };
   for (const auto& msgId : ignoredMessageIds) {
     if (pCallbackData->messageIdNumber == msgId)
       return VK_FALSE; // Skip this message
   }
 
-  const char* severity = vkb::to_string_message_severity(messageSeverity);
   const char* type = vkb::to_string_message_type(messageType);
   const char* message = pCallbackData->pMessage;
-  const i32 messageId = pCallbackData->messageIdNumber;
-  constexpr const char* fmt = "Vulkan [{}][{}]: {} [0x{:x}]";
+  const std::string debugMsg = std::format("VULKAN [{}]: {}", type, message);
 
   switch (messageSeverity) {
   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-    log().trace(fmt, severity, type, message, messageId);
+    log().trace(debugMsg);
     // can return VK_FALSE here to ignore verbose messages
     break;
   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-    log().info(fmt, severity, type, message, messageId);
+    log().info(debugMsg);
     break;
   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-    log().warn(fmt, severity, type, message, messageId);
+    log().warn(debugMsg);
     break;
   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-    log().error(fmt, severity, type, message, messageId);
+    log().error(debugMsg);
     break;
   default:
-    log().critical("Unknown Vulkan message severity: {}", static_cast<int>(messageSeverity));
+    log().critical("Unknown Vulkan message severity: {}. message: {}", static_cast<int>(messageSeverity),
+                   debugMsg);
   }
   if (kDebugBreakAtValidationErrors)
     std::abort();
