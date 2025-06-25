@@ -489,18 +489,22 @@ void Renderer::beginDebugLabel(std::string_view label) const {
 }
 
 void Renderer::beginDebugLabel(std::string_view label, const f32 color[4]) const {
-  // TODO(vug): mechanism to ensure this is called from inside command buffer recording
-  VkDebugUtilsLabelEXT vkLabel{
-      .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
-      .pLabelName = label.data(),
-      .color = {color[0], color[1], color[2], color[3]},
-  };
-  vkCmdBeginDebugUtilsLabelEXT(commandBuffer_, &vkLabel);
+  if constexpr (kBuildType == BuildType::Debug) {
+    // TODO(vug): mechanism to ensure this is called from inside command buffer recording
+    VkDebugUtilsLabelEXT vkLabel{
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
+        .pLabelName = label.data(),
+        .color = {color[0], color[1], color[2], color[3]},
+    };
+    vkCmdBeginDebugUtilsLabelEXT(commandBuffer_, &vkLabel);
+  }
 }
 void Renderer::endDebugLabel() const {
-  // TODO(vug): mechanism to ensure this is called from inside command buffer recording, and after a
-  //            beginLabel
-  vkCmdEndDebugUtilsLabelEXT(commandBuffer_);
+  if constexpr (kBuildType == BuildType::Debug) {
+    // TODO(vug): mechanism to ensure this is called from inside command buffer recording, and after a
+    //            beginLabel
+    vkCmdEndDebugUtilsLabelEXT(commandBuffer_);
+  }
 }
 
 void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
@@ -667,7 +671,9 @@ void Renderer::upload(Mesh& mesh) const {
 }
 
 void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {
-  VK(vkSetDebugUtilsObjectNameEXT(getDevice(), &nameInfo));
+  if constexpr (kBuildType == BuildType::Debug) {
+    VK(vkSetDebugUtilsObjectNameEXT(getDevice(), &nameInfo));
+  }
 }
 
 Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo, std::string_view debugName) const {

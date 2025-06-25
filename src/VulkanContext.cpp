@@ -183,7 +183,7 @@ VkBool32 VKAPI_PTR debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageS
   }
 
   const std::string debugMsg =
-      std::format("VULKAN [{}]: {}{}{}{}", type, message, queueLabels, commandBufferLabels);
+      std::format("VULKAN [{}]: {}{}{}", type, message, queueLabels, commandBufferLabels);
 
   switch (messageSeverity) {
   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
