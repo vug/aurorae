@@ -45,6 +45,16 @@
         "CMAKE_BUILD_TYPE": "Release",
         "SUBFOLDER": "Release"
       }
+    },
+    {
+      "name": "app-release-with-debug-info",
+      "displayName": "Aurorae App (Release w/Debug Info)",
+      "inherits": "app-common",
+      "binaryDir": "${sourceDir}/build/relWithDebInfo",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "SUBFOLDER": "RelWithDebInfo"
+      }
     }
   ],
   "buildPresets": [
@@ -74,6 +84,15 @@
         "Aurorae"
       ],
       "configuration": "Release"
+    },
+    {
+      "name": "build-app-release-with-debug-info",
+      "displayName": "Build Aurorae App (Release w/Debug Info)",
+      "configurePreset": "app-release-with-debug-info",
+      "targets": [
+        "Aurorae"
+      ],
+      "configuration": "RelWithDebInfo"
     }
   ]
 }

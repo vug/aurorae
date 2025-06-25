@@ -3,7 +3,7 @@ project(AuroraeSuperbuild NONE) # NONE indicates no languages for this project i
 
 include(ExternalProject) # Required for ExternalProject_Add
 
-set(SUPERBUILD_CONFIGS "Debug" "DebugAsan" "Release") # "RelWithDebInfo")
+set(SUPERBUILD_CONFIGS "Debug" "DebugAsan" "Release" "RelWithDebInfo")
 # Where dependencies will be installed for each configuration
 set(DEP_INSTALL_BASE_DIR ${CMAKE_BINARY_DIR}/dependencies-install)
 message("DEP_INSTALL_BASE_DIR: ${DEP_INSTALL_BASE_DIR}")
