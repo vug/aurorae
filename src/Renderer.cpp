@@ -91,7 +91,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
                              {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}},  // Right top vertex (Green)
                              {{-0.5f, 0.5f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}  // Left top vertex (Blue)
                          },
-                     .indices = {0, 1, 2},
+                     .indices = {0, 2, 1},
                      .debugName = "Triangle"};
   upload(meshes.triangle);
 

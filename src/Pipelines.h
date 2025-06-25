@@ -11,8 +11,7 @@ public:
   explicit Pipelines(const Renderer& renderer);
 
   // "Materials" so far.
-  [[nodiscard]] Pipeline createTrianglePipeline() const;
-  [[nodiscard]] Pipeline createCubePipeline() const;
+  [[nodiscard]] Pipeline createUnlitPipeline() const;
 
   void cleanupPipeline(Pipeline& pipeline) const;
 

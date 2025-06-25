@@ -42,8 +42,7 @@ Application::~Application() {
 
 void Application::run() {
   Pipelines pipelines{renderer_};
-  Pipeline trianglePipeline = pipelines.createTrianglePipeline();
-  Pipeline cubePipeline = pipelines.createCubePipeline();
+  Pipeline unlitPipeline = pipelines.createUnlitPipeline();
 
   log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
@@ -63,18 +62,26 @@ void Application::run() {
 
     if (renderer_.beginFrame()) {
       renderer_.setClearColor(0.25f, 0.25f, 0.25f);
-      renderer_.drawIndexed(trianglePipeline, renderer_.meshes.triangle.vertexBuffer,
-                            renderer_.meshes.triangle.indexBuffer, {});
 
-      glm::mat4 worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
-      PushConstantsInfo pcInfo{
-          .pipelineLayout = trianglePipeline.pipelineLayout,
+      glm::mat4 worldFromObject1 = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f));
+      PushConstantsInfo pcInfo1{
+          .pipelineLayout = unlitPipeline.pipelineLayout,
           .stages = {ShaderStage::Vertex},
-          .sizeBytes = sizeof(worldFromObject),
-          .data = glm::value_ptr(worldFromObject),
+          .sizeBytes = sizeof(worldFromObject1),
+          .data = glm::value_ptr(worldFromObject1),
       };
-      renderer_.drawIndexed(cubePipeline, renderer_.meshes.cube.vertexBuffer,
-                            renderer_.meshes.cube.indexBuffer, &pcInfo);
+      renderer_.drawIndexed(unlitPipeline, renderer_.meshes.triangle.vertexBuffer,
+                            renderer_.meshes.triangle.indexBuffer, &pcInfo1);
+
+      glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
+      PushConstantsInfo pcInfo2{
+          .pipelineLayout = unlitPipeline.pipelineLayout,
+          .stages = {ShaderStage::Vertex},
+          .sizeBytes = sizeof(worldFromObject2),
+          .data = glm::value_ptr(worldFromObject2),
+      };
+      renderer_.drawIndexed(unlitPipeline, renderer_.meshes.cube.vertexBuffer,
+                            renderer_.meshes.cube.indexBuffer, &pcInfo2);
       renderer_.endFrame();
     }
     // If beginFrame() returns false, it means it handled a situation like
@@ -85,8 +92,7 @@ void Application::run() {
   // TODO(vug): With proper RAII, and architecture, we shouldn't need to call wait idle for cleaning up
   // pipelines manually
   renderer_.deviceWaitIdle();
-  pipelines.cleanupPipeline(trianglePipeline);
-  pipelines.cleanupPipeline(cubePipeline);
+  pipelines.cleanupPipeline(unlitPipeline);
   log().debug("Main loop finished.");
 }
 } // namespace aur

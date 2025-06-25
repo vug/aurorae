@@ -1,10 +1,16 @@
 /*
-TODO(vug): consolidate triangle and cube shaders into unlit shader
-TODO(Vug): put Allocator and ShaderModule into common resource format too
+TODO(vug): set per-frame data from Application
+TODO(vug): remove unnecessary shaders. Keep 2D drawing one without buffers.
+TODO(vug): put Allocator and ShaderModule into common resource format too
+TODO(vug): bring Assimp, load a model (does not have to support all formats/backends)
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
 TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
            methods.
+TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
+TODO(vug): bring Open Image IO (does not have to support all formats/backends. One HDR, one lossless, and one
+           compressed is enough)
 TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods (?)
+TODO(vug): introduce RenderDoc
 TODO(vug): Introduce more resource abstractions (Image/Texture, Sampler... Concrete Buffer types?) then
            introduce CRTP base class generalization. (See chat) I can give VulkanContext as context so that
            everything necessary will be available for creation
@@ -13,7 +19,6 @@ TODO(vug): add Renderer Texture, Depth/Stencil Image, Offscreen Render Target cr
 TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?
 TODO(vug): use slang as the shader language, and import global and per-frame uniforms and default vertex
            attributes etc. from there
-TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): generate layouts from shader reflection
 TODO(vug): basic geometry assets: triangle, quad, cube
 .
