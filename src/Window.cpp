@@ -24,6 +24,8 @@ Window::Window(uint32_t width, uint32_t height, std::string_view title)
 
   glfwSetWindowUserPointer(glfwWindow_, this);
   glfwSetFramebufferSizeCallback(glfwWindow_, framebufferResizeCallback);
+  glfwSetKeyCallback(glfwWindow_, keyCallback); // Register the key callback
+
   log().info("Window created: {}x{}", width, height);
 }
 
@@ -58,6 +60,12 @@ void Window::framebufferResizeCallback(GLFWwindow* glfwWin, i32 width, i32 heigh
     windowInstance->currentWidth_ = static_cast<u32>(width);
     windowInstance->currentHeight_ = static_cast<u32>(height);
     log().trace("Framebuffer resized event: {}x{}", width, height);
+  }
+}
+
+void Window::keyCallback(GLFWwindow* glfwWin, int key, [[maybe_unused]] int scancode, int action, int mods) {
+  if (key == GLFW_KEY_Q && action == GLFW_PRESS && (mods & GLFW_MOD_CONTROL)) {
+    glfwSetWindowShouldClose(glfwWin, GLFW_TRUE);
   }
 }
 

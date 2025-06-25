@@ -38,6 +38,7 @@ public:
 
 private:
   static void framebufferResizeCallback(GLFWwindow* window, i32 width, i32 height);
+  static void keyCallback(GLFWwindow* glfwWin, int key, int scancode, int action, int mods);
 
   GLFWwindow* glfwWindow_{nullptr};
   bool framebufferResized_{false};

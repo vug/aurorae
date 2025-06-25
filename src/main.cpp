@@ -1,6 +1,4 @@
 /*
-TODO(vug): Fix release mode
-TODO(vug): quit with ESC (or Ctrl+Q)
 TODO(vug): consolidate triangle and cube shaders into unlit shader
 TODO(Vug): put Allocator and ShaderModule into common resource format too
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
