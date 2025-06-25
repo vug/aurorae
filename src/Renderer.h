@@ -92,6 +92,8 @@ public:
     VkObjectType objType = VK_OBJECT_TYPE_UNKNOWN;
     if constexpr (std::is_same_v<TObject, Buffer>)
       objType = VK_OBJECT_TYPE_BUFFER;
+    else if constexpr (std::is_same_v<TObject, DescriptorPool>)
+      objType = VK_OBJECT_TYPE_DESCRIPTOR_POOL;
     else if constexpr (std::is_same_v<TObject, DescriptorSetLayout>)
       objType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
     else if constexpr (std::is_same_v<TObject, DescriptorSet>)

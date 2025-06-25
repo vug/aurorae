@@ -167,7 +167,23 @@ VkBool32 VKAPI_PTR debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageS
 
   const char* type = vkb::to_string_message_type(messageType);
   const char* message = pCallbackData->pMessage;
-  const std::string debugMsg = std::format("VULKAN [{}]: {}", type, message);
+  // TODO(vug): these labels are probably already included in the debug message. If they appear duplicated
+  //            stop adding them to the printed log explicitly.
+  std::string queueLabels;
+  if (pCallbackData->queueLabelCount > 0) {
+    queueLabels = " Queue Labels:";
+    for (u32 i = 0; i < pCallbackData->queueLabelCount; ++i)
+      queueLabels += std::format(" {}", pCallbackData->pQueueLabels[i].pLabelName);
+  }
+  std::string commandBufferLabels;
+  if (pCallbackData->cmdBufLabelCount > 0) {
+    queueLabels = " Command Buffer Labels:";
+    for (u32 i = 0; i < pCallbackData->cmdBufLabelCount; ++i)
+      queueLabels += std::format(" {}", pCallbackData->pCmdBufLabels[i].pLabelName);
+  }
+
+  const std::string debugMsg =
+      std::format("VULKAN [{}]: {}{}{}{}", type, message, queueLabels, commandBufferLabels);
 
   switch (messageSeverity) {
   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
