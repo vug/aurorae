@@ -209,13 +209,20 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
   vkCmdCopyBuffer(commandBufferOneShot_, stagingBuffer.handle, deviceBuffer.handle, 1, &copyRegion);
   VK(vkEndCommandBuffer(commandBufferOneShot_));
 
+  VkFenceCreateInfo fenceInfo{
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+  };
+  VkFence uploadFence;
+  VK(vkCreateFence(getDevice(), &fenceInfo, nullptr, &uploadFence));
   const VkSubmitInfo submitInfo{
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
       .commandBufferCount = 1,
       .pCommandBuffers = &commandBufferOneShot_,
   };
-  VK(vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
-  VK(vkQueueWaitIdle(vulkanContext_.getGraphicsQueue())); // Simple synchronization
+  VK(vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo, uploadFence));
+  constexpr u64 oneSec = 1'000'000'000;
+  VK(vkWaitForFences(getDevice(), 1, &uploadFence, VK_TRUE, oneSec));
+  vkDestroyFence(getDevice(), uploadFence, nullptr);
 
   return deviceBuffer;
 }

@@ -1,7 +1,6 @@
 /*
-TODO(vug): can I do better than `vkQueueWaitIdle` for uploading buffer data.
 TODO(vug): don't forget to use the debug names in debug callback
-TODO(vug): Fix release mode on desktop
+TODO(vug): Fix release mode
 TODO(vug): quit with ESC (or Ctrl+Q)
 TODO(vug): consolidate triangle and cube shaders into unlit shader
 TODO(Vug): put Allocator and ShaderModule into common resource format too
