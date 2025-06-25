@@ -18,6 +18,9 @@ constexpr bool kEnableGpuAssistedValidation{false};
 constexpr bool kEnableCoreValidationLayers{kEnableValidationLayers && !kEnableGpuAssistedValidation};
 constexpr bool kDebugBreakAtValidationErrors{true};
 
+VkBool32 VKAPI_PTR debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT, VkDebugUtilsMessageTypeFlagsEXT,
+                                 const VkDebugUtilsMessengerCallbackDataEXT*, void*);
+
 VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   // Load basic Vulkan functions such as vkEnumerateInstanceVersion,
   // vkGetInstanceProcAddr etc.
@@ -35,56 +38,6 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
       .enable_extension(VK_KHR_SURFACE_EXTENSION_NAME) // not necessary
       .require_api_version(VK_MAKE_API_VERSION(0, 1, 4, 313));
   if constexpr (kEnableValidationLayers) {
-    PFN_vkDebugUtilsMessengerCallbackEXT debugCallback =
-        [](VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-           VkDebugUtilsMessageTypeFlagsEXT messageType,
-           const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-           [[maybe_unused]] void* pUserData) -> VkBool32 {
-      constexpr i32 ignoredMessageIds[] = {
-          0x675dc32e, // just warns about VK_EXT_debug_utils is intended to be
-                      // used in debugging only.
-          0x24b5c69f, // GPU validation:
-          0x0, // Layer name GalaxyOverlayVkLayer does not conform to naming standard (Policy #LLP_LAYER_3)
-          -0x257d9f46, // enabling a deprecated extension that has been promoted to main Vulkan. triggered
-                       // because of VK_KHR_maintenance6 for vkCmdPushConstants2KHR [issue #7]
-          0x86974c1,   // perf warning that says don't use VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-                       // reset entire pool instead.
-      };
-      for (const auto& msgId : ignoredMessageIds) {
-        if (pCallbackData->messageIdNumber == msgId)
-          return VK_FALSE; // Skip this message
-      }
-
-      const char* severity = vkb::to_string_message_severity(messageSeverity);
-      const char* type = vkb::to_string_message_type(messageType);
-      const char* message = pCallbackData->pMessage;
-      const i32 messageId = pCallbackData->messageIdNumber;
-      constexpr const char* fmt = "Vulkan [{}][{}]: {} [0x{:x}]";
-
-      switch (messageSeverity) {
-      case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        log().trace(fmt, severity, type, message, messageId);
-        // can return VK_FALSE here to ignore verbose messages
-        break;
-      case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        log().info(fmt, severity, type, message, messageId);
-        break;
-      case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        log().warn(fmt, severity, type, message, messageId);
-        break;
-      case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        log().error(fmt, severity, type, message, messageId);
-        break;
-      default:
-        log().critical("Unknown Vulkan message severity: {}", static_cast<int>(messageSeverity));
-      }
-      if (kDebugBreakAtValidationErrors)
-        std::abort();
-      return VK_FALSE;
-      // Return true for validation to skip passing down the call to the driver
-      // and return VK_ERROR_VALIDATION_FAILED_EXT from VK function calls
-      // return VK_TRUE;
-    };
     vkbInstanceBuilder.set_debug_callback(debugCallback); // vkb::default_debug_callback
   }
   if constexpr (kEnableCoreValidationLayers) {
@@ -192,5 +145,55 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   };
   allocator_ = Allocator(getInstance(), getPhysicalDevice(), getDevice(), allocatorCreateInfo);
 }
+
+VkBool32 VKAPI_PTR debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                 VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                 const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                 [[maybe_unused]] void* pUserData) {
+  constexpr i32 ignoredMessageIds[] = {
+      0x675dc32e, // just warns about VK_EXT_debug_utils is intended to be
+                  // used in debugging only.
+      0x24b5c69f, // GPU validation:
+      0x0,        // Layer name GalaxyOverlayVkLayer does not conform to naming standard (Policy #LLP_LAYER_3)
+      -0x257d9f46, // enabling a deprecated extension that has been promoted to main Vulkan. triggered
+                   // because of VK_KHR_maintenance6 for vkCmdPushConstants2KHR [issue #7]
+      0x86974c1,   // perf warning that says don't use VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+                   // reset entire pool instead.
+  };
+  for (const auto& msgId : ignoredMessageIds) {
+    if (pCallbackData->messageIdNumber == msgId)
+      return VK_FALSE; // Skip this message
+  }
+
+  const char* severity = vkb::to_string_message_severity(messageSeverity);
+  const char* type = vkb::to_string_message_type(messageType);
+  const char* message = pCallbackData->pMessage;
+  const i32 messageId = pCallbackData->messageIdNumber;
+  constexpr const char* fmt = "Vulkan [{}][{}]: {} [0x{:x}]";
+
+  switch (messageSeverity) {
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+    log().trace(fmt, severity, type, message, messageId);
+    // can return VK_FALSE here to ignore verbose messages
+    break;
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+    log().info(fmt, severity, type, message, messageId);
+    break;
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+    log().warn(fmt, severity, type, message, messageId);
+    break;
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+    log().error(fmt, severity, type, message, messageId);
+    break;
+  default:
+    log().critical("Unknown Vulkan message severity: {}", static_cast<int>(messageSeverity));
+  }
+  if (kDebugBreakAtValidationErrors)
+    std::abort();
+  return VK_FALSE;
+  // Return true for validation to skip passing down the call to the driver
+  // and return VK_ERROR_VALIDATION_FAILED_EXT from VK function calls
+  // return VK_TRUE;
+};
 
 } // namespace aur
