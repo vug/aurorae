@@ -1,5 +1,4 @@
 /*
-TODO(vug): remove unnecessary shaders. Keep 2D drawing one without buffers.
 TODO(vug): put Allocator and ShaderModule into common resource format too
 TODO(vug): bring Assimp, load a model (does not have to support all formats/backends)
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
