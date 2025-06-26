@@ -1,5 +1,4 @@
 /*
-TODO(vug): set per-frame data from Application
 TODO(vug): remove unnecessary shaders. Keep 2D drawing one without buffers.
 TODO(vug): put Allocator and ShaderModule into common resource format too
 TODO(vug): bring Assimp, load a model (does not have to support all formats/backends)

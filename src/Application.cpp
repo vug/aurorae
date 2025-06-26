@@ -60,6 +60,21 @@ void Application::run() {
       window_.clearResizedFlag();
     }
 
+    // perFrame data need to be set before beginFrame().
+    renderer_.perFrameData = {
+        .viewFromObject = glm::lookAt(glm::vec3{-1, 2, 5}, glm::vec3{0}, glm::vec3{0, 1, 0}),
+        .projectionFromView = glm::perspective(
+            glm::radians(45.0f), static_cast<f32>(window_.getWitdh()) / window_.getHeight(), 0.1f, 100.0f)};
+    // GLM assumes RUB coordinate system by default (when `GLM_FORCE_LEFT_HANDED is not used (which assumes
+    // RUF). Vulkan's clip-space assumes RDF, i.e., the coordinate system at the end of the vertex shader is
+    // RDF, z is in [0, 1] range, and y is downwards.
+    // GLM's projection matrix converts RUB-space into OpenGL's clip-space, which is also RUB.
+    // GLM_FORCE_DEPTH_ZERO_TO_ONE makes the range of z [0, 1]. We provide it via compile definitions in
+    // CMakeLists.txt.
+    // After applying the projection, we still need a conversion from RUB to RDF. This is done by negating
+    // [1][1] element.
+    renderer_.perFrameData.projectionFromView[1][1] *= -1;
+
     // If beginFrame() returns false, it means it handled a situation like
     // swapchain recreation, and the loop should just continue to the next
     // iteration.
@@ -68,7 +83,7 @@ void Application::run() {
 
     renderer_.setClearColor(0.25f, 0.25f, 0.25f);
 
-    glm::mat4 worldFromObject1 = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f));
+    glm::mat4 worldFromObject1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 1.5));
     PushConstantsInfo pcInfo1{
         .pipelineLayout = unlitPipeline.pipelineLayout,
         .stages = {ShaderStage::Vertex},
@@ -78,7 +93,7 @@ void Application::run() {
     renderer_.drawIndexed(unlitPipeline, renderer_.meshes.triangle.vertexBuffer,
                           renderer_.meshes.triangle.indexBuffer, &pcInfo1);
 
-    glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
+    glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
     PushConstantsInfo pcInfo2{
         .pipelineLayout = unlitPipeline.pipelineLayout,
         .stages = {ShaderStage::Vertex},

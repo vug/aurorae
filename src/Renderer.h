@@ -123,6 +123,8 @@ public:
   [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
                                                  std::string_view debugName) const;
 
+  PerFrameData perFrameData;
+
 private:
   void createPerFrameDataResources();
 

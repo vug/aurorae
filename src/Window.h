@@ -34,6 +34,8 @@ public:
   GLFWwindow* getGLFWwindow() const { return glfwWindow_; }
   bool wasResized() const { return framebufferResized_; }
   void clearResizedFlag() { framebufferResized_ = false; }
+  u32 getWitdh() const { return currentWidth_; }
+  u32 getHeight() const { return currentHeight_; }
   void getFramebufferSize(i32& width, i32& height) const;
 
 private:

@@ -3,8 +3,6 @@
 #include "Renderer.h"
 #include <VulkanMemoryAllocator/vk_mem_alloc.h>
 // clang-format on
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <array>
 
@@ -87,11 +85,11 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
 
   meshes.triangle = {.vertices =
                          {
-                             {{0.0f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}}, // Bottom vertex (Red)
-                             {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}},  // Right top vertex (Green)
-                             {{-0.5f, 0.5f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}  // Left top vertex (Blue)
+                             {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}},   // Bottom vertex (Red)
+                             {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}}, // Right top vertex (Green)
+                             {{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}   // Left top vertex (Blue)
                          },
-                     .indices = {0, 2, 1},
+                     .indices = {0, 1, 2},
                      .debugName = "Triangle"};
   upload(meshes.triangle);
 
@@ -308,13 +306,6 @@ bool Renderer::beginFrame() {
 
   // Only reset the fence if we are sure we will submit work that signals it
   VK(vkResetFences(vulkanContext_.getDevice(), 1, &inFlightFence_));
-
-  PerFrameData perFrameData{
-      .viewFromObject = glm::lookAt(glm::vec3{-5, -5, -5}, glm::vec3{0}, glm::vec3{0, 1, 0}),
-      .projectionFromView = glm::perspective(glm::radians(45.0f),
-                                             static_cast<f32>(currentWidth_) / currentHeight_, 0.1f, 100.0f)};
-  // TODO(vug): see whether GLM has a setting for this, so that I don't have to do the flip manually.
-  perFrameData.projectionFromView[1][1] *= -1; // Flip Y. Vulkan uses a left-handed coordinate system
 
   // TODO(vug): introduce a scopedMap -> when it goes out of scope, it unmaps automatically.
   {

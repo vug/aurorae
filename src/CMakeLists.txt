@@ -115,7 +115,10 @@ add_executable(Aurorae
 target_compile_features(Aurorae PRIVATE cxx_std_23)
 message(STATUS "EXTERNAL: ${PROJECT_SOURCE_DIR}/../superbuild")
 target_compile_options(Aurorae PRIVATE /W4 /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0)
-target_compile_definitions(Aurorae PRIVATE SPDLOG_USE_STD_FORMAT SPDLOG_USE_STD_SOURCE_LOCATION)
+target_compile_definitions(Aurorae PRIVATE
+        SPDLOG_USE_STD_FORMAT SPDLOG_USE_STD_SOURCE_LOCATION
+        GLM_FORCE_DEPTH_ZERO_TO_ONE #GLM_FORCE_LEFT_HANDED
+)
 
 target_link_libraries(Aurorae PRIVATE
         Vulkan::Vulkan
