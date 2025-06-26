@@ -1,14 +1,16 @@
 /*
-TODO(vug): put Allocator and ShaderModule into common resource format too
-TODO(vug): bring Assimp, load a model (does not have to support all formats/backends)
-TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
+TODO(vug): put ShaderModule into the common resource format too
+TODO(vug): bring Assimp, load a model (does not have to support all formats/backends) (for now enough to load
+           obj for simplicity and gltf for PBR materials)
+TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
+TODO(vug): bring a texture (stb or oiio)
+TODO(vug): introduce RenderDoc
 TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
            methods.
-TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
+TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
 TODO(vug): bring Open Image IO (does not have to support all formats/backends. One HDR, one lossless, and one
            compressed is enough)
 TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods (?)
-TODO(vug): introduce RenderDoc
 TODO(vug): Introduce more resource abstractions (Image/Texture, Sampler... Concrete Buffer types?) then
            introduce CRTP base class generalization. (See chat) I can give VulkanContext as context so that
            everything necessary will be available for creation
