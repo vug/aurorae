@@ -1,5 +1,4 @@
 /*
-TODO(vug): put ShaderModule into the common resource format too
 TODO(vug): bring Assimp, load a model (does not have to support all formats/backends) (for now enough to load
            obj for simplicity and gltf for PBR materials)
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
