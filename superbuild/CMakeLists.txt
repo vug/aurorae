@@ -118,8 +118,10 @@ set(GLM_DEFS
   "GLM_ENABLE_SIMD_AVX2=ON")
 add_external_dependency(GLM "glm" "${GLM_DEFS}")
 
+# git submodule add https://github.com/assimp/assimp.git
+
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
-# TODO(vug): assimp, imgui, stb, xatlas, embree
+# TODO(vug): imgui, stb, xatlas, embree
 
 add_custom_target(build_all_deps)
 foreach(CONFIG ${SUPERBUILD_CONFIGS})
