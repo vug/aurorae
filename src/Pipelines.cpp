@@ -38,22 +38,25 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
 Pipeline Pipelines::createUnlitPipeline() const {
   PathBuffer vertexPath{pathJoin(kShadersFolder, "unlit.vert.spv")};
   PathBuffer fragmentPath{pathJoin(kShadersFolder, "unlit.frag.spv")};
-  BinaryBlob vertShaderCode = readBinaryFile(vertexPath.c_str());
-  BinaryBlob fragShaderCode = readBinaryFile(fragmentPath.c_str());
-
-  VkShaderModule vertShaderModule = renderer_.createShaderModule(std::move(vertShaderCode));
-  VkShaderModule fragShaderModule = renderer_.createShaderModule(std::move(fragShaderCode));
+  ShaderModuleCreateInfo vertShaderModuleCreateInfo{
+      .code = readBinaryFile(vertexPath.c_str()),
+  };
+  ShaderModuleCreateInfo fragShaderModuleCreateInfo{
+      .code = readBinaryFile(fragmentPath.c_str()),
+  };
+  ShaderModule vertShaderModule = renderer_.createShaderModule(std::move(vertShaderModuleCreateInfo));
+  ShaderModule fragShaderModule = renderer_.createShaderModule(std::move(fragShaderModuleCreateInfo));
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_VERTEX_BIT,
-      .module = vertShaderModule,
+      .module = vertShaderModule.handle,
       .pName = "main",
   };
   const VkPipelineShaderStageCreateInfo fragShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .module = fragShaderModule,
+      .module = fragShaderModule.handle,
       .pName = "main",
   };
   std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
@@ -171,9 +174,6 @@ Pipeline Pipelines::createUnlitPipeline() const {
 
   VkPipeline pipeline{VK_NULL_HANDLE};
   VK(vkCreateGraphicsPipelines(renderer_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline));
-
-  vkDestroyShaderModule(renderer_.getDevice(), fragShaderModule, nullptr);
-  vkDestroyShaderModule(renderer_.getDevice(), vertShaderModule, nullptr);
   log().debug("Cube graphics pipeline created.");
 
   return {

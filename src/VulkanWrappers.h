@@ -23,6 +23,7 @@ FORWARD_DEFINE_VK_HANDLE(VkDescriptorPool)
 FORWARD_DEFINE_VK_HANDLE(VkDescriptorSetLayout)
 FORWARD_DEFINE_VK_HANDLE(VkDescriptorSet)
 FORWARD_DEFINE_VK_HANDLE(VkPipelineLayout)
+FORWARD_DEFINE_VK_HANDLE(VkShaderModule)
 using VkDeviceSize = uint64_t;
 using VkBufferUsageFlags = uint32_t;
 enum VmaMemoryUsage : int32_t;

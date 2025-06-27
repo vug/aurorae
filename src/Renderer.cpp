@@ -160,15 +160,11 @@ Renderer::~Renderer() {
   log().info("Renderer destroyed.");
 }
 
-VkShaderModule Renderer::createShaderModule(BinaryBlob code) const {
-  const VkShaderModuleCreateInfo createInfo{
-      .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = code.size(),
-      .pCode = reinterpret_cast<const u32*>(code.data()),
-  };
-  VkShaderModule shaderModule;
-  VK(vkCreateShaderModule(vulkanContext_.getDevice(), &createInfo, nullptr, &shaderModule));
-  return shaderModule;
+ShaderModule Renderer::createShaderModule(ShaderModuleCreateInfo createInfo,
+                                          std::string_view debugName) const {
+  ShaderModule obj{getDevice(), std::move(createInfo)};
+  setDebugName(obj, debugName);
+  return obj;
 }
 Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
                                            std::string_view debugName) const {

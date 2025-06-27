@@ -8,6 +8,7 @@
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
 #include "Resources/DescriptorSetLayout.h"
+#include "Resources/ShaderModule.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
 
@@ -100,6 +101,8 @@ public:
       objType = VK_OBJECT_TYPE_DESCRIPTOR_SET;
     else if constexpr (std::is_same_v<TObject, PipelineLayout>)
       objType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
+    else if constexpr (std::is_same_v<TObject, ShaderModule>)
+      objType = VK_OBJECT_TYPE_SHADER_MODULE;
     else
       static_assert("Unsupported type TObject for setting debug name");
     VkDebugUtilsObjectNameInfoEXT nameInfo{
@@ -118,7 +121,8 @@ public:
                                                   std::string_view debugName = "") const;
   [[nodiscard]] PipelineLayout createPipelineLayout(const PipelineLayoutCreateInfo& createInfo,
                                                     std::string_view debugName = "") const;
-  [[nodiscard]] VkShaderModule createShaderModule(BinaryBlob code) const;
+  [[nodiscard]] ShaderModule createShaderModule(ShaderModuleCreateInfo createInfo,
+                                                std::string_view debugName = "") const;
 
   [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
                                                  std::string_view debugName) const;

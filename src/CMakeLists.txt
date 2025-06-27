@@ -108,6 +108,7 @@ add_executable(Aurorae
         Resources/DescriptorSet.h Resources/DescriptorSet.cpp
         Resources/DescriptorSetLayout.h Resources/DescriptorSetLayout.cpp
         Resources/PipelineLayout.h Resources/PipelineLayout.cpp
+        Resources/ShaderModule.h Resources/ShaderModule.cpp
         Vertex.h Vertex.cpp
         Mesh.h Mesh.cpp
 )
