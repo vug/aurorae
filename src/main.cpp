@@ -1,9 +1,13 @@
 /*
 TODO(vug): load a model (does not have to support all formats/backends) (for now enough to load
            obj for simplicity and gltf for PBR materials)
+TODO(vug): Introduce asset::Model, asset::Mesh, render::Mesh, asset::DrawSpan
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): bring a texture (stb or oiio)
 TODO(vug): introduce RenderDoc
+TODO(vug): Introduce asset::Material, render::Material
+TODO(vug): Introduce AssetManager that stores assets in unordered_maps to shared_ptr of asset type. It's
+           responsible of loading and unloading of assets and keeping them alive.
 TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
            methods.
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
@@ -20,6 +24,7 @@ TODO(vug): use slang as the shader language, and import global and per-frame uni
            attributes etc. from there
 TODO(vug): generate layouts from shader reflection
 TODO(vug): basic geometry assets: triangle, quad, cube
+TODO(vug): introduce entity, so that two entities can use the same mesh/model but have different transforms
 .
 TODO(vug): headless vulkan for image based testing.
 TODO(vug): macros: MOVE_ONLY, COPY_ONLY, NOT_MOVABLE_NOT_COPIABLE

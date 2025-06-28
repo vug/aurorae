@@ -92,6 +92,7 @@ add_executable(Aurorae
         Resources/ShaderModule.h Resources/ShaderModule.cpp
         Vertex.h Vertex.cpp
         Mesh.h Mesh.cpp
+        asset/Mesh.h asset/Mesh.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
