@@ -119,9 +119,30 @@ set(GLM_DEFS
 add_external_dependency(GLM "glm" "${GLM_DEFS}")
 
 # git submodule add https://github.com/assimp/assimp.git
+set(ASSIMP_DEFS
+  "ASSIMP_BUILD_TESTS=OFF"
+  "BUILD_SHARED_LIBS=OFF"
+  "ASSIMP_WARNINGS_AS_ERRORS=OFF"
+  # were already set
+  "ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=ON"
+  "ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT=ON"
+  "ASSIMP_INSTALL=ON"
+  "ASSIMP_INSTALL_PDB=ON"
+  "ASSIMP_INJECT_DEBUG_POSTFIX=ON"
+  "CMAKE_DEBUG_POSTFIX:STRING=d"
+  # Turning this on attempts to clone tinyusdz repo at build time.
+  # Come back to this only if I really need USD support
+  "ASSIMP_BUILD_USD_IMPORTER=OFF"
+  "ASSIMP_BUILD_ASSIMP_TOOLS=OFF"
+  "ASSIMP_BUILD_SAMPLES=OFF"
+)
+add_external_dependency(Assimp "assimp" "${ASSIMP_DEFS}")
 
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
 # TODO(vug): imgui, stb, xatlas, embree
+
+add_custom_target(just_assimp)
+add_dependencies(just_assimp Assimp_Debug Assimp_DebugAsan Assimp_Release Assimp_RelWithDebInfo) 
 
 add_custom_target(build_all_deps)
 foreach(CONFIG ${SUPERBUILD_CONFIGS})
