@@ -4,7 +4,8 @@
 #include <vector>
 
 #include "Handle.h"
-// #include "Mesh.h"
+#include "Material.h"
+#include "Mesh.h"
 
 #include <filesystem>
 
@@ -12,16 +13,16 @@ namespace aur {
 
 namespace asset {
 struct Mesh;
-struct Material;
 } // namespace asset
 
 class AssetManager {
 public:
   std::vector<Handle<asset::Mesh>> loadFromFile(const std::filesystem::path& path);
 
-  asset::Mesh* get(Handle<asset::Mesh> handle);
-  asset::Material* get(Handle<asset::Material> handle);
-  // asset::Texture* get(Handle<asset::Texture> handle);
+  inline asset::Mesh* get(Handle<asset::Mesh> handle) { return &meshes_.at(handle); };
+  inline asset::Material* get(Handle<asset::Material> handle) {
+    return &materials_.at(handle);
+  } // asset::Texture* get(Handle<asset::Texture> handle);
 
 private:
   // The manager OWNS the actual asset data in vectors.

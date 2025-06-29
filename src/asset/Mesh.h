@@ -38,14 +38,5 @@ struct Mesh {
   static Mesh makeCube();
 };
 
-class Model {
-public:
-  std::vector<Mesh> meshes;
-  // std::vector<Pipeline> -> std::vector<Material>
-  std::vector<MaterialSpan> drawSpans;
-
-  [[nodiscard]] static Model loadFromFile(const std::filesystem::path& path);
-};
-
 }; // namespace asset
 } // namespace aur

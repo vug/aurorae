@@ -13,6 +13,7 @@ struct Handle {
   bool operator==(const Handle<TAsset>& other) const { return id == other.id; }
   // for using as a key in maps
   bool operator<(const Handle<TAsset>& other) const { return id < other.id; }
+  operator u32() const { return id; }
 };
 
 } // namespace aur

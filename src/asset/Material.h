@@ -3,7 +3,7 @@
 namespace aur {
 namespace asset {
 
-class Material {
+struct Material {
   // TODO(vug): just own a pipeline, and filepath to shader modules?
 };
 

@@ -8,6 +8,7 @@
 #include "GlfwUtils.h"
 #include "Logger.h"
 #include "Pipelines.h"
+#include "asset/AssetManager.h"
 #include "asset/Mesh.h"
 
 namespace aur {
@@ -41,15 +42,15 @@ Application::~Application() {
 }
 
 void Application::run() {
+  AssetManager assMan;
   // "Asset Library"
   Pipelines pipelines{renderer_};
   Pipeline unlitPipeline = pipelines.createUnlitPipeline();
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
-  asset::Model boxModel = asset::Model::loadFromFile(modelPath);
-  Mesh boxRenderMesh{.vertices = boxModel.meshes[0].vertices,
-                     .indices = boxModel.meshes[0].indices,
-                     .debugName = "GLTF Box"};
+  Handle<asset::Mesh> boxMeshHandle = assMan.loadFromFile(modelPath)[0];
+  asset::Mesh* mesh = assMan.get(boxMeshHandle);
+  Mesh boxRenderMesh{.vertices = mesh->vertices, .indices = mesh->indices, .debugName = "GLTF Box"};
   renderer_.upload(boxRenderMesh);
   asset::Mesh triangleMesh = asset::Mesh::makeTriangle();
   Mesh triangleRenderMesh{
