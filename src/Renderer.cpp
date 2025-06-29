@@ -83,42 +83,6 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
   createPerFrameDataResources();
 
-  meshes.triangle = {.vertices =
-                         {
-                             {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}},   // Bottom vertex (Red)
-                             {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}}, // Right top vertex (Green)
-                             {{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}   // Left top vertex (Blue)
-                         },
-                     .indices = {0, 1, 2},
-                     .debugName = "Triangle"};
-  upload(meshes.triangle);
-
-  meshes.cube = {.vertices =
-                     {
-                         // Front face
-                         {{-1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}}, // 0: Red
-                         {{1.0f, -1.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}},  // 1: Green
-                         {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}},   // 2: Blue
-                         {{-1.0f, 1.0f, 1.0f},
-                          {1.0f, 1.0f, 0.0f, 1.0f}}, // 3: Yellow
-                                                     // Back face (indices 4-7 correspond to original indices)
-                         {{-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}, // 4: Magenta
-                         {{1.0f, -1.0f, -1.0f}, {0.0f, 1.0f, 1.0f, 1.0f}},  // 5: Cyan
-                         {{1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},   // 6: White
-                         {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}}   // 7: Black
-                     },
-                 .indices =
-                     {
-                         0, 1, 2, 2, 3, 0, // Front face
-                         1, 5, 6, 6, 2, 1, // Right face
-                         7, 6, 5, 5, 4, 7, // Back face
-                         4, 0, 3, 3, 7, 4, // Left face
-                         3, 2, 6, 6, 7, 3, // Top face
-                         4, 5, 1, 1, 0, 4  // Bottom face
-                     },
-                 .debugName = "Cube"};
-  upload(meshes.cube);
-
   log().trace("Renderer initialized.");
 }
 
@@ -650,6 +614,7 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImage_ = VK_NULL_HANDLE;
   depthImageMemory_ = VK_NULL_HANDLE;
 }
+
 void Renderer::upload(Mesh& mesh) const {
   mesh.vertexBuffer = createBufferAndUploadData(mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex),
                                                 BufferUsage::Vertex, mesh.debugName + " Vertex Buffer");

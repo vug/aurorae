@@ -24,14 +24,16 @@ struct DrawSpan {
 };
 
 struct Mesh {
-  Mesh() = default;
-
   std::vector<Vertex> vertices;
   std::vector<u32> indices;
   std::filesystem::path path;
   std::string debugName;
   // TODO(vug): Decouple transform from mesh. An entity in a Scene will have both.
   glm::mat4 transform{1};
+
+  static Mesh makeTriangle();
+  // static Mesh makeQuad();
+  static Mesh makeCube();
 };
 
 class Model {

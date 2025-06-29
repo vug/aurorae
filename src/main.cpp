@@ -1,9 +1,9 @@
 /*
-
 TODO(vug): Introduce render::Mesh
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): bring a texture (stb or oiio)
 TODO(vug): introduce RenderDoc
+TODO(vug): Resource abstraction for Pipeline!
 TODO(vug): Introduce asset::Material, render::Material
 TODO(vug): Introduce AssetManager that stores assets in unordered_maps to shared_ptr of asset type. It's
            responsible of loading and unloading of assets and keeping them alive.
@@ -12,6 +12,7 @@ TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
 TODO(vug): bring Open Image IO (does not have to support all formats/backends. One HDR, one lossless, and one
            compressed is enough)
+TODO(vug): Very simple scene abstraction that has a vector of meshes.
 TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods (?)
 TODO(vug): Introduce more resource abstractions (Image/Texture, Sampler... Concrete Buffer types?) then
            introduce CRTP base class generalization. (See chat) I can give VulkanContext as context so that
@@ -22,7 +23,7 @@ TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?
 TODO(vug): use slang as the shader language, and import global and per-frame uniforms and default vertex
            attributes etc. from there
 TODO(vug): generate layouts from shader reflection
-TODO(vug): basic geometry assets: triangle, quad, cube
+TODO(vug): basic geometry assets: quad
 TODO(vug): introduce entity, so that two entities can use the same mesh/model but have different transforms
 .
 TODO(vug): headless vulkan for image based testing.

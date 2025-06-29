@@ -177,14 +177,6 @@ private:
   VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};
   // Default depth is 1.0 (far plane), stencil is 0
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
-
-public:
-  class Meshes {
-  public:
-    Mesh triangle;
-    Mesh cube;
-  };
-  Meshes meshes;
 };
 
 } // namespace aur

@@ -1,16 +1,13 @@
 #include "Application.h"
 
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <volk/volk.h>
 
 #include "AppContext.h"
 #include "GlfwUtils.h"
 #include "Logger.h"
 #include "Pipelines.h"
-
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-//
 #include "asset/Mesh.h"
 
 namespace aur {
@@ -44,15 +41,23 @@ Application::~Application() {
 }
 
 void Application::run() {
+  // "Asset Library"
   Pipelines pipelines{renderer_};
   Pipeline unlitPipeline = pipelines.createUnlitPipeline();
-
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
-  asset::Model box = asset::Model::loadFromFile(modelPath);
-  Mesh renderMesh{
-      .vertices = box.meshes[0].vertices, .indices = box.meshes[0].indices, .debugName = "GLTF Box"};
-  renderer_.upload(renderMesh);
+  asset::Model boxModel = asset::Model::loadFromFile(modelPath);
+  Mesh boxRenderMesh{.vertices = boxModel.meshes[0].vertices,
+                     .indices = boxModel.meshes[0].indices,
+                     .debugName = "GLTF Box"};
+  renderer_.upload(boxRenderMesh);
+  asset::Mesh triangleMesh = asset::Mesh::makeTriangle();
+  Mesh triangleRenderMesh{
+      .vertices = triangleMesh.vertices,
+      .indices = triangleMesh.indices,
+  };
+  renderer_.upload(triangleRenderMesh);
+  log().trace("Created assets...");
 
   log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
@@ -100,8 +105,8 @@ void Application::run() {
         .sizeBytes = sizeof(worldFromObject1),
         .data = glm::value_ptr(worldFromObject1),
     };
-    renderer_.drawIndexed(unlitPipeline, renderer_.meshes.triangle.vertexBuffer,
-                          renderer_.meshes.triangle.indexBuffer, &pcInfo1);
+    renderer_.drawIndexed(unlitPipeline, triangleRenderMesh.vertexBuffer, triangleRenderMesh.indexBuffer,
+                          &pcInfo1);
 
     glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
     PushConstantsInfo pcInfo2{
@@ -110,12 +115,12 @@ void Application::run() {
         .sizeBytes = sizeof(worldFromObject2),
         .data = glm::value_ptr(worldFromObject2),
     };
-    renderer_.drawIndexed(unlitPipeline, renderMesh.vertexBuffer, renderMesh.indexBuffer, &pcInfo2);
+    renderer_.drawIndexed(unlitPipeline, boxRenderMesh.vertexBuffer, boxRenderMesh.indexBuffer, &pcInfo2);
     renderer_.endFrame();
   }
 
   // TODO(vug): With proper RAII, and architecture, we shouldn't need to call wait idle for cleaning up
-  // pipelines manually
+  //            pipelines manually
   renderer_.deviceWaitIdle();
   pipelines.cleanupPipeline(unlitPipeline);
   log().debug("Main loop finished.");
