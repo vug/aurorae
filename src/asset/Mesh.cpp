@@ -85,10 +85,8 @@ Model Model::loadFromFile(const std::filesystem::path& path) {
 
           // TODO(vug): bring material data to aur too.
           // Record a DrawSpan for this chunk of geometry in the Mesh
-          model.drawSpans.emplace_back(DrawSpan{.meshIx = static_cast<u32>(model.meshes.size()),
-                                                .materialIx = 0u,
-                                                .offset = spanOffset,
-                                                .count = aiMeshIndexCnt});
+          model.drawSpans.emplace_back(
+              MaterialSpan{.material = Handle<Material>{0}, .offset = spanOffset, .count = aiMeshIndexCnt});
           spanOffset += aiMeshIndexCnt;
         }
       };

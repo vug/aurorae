@@ -93,6 +93,9 @@ add_executable(Aurorae
         Vertex.h Vertex.cpp
         Mesh.h Mesh.cpp
         asset/Mesh.h asset/Mesh.cpp
+        asset/Handle.h
+        asset/AssetManager.h asset/AssetManager.cpp
+        asset/Material.h asset/Material.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)

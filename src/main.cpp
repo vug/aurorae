@@ -1,10 +1,15 @@
 /*
-TODO(vug): Introduce render::Mesh
+TODO(vug): copy loadFromFile function to AssetManager.
+           First create (dummy) Materials (with different debug names) -> store them in AssetManager
+           then create asset::Mesh and MaterialSpans.
+TODO(vug): Introduce render::Mesh that takes an asset::Mesh in second constructor. Uploads GPU.
+TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): bring a texture (stb or oiio)
 TODO(vug): introduce RenderDoc
 TODO(vug): Resource abstraction for Pipeline!
 TODO(vug): Introduce asset::Material, render::Material
+TODO(vug): Introduce a default material, and a missing material.
 TODO(vug): Introduce AssetManager that stores assets in unordered_maps to shared_ptr of asset type. It's
            responsible of loading and unloading of assets and keeping them alive.
 TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
