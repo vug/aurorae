@@ -10,6 +10,9 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+//
+#include "asset/Mesh.h"
+
 namespace aur {
 
 Application::Initializer::Initializer() {
@@ -43,6 +46,13 @@ Application::~Application() {
 void Application::run() {
   Pipelines pipelines{renderer_};
   Pipeline unlitPipeline = pipelines.createUnlitPipeline();
+
+  const auto modelPath =
+      std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
+  asset::Model box = asset::Model::loadFromFile(modelPath);
+  Mesh renderMesh{
+      .vertices = box.meshes[0].vertices, .indices = box.meshes[0].indices, .debugName = "GLTF Box"};
+  renderer_.upload(renderMesh);
 
   log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
@@ -100,8 +110,7 @@ void Application::run() {
         .sizeBytes = sizeof(worldFromObject2),
         .data = glm::value_ptr(worldFromObject2),
     };
-    renderer_.drawIndexed(unlitPipeline, renderer_.meshes.cube.vertexBuffer,
-                          renderer_.meshes.cube.indexBuffer, &pcInfo2);
+    renderer_.drawIndexed(unlitPipeline, renderMesh.vertexBuffer, renderMesh.indexBuffer, &pcInfo2);
     renderer_.endFrame();
   }
 

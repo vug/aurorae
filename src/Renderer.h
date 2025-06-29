@@ -128,6 +128,7 @@ public:
                                                  std::string_view debugName) const;
 
   PerFrameData perFrameData;
+  void upload(Mesh& mesh) const;
 
 private:
   void createPerFrameDataResources();
@@ -137,8 +138,6 @@ private:
   void internalRecreateSwapchain();
   void createSwapchainDepthResources();
   void cleanupSwapchainDepthResources();
-
-  void upload(Mesh& mesh) const;
 
   // to prevent inclusion of volk/vulkan headers
   void setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const;

@@ -40,7 +40,7 @@ public:
   // std::vector<Pipeline> -> std::vector<Material>
   std::vector<DrawSpan> drawSpans;
 
-  static Model loadFromFile(const std::filesystem::path& path);
+  [[nodiscard]] static Model loadFromFile(const std::filesystem::path& path);
 };
 
 }; // namespace asset

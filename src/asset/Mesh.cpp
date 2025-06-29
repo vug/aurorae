@@ -67,7 +67,7 @@ Model Model::loadFromFile(const std::filesystem::path& path) {
           // copy vertex attributes data in this aiMesh to mesh by appending fat vertices
           for (u32 vertIx = 0; vertIx < m->mNumVertices; ++vertIx) {
             const aiVector3D& pos = m->mVertices[vertIx];
-            const aiColor4D& col0 = *m->mColors[0];
+            const aiColor4D& col0 = m->mColors[0][vertIx];
             Vertex v{{pos.x, pos.y, pos.z}, {col0.r, col0.g, col0.b, col0.a}};
             mesh.vertices.push_back(v);
           }
