@@ -43,6 +43,7 @@ inline constexpr const char* kShadersFolder{ASSETS_FOLDER "/shaders/relwithdebin
 constexpr BuildType kBuildType{BuildType::Release};
 inline constexpr const char* kShadersFolder = {ASSETS_FOLDER "/shaders/release"};
 #endif
+inline constexpr const char* kModelsFolder{ASSETS_FOLDER "/models"};
 
 class PathBuffer {
 public:
