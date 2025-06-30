@@ -39,10 +39,10 @@ Pipeline Pipelines::createUnlitPipeline() const {
   PathBuffer vertexPath{pathJoin(kShadersFolder, "unlit.vert.spv")};
   PathBuffer fragmentPath{pathJoin(kShadersFolder, "unlit.frag.spv")};
   ShaderModuleCreateInfo vertShaderModuleCreateInfo{
-      .code = readBinaryFile(vertexPath.c_str()),
+      .filePath = vertexPath.c_str(),
   };
   ShaderModuleCreateInfo fragShaderModuleCreateInfo{
-      .code = readBinaryFile(fragmentPath.c_str()),
+      .filePath = fragmentPath.c_str(),
   };
   ShaderModule vertShaderModule = renderer_.createShaderModule(std::move(vertShaderModuleCreateInfo));
   ShaderModule fragShaderModule = renderer_.createShaderModule(std::move(fragShaderModuleCreateInfo));

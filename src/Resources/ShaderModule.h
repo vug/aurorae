@@ -1,18 +1,20 @@
 #pragma once
 
+#include <filesystem>
+
 #include "../FileIO.h"
 #include "../VulkanWrappers.h"
 
 namespace aur {
 
 struct ShaderModuleCreateInfo {
-  BinaryBlob code;
+  std::filesystem::path filePath;
 };
 
 class ShaderModule {
 public:
   ShaderModule() = default;
-  ShaderModule(VkDevice device, ShaderModuleCreateInfo createInfo);
+  ShaderModule(VkDevice device, const ShaderModuleCreateInfo& createInfo);
   ~ShaderModule();
 
   ShaderModule(const ShaderModule&) = delete;

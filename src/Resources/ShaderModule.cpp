@@ -6,20 +6,20 @@
 
 namespace aur {
 
-ShaderModule::ShaderModule(VkDevice device, ShaderModuleCreateInfo shaderCreateInfo)
+ShaderModule::ShaderModule(VkDevice device, const ShaderModuleCreateInfo& shaderCreateInfo)
     : createInfo(std::move(shaderCreateInfo))
     , handle([this, device]() {
+      BinaryBlob codeBlob = readBinaryFile(createInfo.filePath.string());
+
       VkShaderModuleCreateInfo vkCreateInfo{
           .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-          .codeSize = createInfo.code.size(),
-          .pCode = reinterpret_cast<const u32*>(createInfo.code.data()),
+          .codeSize = codeBlob.size(),
+          .pCode = reinterpret_cast<const u32*>(codeBlob.data()),
       };
-
       VkShaderModule hnd = VK_NULL_HANDLE;
       if (vkCreateShaderModule(device, &vkCreateInfo, nullptr, &hnd) != VK_SUCCESS)
         log().fatal("Failed to create shader module!");
 
-      // *const_cast<VkShaderModule*>(&handle) = newHandle;
       return hnd;
     }())
     , device_(device) {}
@@ -29,8 +29,6 @@ ShaderModule::~ShaderModule() {
 }
 
 ShaderModule::ShaderModule(ShaderModule&& other) noexcept
-    // TODO(vug): apparently moving a const object is Undefined Behavior. Consider switching to `const
-    //            CreateInfo& getCreateInfo()` style.
     : createInfo(std::move(const_cast<ShaderModuleCreateInfo&>(other.createInfo)))
     , handle(other.handle)
     , device_(other.device_) {

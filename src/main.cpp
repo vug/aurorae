@@ -4,8 +4,13 @@ TODO(vug): First create (dummy) Materials (with different debug names) -> store 
 TODO(vug): Introduce render::Mesh that takes an asset::Mesh in second constructor. Uploads GPU.
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
+TODO(vug): add STL includes to a precompiled header pch_stl.h
+           Also add headers such as utils and logger that are included in
+           every file into pch_aur.h. and maybe a pch_dependencies
 TODO(vug): bring a texture (stb or oiio)
 TODO(vug): introduce RenderDoc
+TODO(vug): Apparently const_cast a const member is really UB and I shouldn't do it. Migrate to const getter
+           for handles and create infos.
 TODO(vug): Resource abstraction for Pipeline!
 TODO(vug): Introduce asset::Material, render::Material
 TODO(vug): Introduce a default material, and a missing material.
@@ -36,9 +41,6 @@ TODO(vug): try out C++ modules, but don't obsess if it does not work well
            https://gemini.google.com/app/31dc373a7f5b3005
 TODO(vug): consider making all members of dependency library types pointers, so that I can
            forward declare them and won't leak their headers
-TODO(vug): add STL includes to a precompiled header pch_stl.h
-           Also add headers such as utils and logger that are included in
-           every file into pch_aur.h. and maybe a pch_dependencies
 TODO(vug): looks like at app start, longest duration is spent on graphics pipeline creation.
            Add a timer to measure important perf durations (cold start etc)
            Investigate what can be done to make pipeline creation faster. Can we cache them?
