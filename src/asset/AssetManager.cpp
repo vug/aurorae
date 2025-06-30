@@ -10,9 +10,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "../Logger.h"
+#include "AssimpUtils.h"
 #include "Mesh.h"
 
 namespace aur {
+
 std::vector<Handle<asset::Mesh>> AssetManager::loadFromFile(const std::filesystem::path& path) {
   Assimp::Importer importer;
 
@@ -24,6 +26,13 @@ std::vector<Handle<asset::Mesh>> AssetManager::loadFromFile(const std::filesyste
                                  aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
   if (!scene)
     log().fatal("Failed to load mesh from file: {}", path.string());
+
+  // TODO(vug): Do something with the materials
+  const u32 materialCnt = scene->mNumMaterials;
+  log().info("Scene {} has {} materials.", scene->mName.C_Str(), materialCnt);
+  auto materials = scene->mMaterials;
+  const aiMaterial* mat = materials[0];
+  asset::printMaterialProperties(mat);
 
   std::vector<Handle<asset::Mesh>> meshes;
   // aur: Model is made of Meshes and meshes have DrawSpans (Materials)

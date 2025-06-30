@@ -96,6 +96,7 @@ add_executable(Aurorae
         asset/Handle.h
         asset/AssetManager.h asset/AssetManager.cpp
         asset/Material.h asset/Material.cpp
+        asset/AssimpUtils.h asset/AssimpUtils.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
