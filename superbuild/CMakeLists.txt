@@ -153,6 +153,7 @@ foreach(CONFIG ${SUPERBUILD_CONFIGS})
         Glfw_${CONFIG}
         VMA_${CONFIG}
         GLM_${CONFIG}
+        Assimp_${CONFIG}
         # Vulkan_${CONFIG}}
     )
 endforeach()

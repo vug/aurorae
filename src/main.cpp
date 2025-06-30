@@ -1,6 +1,5 @@
 /*
-TODO(vug): copy loadFromFile function to AssetManager.
-           First create (dummy) Materials (with different debug names) -> store them in AssetManager
+TODO(vug): First create (dummy) Materials (with different debug names) -> store them in AssetManager
            then create asset::Mesh and MaterialSpans.
 TODO(vug): Introduce render::Mesh that takes an asset::Mesh in second constructor. Uploads GPU.
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
