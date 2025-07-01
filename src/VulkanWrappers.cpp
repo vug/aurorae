@@ -31,6 +31,11 @@ static_assert(static_cast<u32>(MemoryUsage::CpuOnly) == VMA_MEMORY_USAGE_CPU_ONL
 static_assert(static_cast<u32>(MemoryUsage::CpuToGpu) == VMA_MEMORY_USAGE_CPU_TO_GPU);
 static_assert(static_cast<u32>(MemoryUsage::GpuToCpu) == VMA_MEMORY_USAGE_GPU_TO_CPU);
 
+static_assert(static_cast<u32>(CullMode::None) == VK_CULL_MODE_NONE);
+static_assert(static_cast<u32>(CullMode::Front) == VK_CULL_MODE_FRONT_BIT);
+static_assert(static_cast<u32>(CullMode::Back) == VK_CULL_MODE_BACK_BIT);
+static_assert(static_cast<u32>(CullMode::FrontAndBack) == VK_CULL_MODE_FRONT_AND_BACK);
+
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums) {
   u32 flags{};

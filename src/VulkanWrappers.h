@@ -119,6 +119,13 @@ enum class MemoryUsage {
   GpuToCpu = 4,
 };
 
+enum class CullMode {
+  None = 0,
+  Front = 1,
+  Back = 2,
+  FrontAndBack = 3,
+};
+
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums);
 
