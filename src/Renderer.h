@@ -121,7 +121,7 @@ public:
                                                   std::string_view debugName = "") const;
   [[nodiscard]] PipelineLayout createPipelineLayout(const PipelineLayoutCreateInfo& createInfo,
                                                     std::string_view debugName = "") const;
-  [[nodiscard]] ShaderModule createShaderModule(ShaderModuleCreateInfo createInfo,
+  [[nodiscard]] ShaderModule createShaderModule(const ShaderModuleCreateInfo& createInfo,
                                                 std::string_view debugName = "") const;
 
   [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,

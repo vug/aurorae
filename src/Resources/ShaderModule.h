@@ -2,7 +2,6 @@
 
 #include <filesystem>
 
-#include "../FileIO.h"
 #include "../VulkanWrappers.h"
 
 namespace aur {

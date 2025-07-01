@@ -124,12 +124,13 @@ Renderer::~Renderer() {
   log().info("Renderer destroyed.");
 }
 
-ShaderModule Renderer::createShaderModule(ShaderModuleCreateInfo createInfo,
+ShaderModule Renderer::createShaderModule(const ShaderModuleCreateInfo& createInfo,
                                           std::string_view debugName) const {
-  ShaderModule obj{getDevice(), std::move(createInfo)};
+  ShaderModule obj{getDevice(), createInfo};
   setDebugName(obj, debugName);
   return obj;
 }
+
 Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
                                            std::string_view debugName) const {
   // host visible, host coherent

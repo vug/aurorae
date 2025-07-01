@@ -2,12 +2,13 @@
 
 #include <volk/volk.h>
 
+#include "../FileIO.h"
 #include "../Logger.h"
 
 namespace aur {
 
 ShaderModule::ShaderModule(VkDevice device, const ShaderModuleCreateInfo& shaderCreateInfo)
-    : createInfo(std::move(shaderCreateInfo))
+    : createInfo(shaderCreateInfo)
     , handle([this, device]() {
       BinaryBlob codeBlob = readBinaryFile(createInfo.filePath.string());
 
