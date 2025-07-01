@@ -15,7 +15,18 @@
 
 namespace aur {
 
-std::vector<Handle<asset::Mesh>> AssetManager::loadFromFile(const std::filesystem::path& path) {
+Handle<asset::Shader> AssetManager::loadShaderFromFile(const std::filesystem::path& path) {
+  // could return an invalid handle instead
+  if (!std::filesystem::exists(path))
+    log().fatal("Shader file not found: {}", path.string());
+
+  asset::Shader& shader = shaders_.emplace_back(path);
+  shader.filePath = path;
+
+  return Handle<asset::Shader>{static_cast<u32>(shaders_.size() - 1)};
+}
+
+std::vector<Handle<asset::Mesh>> AssetManager::loadMeshFromFile(const std::filesystem::path& path) {
   Assimp::Importer importer;
 
   // aiProcess_MakeLeftHanded flag for RUF import instead of RUB import
@@ -24,6 +35,7 @@ std::vector<Handle<asset::Mesh>> AssetManager::loadFromFile(const std::filesyste
   const aiScene* scene = importer.ReadFile(
       path.string().c_str(), aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenNormals |
                                  aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+  // Could return an empty vector instead
   if (!scene)
     log().fatal("Failed to load mesh from file: {}", path.string());
 

@@ -6,6 +6,7 @@
 #include "Handle.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Shader.h"
 
 #include <filesystem>
 
@@ -17,24 +18,28 @@ struct Mesh;
 
 class AssetManager {
 public:
-  std::vector<Handle<asset::Mesh>> loadFromFile(const std::filesystem::path& path);
+  Handle<asset::Shader> loadShaderFromFile(const std::filesystem::path& path);
+  std::vector<Handle<asset::Mesh>> loadMeshFromFile(const std::filesystem::path& path);
 
+  // asset::Texture* get(Handle<asset::Texture> handle);
+  inline asset::Shader* get(Handle<asset::Shader> handle) { return &shaders_.at(handle); }
+  inline asset::Material* get(Handle<asset::Material> handle) { return &materials_.at(handle); }
   inline asset::Mesh* get(Handle<asset::Mesh> handle) { return &meshes_.at(handle); };
-  inline asset::Material* get(Handle<asset::Material> handle) {
-    return &materials_.at(handle);
-  } // asset::Texture* get(Handle<asset::Texture> handle);
 
 private:
   // The manager OWNS the actual asset data in vectors.
-  std::vector<asset::Mesh> meshes_;
+  // std::vector<asset::Texture> textures_
+  std::vector<asset::Shader> shaders_;
   std::vector<asset::Material> materials_;
-  // std::vector<asset::Texture> textures_;
+  std::vector<asset::Mesh> meshes_;
 
   // TODO(vug): implement caching
-  // Caching to prevent loading the same file twice
-  std::unordered_map<std::filesystem::path, std::vector<Handle<asset::Mesh>>> loadedModels_;
+  // cache shaders
+  std::unordered_map<std::string, Handle<asset::Shader>> loadedShaders_;
   // Caching to de-duplicate materials and textures
   std::unordered_map<std::string, Handle<asset::Material>> loadedMaterials_;
+  // Caching to prevent loading the same file twice
+  std::unordered_map<std::filesystem::path, std::vector<Handle<asset::Mesh>>> loadedModels_;
   // std::unordered_map<std::filesystem::path, Handle<asset::Texture>> loadedTextures_;
 };
 
