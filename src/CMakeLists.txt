@@ -92,10 +92,11 @@ add_executable(Aurorae
         Resources/ShaderModule.h Resources/ShaderModule.cpp
         Vertex.h Vertex.cpp
         Mesh.h Mesh.cpp
-        asset/Mesh.h asset/Mesh.cpp
         asset/Handle.h
         asset/AssetManager.h asset/AssetManager.cpp
+        asset/Shader.h asset/Shader.cpp
         asset/Material.h asset/Material.cpp
+        asset/Mesh.h asset/Mesh.cpp
         asset/AssimpUtils.h asset/AssimpUtils.cpp
 )
 
