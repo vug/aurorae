@@ -1,18 +1,18 @@
 #include "AppContext.h"
 
 #include "Logger.h"
-#include "Renderer.h"
 
 namespace aur {
+
 Renderer* AppContext::renderer_ = {};
+AssetManager* AppContext::assetManager_ = {};
+bool AppContext::initialized_ = false;
 
-void AppContext::initialize(Renderer& renderer) {
+void AppContext::initialize(Renderer& renderer, AssetManager& assetManager) {
   renderer_ = &renderer;
+  assetManager_ = &assetManager;
+  initialized_ = true;
+  log().trace("AppContext initialized.");
 }
 
-const Renderer& AppContext::getRenderer() {
-  if (!renderer_)
-    log().fatal("getRenderer() is called before AppContext was initialized.");
-  return *renderer_;
-}
 } // namespace aur

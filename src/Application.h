@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "Utils.h"
 #include "Window.h"
+#include "asset/AssetManager.h"
 
 namespace aur {
 
@@ -32,6 +33,7 @@ private:
   // then Window).
   Window window_;
   Renderer renderer_;
+  AssetManager assetManager_;
 };
 
 } // namespace aur
