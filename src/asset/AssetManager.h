@@ -22,9 +22,9 @@ public:
   std::vector<Handle<asset::Mesh>> loadMeshFromFile(const std::filesystem::path& path);
 
   // asset::Texture* get(Handle<asset::Texture> handle);
-  inline asset::Shader* get(Handle<asset::Shader> handle) { return &shaders_.at(handle); }
-  inline asset::Material* get(Handle<asset::Material> handle) { return &materials_.at(handle); }
-  inline asset::Mesh* get(Handle<asset::Mesh> handle) { return &meshes_.at(handle); };
+  inline const asset::Shader* get(Handle<asset::Shader> handle) const { return &shaders_.at(handle); }
+  inline const asset::Material* get(Handle<asset::Material> handle) const { return &materials_.at(handle); }
+  inline const asset::Mesh* get(Handle<asset::Mesh> handle) const { return &meshes_.at(handle); };
 
 private:
   // The manager OWNS the actual asset data in vectors.

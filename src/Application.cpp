@@ -53,7 +53,7 @@ void Application::run() {
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
   Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromFile(modelPath)[0];
-  asset::Mesh* mesh = assetManager_.get(boxMeshHandle);
+  const asset::Mesh* mesh = assetManager_.get(boxMeshHandle);
   Mesh boxRenderMesh{.vertices = mesh->vertices, .indices = mesh->indices, .debugName = "GLTF Box"};
   renderer_.upload(boxRenderMesh);
   asset::Mesh triangleMesh = asset::Mesh::makeTriangle();
