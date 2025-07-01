@@ -1,21 +1,12 @@
-#include "Pipelines.h"
-
-#include "AppContext.h"
-
-#include <array>
+#include "Pipeline.h"
 
 #include <volk/volk.h>
 
 #include "Logger.h"
 #include "Renderer.h"
-#include "Resources/PipelineLayout.h"
 #include "asset/AssetManager.h"
-#include "asset/Handle.h"
-#include "asset/Shader.h"
 
 namespace aur {
-Pipelines::Pipelines(const Renderer& renderer)
-    : renderer_(renderer) {}
 
 VkVertexInputBindingDescription toVkVertexInputBindingDescription(const VertexInputBindingDescription& desc) {
   const VkVertexInputBindingDescription vkBindingDescription{
@@ -39,17 +30,21 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
   return vkAttributeDescription;
 }
 
-Pipeline Pipelines::createPipeline(Handle<asset::Shader> vertHandle, Handle<asset::Shader> fragHandle) const {
-  const asset::Shader* vertShader = AppContext::get<AssetManager>().get(vertHandle);
+Pipeline::Pipeline(AssetManager& assetManager, const Renderer& renderer, const PipelineCreateInfo& createInfo)
+    : renderer_(renderer) {
+  // TODO(vug): consider bringing dependencies (Renderer & AssetManager) via constructor parameters
+  const asset::Shader* vertShader = assetManager.get(createInfo.vert);
   const ShaderModuleCreateInfo vertShaderModuleCreateInfo{
       .filePath = vertShader->filePath,
   };
-  const asset::Shader* fragShader = AppContext::get<AssetManager>().get(fragHandle);
+  const asset::Shader* fragShader = assetManager.get(createInfo.frag);
   const ShaderModuleCreateInfo fragShaderModuleCreateInfo{
       .filePath = fragShader->filePath,
   };
-  ShaderModule vertShaderModule = renderer_.createShaderModule(vertShaderModuleCreateInfo);
-  ShaderModule fragShaderModule = renderer_.createShaderModule(fragShaderModuleCreateInfo);
+
+  // TODO(vug): later migrate to render::Shader
+  ShaderModule vertShaderModule = renderer.createShaderModule(vertShaderModuleCreateInfo);
+  ShaderModule fragShaderModule = renderer.createShaderModule(fragShaderModuleCreateInfo);
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -136,11 +131,11 @@ Pipeline Pipelines::createPipeline(Handle<asset::Shader> vertHandle, Handle<asse
       .size = sizeof(glm::mat4),
   };
   PipelineLayoutCreateInfo layoutCreateInfo{
-      .descriptorSetLayouts = {&renderer_.getPerFrameDescriptorSetLayout()},
+      .descriptorSetLayouts = {&renderer.getPerFrameDescriptorSetLayout()},
       .pushConstants = {pushConstant},
   };
 
-  PipelineLayout pipelineLayout = renderer_.createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
+  pipelineLayout = renderer.createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
 
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
@@ -150,12 +145,12 @@ Pipeline Pipelines::createPipeline(Handle<asset::Shader> vertHandle, Handle<asse
       .pDynamicStates = dynamicStates.data(),
   };
 
-  const VkFormat colorAttachmentFormat = renderer_.getSwapchainColorImageFormat();
+  const VkFormat colorAttachmentFormat = renderer.getSwapchainColorImageFormat();
   const VkPipelineRenderingCreateInfoKHR pipelineRenderingCreateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
       .colorAttachmentCount = 1,
       .pColorAttachmentFormats = &colorAttachmentFormat,
-      .depthAttachmentFormat = renderer_.getSwapchainDepthImageFormat(),
+      .depthAttachmentFormat = renderer.getSwapchainDepthImageFormat(),
   };
 
   const VkGraphicsPipelineCreateInfo pipelineInfo{
@@ -176,21 +171,13 @@ Pipeline Pipelines::createPipeline(Handle<asset::Shader> vertHandle, Handle<asse
       .subpass = 0,
   };
 
-  VkPipeline pipeline{VK_NULL_HANDLE};
-  VK(vkCreateGraphicsPipelines(renderer_.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline));
-  log().debug("Cube graphics pipeline created.");
-
-  return {
-      .vertexPath = vertShader->filePath,
-      .fragmentPath = fragShader->filePath,
-      .pipeline = pipeline,
-      .pipelineLayout = std::move(pipelineLayout),
-  };
+  // VkPipeline hnd{VK_NULL_HANDLE};
+  VK(vkCreateGraphicsPipelines(renderer.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &handle));
 }
-void Pipelines::cleanupPipeline(Pipeline& pipeline) const {
-  if (pipeline.pipeline != VK_NULL_HANDLE) {
-    vkDestroyPipeline(renderer_.getDevice(), pipeline.pipeline, nullptr);
-    pipeline.pipeline = VK_NULL_HANDLE;
+Pipeline::~Pipeline() {
+  if (handle != VK_NULL_HANDLE) {
+    vkDestroyPipeline(renderer_.getDevice(), handle, nullptr);
+    handle = VK_NULL_HANDLE;
   }
 }
 } // namespace aur

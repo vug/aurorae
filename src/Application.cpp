@@ -7,7 +7,7 @@
 #include "AppContext.h"
 #include "GlfwUtils.h"
 #include "Logger.h"
-#include "Pipelines.h"
+#include "Pipeline.h"
 #include "asset/AssetManager.h"
 #include "asset/Mesh.h"
 
@@ -48,8 +48,11 @@ void Application::run() {
       assetManager_.loadShaderFromFile(std::filesystem::path{kShadersFolder} / "unlit.vert.spv");
   Handle<asset::Shader> unlitFrag =
       assetManager_.loadShaderFromFile(std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
-  Pipelines pipelines{renderer_};
-  Pipeline unlitPipeline = pipelines.createPipeline(unlitVert, unlitFrag);
+  PipelineCreateInfo pipelineCreateInfo{
+      .vert = unlitVert,
+      .frag = unlitFrag,
+  };
+  Pipeline unlitPipeline{assetManager_, renderer_, pipelineCreateInfo};
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
   Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromFile(modelPath)[0];
@@ -127,7 +130,6 @@ void Application::run() {
   // TODO(vug): With proper RAII, and architecture, we shouldn't need to call wait idle for cleaning up
   //            pipelines manually
   renderer_.deviceWaitIdle();
-  pipelines.cleanupPipeline(unlitPipeline);
   log().debug("Main loop finished.");
 }
 } // namespace aur

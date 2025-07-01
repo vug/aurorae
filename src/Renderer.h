@@ -16,7 +16,7 @@ struct GLFWwindow;
 
 namespace aur {
 
-struct Pipeline;
+class Pipeline;
 class PipelineLayout;
 struct PipelineLayoutCreateInfo;
 struct PushConstantsInfo;

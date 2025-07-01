@@ -25,8 +25,6 @@ struct Material {
   // will contain a reference to asset::Shader
 
   // render::Material
-  ShaderModule vertexShaderModule;
-  ShaderModule fragmentShaderModule;
   Pipeline* pipeline;
   DescriptorSet desriptorSet;
 };

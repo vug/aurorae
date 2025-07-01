@@ -485,7 +485,7 @@ void Renderer::bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* p
   //            later bindDescriptorSet can use it. Maybe it can have two variants... if pipeline is not
   //            provided it'll use bound pipeline (?)
   beginDebugLabel("Bind Pipeline, Upload Push Constants");
-  vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
+  vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
   const BindDescriptorSetInfo perFrameBindDescriptorInfo{
       .pipelineLayout = &pipeline.pipelineLayout,
       .descriptorSet = &perFrameDescriptorSet_,

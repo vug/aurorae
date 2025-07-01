@@ -81,8 +81,7 @@ add_executable(Aurorae
         Swapchain.h Swapchain.cpp
         Renderer.h Renderer.cpp
         AppContext.h AppContext.cpp
-        Pipelines.h Pipelines.cpp
-        Pipeline.h
+        Pipeline.h Pipeline.cpp
         Resources/Allocator.h Resources/Allocator.cpp
         Resources/Buffer.h Resources/Buffer.cpp
         Resources/DescriptorPool.h Resources/DescriptorPool.cpp
