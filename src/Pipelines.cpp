@@ -1,13 +1,17 @@
 #include "Pipelines.h"
 
+#include "AppContext.h"
+
 #include <array>
 
 #include <volk/volk.h>
 
-#include "FileIO.h"
 #include "Logger.h"
 #include "Renderer.h"
 #include "Resources/PipelineLayout.h"
+#include "asset/AssetManager.h"
+#include "asset/Handle.h"
+#include "asset/Shader.h"
 
 namespace aur {
 Pipelines::Pipelines(const Renderer& renderer)
@@ -35,17 +39,17 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
   return vkAttributeDescription;
 }
 
-Pipeline Pipelines::createUnlitPipeline() const {
-  PathBuffer vertexPath{pathJoin(kShadersFolder, "unlit.vert.spv")};
-  PathBuffer fragmentPath{pathJoin(kShadersFolder, "unlit.frag.spv")};
-  ShaderModuleCreateInfo vertShaderModuleCreateInfo{
-      .filePath = vertexPath.c_str(),
+Pipeline Pipelines::createPipeline(Handle<asset::Shader> vertHandle, Handle<asset::Shader> fragHandle) const {
+  const asset::Shader* vertShader = AppContext::get<AssetManager>().get(vertHandle);
+  const ShaderModuleCreateInfo vertShaderModuleCreateInfo{
+      .filePath = vertShader->filePath,
   };
-  ShaderModuleCreateInfo fragShaderModuleCreateInfo{
-      .filePath = fragmentPath.c_str(),
+  const asset::Shader* fragShader = AppContext::get<AssetManager>().get(fragHandle);
+  const ShaderModuleCreateInfo fragShaderModuleCreateInfo{
+      .filePath = fragShader->filePath,
   };
-  ShaderModule vertShaderModule = renderer_.createShaderModule(std::move(vertShaderModuleCreateInfo));
-  ShaderModule fragShaderModule = renderer_.createShaderModule(std::move(fragShaderModuleCreateInfo));
+  ShaderModule vertShaderModule = renderer_.createShaderModule(vertShaderModuleCreateInfo);
+  ShaderModule fragShaderModule = renderer_.createShaderModule(fragShaderModuleCreateInfo);
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -177,8 +181,8 @@ Pipeline Pipelines::createUnlitPipeline() const {
   log().debug("Cube graphics pipeline created.");
 
   return {
-      .vertexPath = std::move(vertexPath),
-      .fragmentPath = std::move(fragmentPath),
+      .vertexPath = vertShader->filePath,
+      .fragmentPath = fragShader->filePath,
       .pipeline = pipeline,
       .pipelineLayout = std::move(pipelineLayout),
   };

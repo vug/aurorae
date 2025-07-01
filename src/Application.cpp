@@ -43,14 +43,17 @@ Application::~Application() {
 }
 
 void Application::run() {
-  AssetManager assMan;
   // "Asset Library"
+  Handle<asset::Shader> unlitVert =
+      assetManager_.loadShaderFromFile(std::filesystem::path{kShadersFolder} / "unlit.vert.spv");
+  Handle<asset::Shader> unlitFrag =
+      assetManager_.loadShaderFromFile(std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
   Pipelines pipelines{renderer_};
-  Pipeline unlitPipeline = pipelines.createUnlitPipeline();
+  Pipeline unlitPipeline = pipelines.createPipeline(unlitVert, unlitFrag);
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
-  Handle<asset::Mesh> boxMeshHandle = assMan.loadFromFile(modelPath)[0];
-  asset::Mesh* mesh = assMan.get(boxMeshHandle);
+  Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromFile(modelPath)[0];
+  asset::Mesh* mesh = assetManager_.get(boxMeshHandle);
   Mesh boxRenderMesh{.vertices = mesh->vertices, .indices = mesh->indices, .debugName = "GLTF Box"};
   renderer_.upload(boxRenderMesh);
   asset::Mesh triangleMesh = asset::Mesh::makeTriangle();
