@@ -1,11 +1,34 @@
 #pragma once
 
-namespace aur {
-namespace asset {
+#include "../Resources/DescriptorSet.h"
+#include "../Resources/ShaderModule.h"
+#include "Handle.h"
 
-struct Material {
-  // TODO(vug): just own a pipeline, and filepath to shader modules?
+namespace aur::asset {
+
+struct Shader;
+struct Pipeline;
+
+struct MaterialCreateInfo {
+  // plan for asset::Material
+  Handle<asset::Shader> vertexHandle;
+  Handle<asset::Shader> fragHandle;
+
+  // MaterialMetadata using which we can create the PipelineCreateInfo
+  // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
+  // values. Then, Renderer::getOrCreateMaterial() takes this create info and creates a renderer::Shader, a
+  // Pipeline object, and corresponding buffers and images
 };
 
-} // namespace asset
-} // namespace aur
+struct Material {
+  // asset::Material
+  // will contain a reference to asset::Shader
+
+  // render::Material
+  ShaderModule vertexShaderModule;
+  ShaderModule fragmentShaderModule;
+  Pipeline* pipeline;
+  DescriptorSet desriptorSet;
+};
+
+} // namespace aur::asset

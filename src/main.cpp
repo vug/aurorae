@@ -1,4 +1,9 @@
 /*
+TODO(vug): Resource abstraction for Pipeline!
+           Start with PipelineCreateInfo with operator<. it takes handles to asset::Shader, and any other
+           modifiable part.
+           Then introduce the PipelineCache.
+TODO(vug): Introduce asset::Material, render::Material
 TODO(vug): First create (dummy) Materials (with different debug names) -> store them in AssetManager
            then create asset::Mesh and MaterialSpans.
 TODO(vug): Introduce render::Mesh that takes an asset::Mesh in second constructor. Uploads GPU.
@@ -11,8 +16,6 @@ TODO(vug): bring a texture (stb or oiio)
 TODO(vug): introduce RenderDoc
 TODO(vug): Apparently const_cast a const member is really UB and I shouldn't do it. Migrate to const getter
            for handles and create infos.
-TODO(vug): Resource abstraction for Pipeline!
-TODO(vug): Introduce asset::Material, render::Material
 TODO(vug): Introduce a default material, and a missing material.
 TODO(vug): Introduce AssetManager that stores assets in unordered_maps to shared_ptr of asset type. It's
            responsible of loading and unloading of assets and keeping them alive.
@@ -35,6 +38,8 @@ TODO(vug): generate layouts from shader reflection
 TODO(vug): basic geometry assets: quad
 TODO(vug): introduce entity, so that two entities can use the same mesh/model but have different transforms
 .
+TODO(vug): Initially Material can be stored in files. Later, split materials and pipelines. Store pipelines in
+           files, and store materials in files, where they refer to a pipeline and has some parameters.
 TODO(vug): headless vulkan for image based testing.
 TODO(vug): macros: MOVE_ONLY, COPY_ONLY, NOT_MOVABLE_NOT_COPIABLE
 TODO(vug): try out C++ modules, but don't obsess if it does not work well
