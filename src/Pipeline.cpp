@@ -4,6 +4,7 @@
 
 #include "Logger.h"
 #include "Renderer.h"
+#include "Vertex.h"
 #include "asset/Shader.h"
 
 namespace aur {

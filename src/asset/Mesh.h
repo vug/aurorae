@@ -34,6 +34,7 @@ struct Mesh {
   glm::mat4 transform{1};
 
   static Mesh makeTriangle();
+  // TODO(vug): quads are used a lot, could be nice to generate them procedurally
   // static Mesh makeQuad();
   static Mesh makeCube();
 };

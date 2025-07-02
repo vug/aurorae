@@ -20,6 +20,7 @@ class AssetManager {
 public:
   Handle<asset::Shader> loadShaderFromFile(const std::filesystem::path& path);
   std::vector<Handle<asset::Mesh>> loadMeshFromFile(const std::filesystem::path& path);
+  Handle<asset::Mesh> loadExistingMesh(const asset::Mesh& mesh);
 
   // asset::Texture* get(Handle<asset::Texture> handle);
   inline const asset::Shader* get(Handle<asset::Shader> handle) const { return &shaders_.at(handle); }

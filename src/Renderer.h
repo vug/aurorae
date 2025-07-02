@@ -3,7 +3,6 @@
 #include <glm/mat4x4.hpp>
 
 #include "FileIO.h"
-#include "Mesh.h"
 #include "Resources/Buffer.h"
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
@@ -11,6 +10,8 @@
 #include "Resources/ShaderModule.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
+#include "asset/Handle.h"
+#include "render/Mesh.h"
 
 struct GLFWwindow;
 
@@ -20,6 +21,9 @@ class Pipeline;
 class PipelineLayout;
 struct PipelineLayoutCreateInfo;
 struct PushConstantsInfo;
+namespace asset {
+struct Mesh;
+}
 
 struct BindDescriptorSetInfo {
   const PipelineLayout* pipelineLayout{};
@@ -128,7 +132,7 @@ public:
                                                  std::string_view debugName) const;
 
   PerFrameData perFrameData;
-  void upload(Mesh& mesh) const;
+  render::Mesh upload(Handle<asset::Mesh> mesh) const;
 
 private:
   void createPerFrameDataResources();

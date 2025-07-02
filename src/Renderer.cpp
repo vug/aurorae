@@ -12,7 +12,9 @@
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
 #include "Utils.h"
+#include "Vertex.h"
 #include "VulkanWrappers.h"
+#include "asset/Mesh.h"
 
 namespace aur {
 
@@ -616,11 +618,15 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageMemory_ = VK_NULL_HANDLE;
 }
 
-void Renderer::upload(Mesh& mesh) const {
-  mesh.vertexBuffer = createBufferAndUploadData(mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex),
-                                                BufferUsage::Vertex, mesh.debugName + " Vertex Buffer");
-  mesh.indexBuffer = createBufferAndUploadData(mesh.indices.data(), mesh.indices.size() * sizeof(u32),
-                                               BufferUsage::Index, mesh.debugName + " Index Buffer");
+render::Mesh Renderer::upload(Handle<asset::Mesh> mesh) const {
+  render::Mesh rMesh;
+  const asset::Mesh& aMesh = mesh.get();
+  rMesh.vertexBuffer =
+      createBufferAndUploadData(aMesh.vertices.data(), aMesh.vertices.size() * sizeof(Vertex),
+                                BufferUsage::Vertex, aMesh.debugName + " Vertex Buffer");
+  rMesh.indexBuffer = createBufferAndUploadData(aMesh.indices.data(), aMesh.indices.size() * sizeof(u32),
+                                                BufferUsage::Index, aMesh.debugName + " Index Buffer");
+  return rMesh;
 }
 
 void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {

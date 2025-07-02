@@ -90,13 +90,13 @@ add_executable(Aurorae
         Resources/PipelineLayout.h Resources/PipelineLayout.cpp
         Resources/ShaderModule.h Resources/ShaderModule.cpp
         Vertex.h Vertex.cpp
-        Mesh.h Mesh.cpp
         asset/Handle.h asset/Handle.cpp
         asset/AssetManager.h asset/AssetManager.cpp
         asset/Shader.h asset/Shader.cpp
         asset/Material.h asset/Material.cpp
         asset/Mesh.h asset/Mesh.cpp
         asset/AssimpUtils.h asset/AssimpUtils.cpp
+        render/Mesh.h render/Mesh.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)

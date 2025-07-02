@@ -118,4 +118,9 @@ std::vector<Handle<asset::Mesh>> AssetManager::loadMeshFromFile(const std::files
 
   return meshes;
 }
+
+Handle<asset::Mesh> AssetManager::loadExistingMesh(const asset::Mesh& mesh) {
+  meshes_.emplace_back(std::move(mesh));
+  return Handle<asset::Mesh>{static_cast<u32>(meshes_.size() - 1)};
+}
 } // namespace aur
