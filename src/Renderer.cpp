@@ -485,9 +485,9 @@ void Renderer::bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* p
   //            later bindDescriptorSet can use it. Maybe it can have two variants... if pipeline is not
   //            provided it'll use bound pipeline (?)
   beginDebugLabel("Bind Pipeline, Upload Push Constants");
-  vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
+  vkCmdBindPipeline(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getHandle());
   const BindDescriptorSetInfo perFrameBindDescriptorInfo{
-      .pipelineLayout = &pipeline.pipelineLayout,
+      .pipelineLayout = &pipeline.getPipelineLayout(),
       .descriptorSet = &perFrameDescriptorSet_,
       .setNo = 0,
       .stages = {ShaderStage::Vertex},
@@ -498,7 +498,7 @@ void Renderer::bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* p
     VkPushConstantsInfoKHR /* [issue #7] */ vkPushConstantsInfo{
         .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
         .pNext = nullptr,
-        .layout = pipeline.pipelineLayout.handle,
+        .layout = pipeline.getPipelineLayout().handle,
         .stageFlags = toVkFlags(pushConstantInfoOpt->stages),
         .offset = 0,
         .size = pushConstantInfoOpt->sizeBytes,

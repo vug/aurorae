@@ -31,7 +31,21 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
 }
 
 Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInfo)
-    : renderer_(renderer) {
+    : createInfo_(createInfo)
+    , renderer_(&renderer)
+    , pipelineLayout_([this]() {
+      // WorldFromObject / Model matrix
+      const PushConstant pushConstant{
+          .stages = {ShaderStage::Vertex},
+          .size = sizeof(glm::mat4),
+      };
+      PipelineLayoutCreateInfo layoutCreateInfo{
+          .descriptorSetLayouts = {&renderer_->getPerFrameDescriptorSetLayout()},
+          .pushConstants = {pushConstant},
+      };
+
+      return renderer_->createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
+    }()) {
   const asset::Shader& vertShader = createInfo.vert.get();
   const ShaderModuleCreateInfo vertShaderModuleCreateInfo{
       .filePath = vertShader.filePath,
@@ -124,18 +138,6 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
       .pAttachments = &colorBlendAttachment,
   };
 
-  // WorldFromObject / Model matrix
-  const PushConstant pushConstant{
-      .stages = {ShaderStage::Vertex},
-      .size = sizeof(glm::mat4),
-  };
-  PipelineLayoutCreateInfo layoutCreateInfo{
-      .descriptorSetLayouts = {&renderer.getPerFrameDescriptorSetLayout()},
-      .pushConstants = {pushConstant},
-  };
-
-  pipelineLayout = renderer.createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
-
   constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                                            VK_DYNAMIC_STATE_SCISSOR};
   const VkPipelineDynamicStateCreateInfo dynamicStateInfo{
@@ -165,18 +167,48 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = pipelineLayout.handle,
+      .layout = pipelineLayout_.handle,
       .renderPass = VK_NULL_HANDLE,
       .subpass = 0,
   };
 
   // VkPipeline hnd{VK_NULL_HANDLE};
-  VK(vkCreateGraphicsPipelines(renderer.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &handle));
+  VK(vkCreateGraphicsPipelines(renderer.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &handle_));
 }
+
 Pipeline::~Pipeline() {
-  if (handle != VK_NULL_HANDLE) {
-    vkDestroyPipeline(renderer_.getDevice(), handle, nullptr);
-    handle = VK_NULL_HANDLE;
+  if (handle_ != VK_NULL_HANDLE) {
+    vkDestroyPipeline(renderer_->getDevice(), handle_, nullptr);
+    handle_ = VK_NULL_HANDLE;
   }
+}
+Pipeline::Pipeline(Pipeline&& other) noexcept
+    : createInfo_(other.createInfo_)
+    , renderer_(other.renderer_)
+    , pipelineLayout_(std::move(other.pipelineLayout_))
+    , handle_(other.handle_) {
+  other.invalidate();
+}
+
+Pipeline& Pipeline::operator=(Pipeline&& other) noexcept {
+  if (this != &other) {
+    destroy();
+    createInfo_ = std::move(other.createInfo_);
+    renderer_ = other.renderer_;
+    pipelineLayout_ = std::move(other.pipelineLayout_);
+    handle_ = other.handle_;
+    other.invalidate();
+  }
+  return *this;
+}
+
+void Pipeline::invalidate() {
+  handle_ = VK_NULL_HANDLE;
+}
+
+void Pipeline::destroy() {
+  if (isValid())
+    vkDestroyPipeline(renderer_->getDevice(), handle_, nullptr);
+  invalidate();
 }
 } // namespace aur

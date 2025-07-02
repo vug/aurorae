@@ -1,11 +1,11 @@
 /*
-TODO(vug): Resource abstraction for Pipeline! -> finish this
-           Then introduce the PipelineCache.
+TODO(vug): Then introduce the PipelineCache.
 TODO(vug): store debug names with objects
 TODO(vug): Introduce asset::Material, render::Material
 TODO(vug): First create (dummy) Materials (with different debug names) -> store them in AssetManager
            then create asset::Mesh and MaterialSpans.
 TODO(vug): Introduce render::Mesh that takes an asset::Mesh in second constructor. Uploads GPU.
+           Be able to get asset::Mesh from render::Mesh
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): add STL includes to a precompiled header pch_stl.h

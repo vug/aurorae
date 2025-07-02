@@ -30,11 +30,25 @@ public:
   Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInfo);
   ~Pipeline();
 
-  PipelineLayout pipelineLayout;
-  VkPipeline handle{VK_NULL_HANDLE};
+  Pipeline(const Pipeline&) = delete;
+  Pipeline& operator=(const Pipeline&) = delete;
+  Pipeline(Pipeline&& other) noexcept;
+  Pipeline& operator=(Pipeline&& other) noexcept;
+
+  const VkPipeline& getHandle() const { return handle_; }
+  const PipelineCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
+
+  const PipelineLayout& getPipelineLayout() const { return pipelineLayout_; }
 
 private:
-  const Renderer& renderer_;
+  void invalidate();
+  void destroy();
+
+  PipelineCreateInfo createInfo_;
+  const Renderer* renderer_;
+  PipelineLayout pipelineLayout_;
+  VkPipeline handle_{VK_NULL_HANDLE};
 };
 
 } // namespace aur
