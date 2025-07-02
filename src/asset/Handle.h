@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../AppContext.h"
 #include "../Utils.h"
 
 namespace aur {
@@ -10,10 +11,11 @@ struct Handle {
   u32 id{kInvalidId};
 
   bool isValid() const { return id != kInvalidId; }
+  const TAsset& get() const;
+
   bool operator==(const Handle<TAsset>& other) const { return id == other.id; }
   // for using as a key in maps
   bool operator<(const Handle<TAsset>& other) const { return id < other.id; }
   operator u32() const { return id; }
 };
-
 } // namespace aur

@@ -4,7 +4,7 @@
 
 #include "Logger.h"
 #include "Renderer.h"
-#include "asset/AssetManager.h"
+#include "asset/Shader.h"
 
 namespace aur {
 
@@ -30,16 +30,15 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
   return vkAttributeDescription;
 }
 
-Pipeline::Pipeline(AssetManager& assetManager, const Renderer& renderer, const PipelineCreateInfo& createInfo)
+Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInfo)
     : renderer_(renderer) {
-  // TODO(vug): consider bringing dependencies (Renderer & AssetManager) via constructor parameters
-  const asset::Shader* vertShader = assetManager.get(createInfo.vert);
+  const asset::Shader& vertShader = createInfo.vert.get();
   const ShaderModuleCreateInfo vertShaderModuleCreateInfo{
-      .filePath = vertShader->filePath,
+      .filePath = vertShader.filePath,
   };
-  const asset::Shader* fragShader = assetManager.get(createInfo.frag);
+  const asset::Shader& fragShader = createInfo.frag.get();
   const ShaderModuleCreateInfo fragShaderModuleCreateInfo{
-      .filePath = fragShader->filePath,
+      .filePath = fragShader.filePath,
   };
 
   // TODO(vug): later migrate to render::Shader

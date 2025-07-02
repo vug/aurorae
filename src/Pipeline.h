@@ -27,7 +27,7 @@ struct PipelineCreateInfo {
 class Pipeline {
 public:
   Pipeline() = default;
-  Pipeline(AssetManager& assetManager, const Renderer& renderer, const PipelineCreateInfo& createInfo);
+  Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInfo);
   ~Pipeline();
 
   PipelineLayout pipelineLayout;

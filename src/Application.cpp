@@ -52,12 +52,12 @@ void Application::run() {
       .vert = unlitVert,
       .frag = unlitFrag,
   };
-  Pipeline unlitPipeline{assetManager_, renderer_, pipelineCreateInfo};
+  Pipeline unlitPipeline{renderer_, pipelineCreateInfo};
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
   Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromFile(modelPath)[0];
-  const asset::Mesh* mesh = assetManager_.get(boxMeshHandle);
-  Mesh boxRenderMesh{.vertices = mesh->vertices, .indices = mesh->indices, .debugName = "GLTF Box"};
+  const asset::Mesh& mesh = boxMeshHandle.get();
+  Mesh boxRenderMesh{.vertices = mesh.vertices, .indices = mesh.indices, .debugName = "GLTF Box"};
   renderer_.upload(boxRenderMesh);
   asset::Mesh triangleMesh = asset::Mesh::makeTriangle();
   Mesh triangleRenderMesh{

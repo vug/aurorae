@@ -11,8 +11,8 @@ struct Pipeline;
 
 struct MaterialCreateInfo {
   // plan for asset::Material
-  Handle<asset::Shader> vertexHandle;
-  Handle<asset::Shader> fragHandle;
+  Handle<Shader> vertexHandle;
+  Handle<Shader> fragHandle;
 
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
