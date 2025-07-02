@@ -1,7 +1,5 @@
 /*
-TODO(vug): Resource abstraction for Pipeline!
-           Start with PipelineCreateInfo with operator<. it takes handles to asset::Shader, and any other
-           modifiable part.
+TODO(vug): Resource abstraction for Pipeline! -> finish this
            Then introduce the PipelineCache.
 TODO(vug): store debug names with objects
 TODO(vug): Introduce asset::Material, render::Material
