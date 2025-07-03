@@ -9,7 +9,7 @@ namespace aur {
 Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& bufferCreateInfo)
     : allocator_{allocator}
     , createInfo{bufferCreateInfo}
-    , handle([this]() {
+    , handle{[this]() {
       const VkBufferCreateInfo bufferInfo{
           .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
           .size = createInfo.sizeBytes,
@@ -21,42 +21,41 @@ Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& bufferCreateInfo)
           .usage = static_cast<VmaMemoryUsage>(createInfo.memoryUsage),
       };
 
-      VkBuffer hnd;
+      VkBuffer hnd{};
       VK(vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &hnd, &allocation_, nullptr));
       return hnd;
-    }()) {}
+    }()} {}
 
 Buffer::~Buffer() {
   destroy();
 }
 
 Buffer::Buffer(Buffer&& other) noexcept
-    : allocator_(std::move(other.allocator_))
-    , allocation_(std::move(other.allocation_))
-    , createInfo(std::move(other.createInfo))
-    , handle(std::move(other.handle)) {
-  other.invalidate();
-}
+    : allocator_{std::exchange(other.allocator_, {})}
+    , allocation_{std::exchange(other.allocation_, {})}
+    , createInfo{std::exchange(other.createInfo, {})}
+    , handle{std::exchange(other.handle, {})} {}
 
 Buffer& Buffer::operator=(Buffer&& other) noexcept {
-  if (this != &other) {
-    // Destroy the existing resource before taking ownership of the new one
-    destroy();
+  if (this == &other)
+    return *this;
 
-    // Pilfer the resources from the other object
-    allocator_ = std::move(other.allocator_);
-    allocation_ = std::move(other.allocation_);
-    createInfo = std::move(other.createInfo);
-    handle = std::move(other.handle);
+  // Destroy the existing resource before taking ownership of the new one
+  destroy();
 
-    other.invalidate();
-  }
+  // Pilfer the resources from the other and invalidate other's members
+  allocator_ = std::exchange(other.allocator_, {});
+  allocation_ = std::exchange(other.allocation_, {});
+  createInfo = std::exchange(other.createInfo, {});
+  handle = std::exchange(other.handle, {});
   return *this;
 }
 
 void Buffer::destroy() {
-  if (isValid() && allocation_ != VK_NULL_HANDLE)
-    vmaDestroyBuffer(allocator_, handle, allocation_);
+  if (!isValid())
+    return;
+
+  vmaDestroyBuffer(allocator_, handle, allocation_);
   invalidate();
 }
 

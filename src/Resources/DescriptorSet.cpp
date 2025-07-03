@@ -5,26 +5,25 @@
 #include "DescriptorSetLayout.h"
 
 namespace aur {
-
 #include <volk/volk.h>
 
 DescriptorSet::DescriptorSet(VkDevice device, VkDescriptorPool pool,
                              const DescriptorSetCreateInfo& setCreateInfo)
-    : createInfo(setCreateInfo)
-    , handle([this, device, pool]() -> VkDescriptorSet {
+    : device_{device}
+    , pool_{pool}
+    , createInfo_{setCreateInfo}
+    , handle_{[this, device, pool]() -> VkDescriptorSet {
       VkDescriptorSetAllocateInfo allocInfo{
           .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
           .descriptorPool = pool,
           .descriptorSetCount = 1,
-          .pSetLayouts = &createInfo.layout->handle,
+          .pSetLayouts = &createInfo_.layout->getHandle(),
       };
 
-      VkDescriptorSet dset = VK_NULL_HANDLE;
-      VK(vkAllocateDescriptorSets(device, &allocInfo, &dset));
-      return dset;
-    }())
-    , pool_(pool)
-    , device_(device) {
+      VkDescriptorSet hnd = VK_NULL_HANDLE;
+      VK(vkAllocateDescriptorSets(device, &allocInfo, &hnd));
+      return hnd;
+    }()} {
   // At this point, the VkDescriptorSet handle is allocated, but the set
   // is conceptually "empty" or unpopulated. Resources will be bound via update().
 }
@@ -34,38 +33,39 @@ DescriptorSet::~DescriptorSet() {
 }
 
 DescriptorSet::DescriptorSet(DescriptorSet&& other) noexcept
-    : createInfo(std::move(other.createInfo))
-    , handle(other.handle)
-    , device_(other.device_)
-    , pool_(other.pool_) {
-  other.invalidate();
-}
+    : device_{std::exchange(other.device_, {})}
+    , pool_{std::exchange(other.pool_, {})}
+    , createInfo_{std::exchange(other.createInfo_, {})}
+    , handle_{std::exchange(other.handle_, {})} {}
 
 DescriptorSet& DescriptorSet::operator=(DescriptorSet&& other) noexcept {
-  if (this != &other) {
-    destroy();
+  if (this == &other)
+    return *this;
 
-    // Pilfer resources from other object
-    const_cast<DescriptorSetCreateInfo&>(createInfo) = std::move(other.createInfo);
-    const_cast<VkDescriptorSet&>(handle) = other.handle;
-    device_ = other.device_;
-    pool_ = other.pool_;
+  destroy();
 
-    other.invalidate();
-  }
+  device_ = std::exchange(other.device_, {});
+  pool_ = std::exchange(other.pool_, {});
+  createInfo_ = std::exchange(other.createInfo_, {});
+  handle_ = std::exchange(other.handle_, {});
+
   return *this;
 }
 
 void DescriptorSet::invalidate() {
-  const_cast<VkDescriptorSet&>(handle) = VK_NULL_HANDLE;
+  handle_ = VK_NULL_HANDLE;
 }
 
 void DescriptorSet::destroy() {
-  if (isValid() && device_ != VK_NULL_HANDLE && pool_ != VK_NULL_HANDLE)
-    VK(vkFreeDescriptorSets(device_, pool_, 1, &handle));
+  if (!isValid())
+    return;
+
+  VK(vkFreeDescriptorSets(device_, pool_, 1, &handle_));
+
+  invalidate();
 }
 
-void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) {
+void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) const {
   // A temporary vector to ensure `dstSet` points to *this* descriptor set.
   // It's a common pattern to ensure the caller doesn't accidentally
   // provide writes for a different set.
@@ -76,7 +76,7 @@ void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) {
     const VkDescriptorBufferInfo& vkBufferInfo =
         vkBufferInfos.emplace_back(bufferInfo.buffer.getHandle(), bufferInfo.offset, bufferInfo.range);
     vkWrites.push_back({.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                        .dstSet = write.dstSet.handle,
+                        .dstSet = write.dstSet.handle_,
                         .dstBinding = write.binding,
                         .descriptorCount = write.descriptorCnt,
                         .descriptorType = static_cast<VkDescriptorType>(write.descriptorType),

@@ -1,10 +1,10 @@
 /*
-TODO(vug): all move constructor and assignment functions should use std::move, uniform initialization in
-constructors
 TODO(vug): item count or size to Buffer
 TODO(vug): make createInfo and handle members non-const
 TODO(vug): constructors for render::Shader and render::Mesh instead of Renderer::upload functions
 TODO(vug): Bring DrawSpans to render::Mesh.
+TODO(vug): continue going over clang-tidy settings from modernize-avoid-bind.
+           https://clang.llvm.org/extra/clang-tidy/checks/list.html
 TODO(vug): Introduce the PipelineCache.
 TODO(vug): store debug names with objects
 TODO(vug): Introduce asset::Material, render::Material

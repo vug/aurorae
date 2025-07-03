@@ -8,7 +8,6 @@
 #include "asset/Shader.h"
 
 namespace aur {
-
 VkVertexInputBindingDescription toVkVertexInputBindingDescription(const VertexInputBindingDescription& desc) {
   const VkVertexInputBindingDescription vkBindingDescription{
       .binding = desc.binding, // The index of the binding in the array of bindings
@@ -32,9 +31,9 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
 }
 
 Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInfo)
-    : createInfo_(createInfo)
-    , renderer_(&renderer)
-    , pipelineLayout_([this]() {
+    : createInfo_{createInfo}
+    , renderer_{&renderer}
+    , pipelineLayout_{[this]() {
       // WorldFromObject / Model matrix
       const PushConstant pushConstant{
           .stages = {ShaderStage::Vertex},
@@ -46,7 +45,7 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
       };
 
       return renderer_->createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
-    }()) {
+    }()} {
   render::Shader shader = renderer.upload(createInfo.shader);
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
@@ -157,7 +156,7 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicStateInfo,
-      .layout = pipelineLayout_.handle,
+      .layout = pipelineLayout_.getHandle(),
       .renderPass = VK_NULL_HANDLE,
       .subpass = 0,
   };
@@ -172,23 +171,24 @@ Pipeline::~Pipeline() {
     handle_ = VK_NULL_HANDLE;
   }
 }
+
 Pipeline::Pipeline(Pipeline&& other) noexcept
-    : createInfo_(other.createInfo_)
-    , renderer_(other.renderer_)
-    , pipelineLayout_(std::move(other.pipelineLayout_))
-    , handle_(other.handle_) {
-  other.invalidate();
-}
+    : createInfo_{std::exchange(other.createInfo_, {})}
+    , renderer_{std::exchange(other.renderer_, {})}
+    , pipelineLayout_{std::exchange(other.pipelineLayout_, {})}
+    , handle_{std::exchange(other.handle_, {})} {}
 
 Pipeline& Pipeline::operator=(Pipeline&& other) noexcept {
-  if (this != &other) {
-    destroy();
-    createInfo_ = std::move(other.createInfo_);
-    renderer_ = other.renderer_;
-    pipelineLayout_ = std::move(other.pipelineLayout_);
-    handle_ = other.handle_;
-    other.invalidate();
-  }
+  if (this == &other)
+    return *this;
+
+  destroy();
+
+  createInfo_ = std::exchange(other.createInfo_, {});
+  renderer_ = std::exchange(other.renderer_, {});
+  pipelineLayout_ = std::exchange(other.pipelineLayout_, {});
+  handle_ = std::exchange(other.handle_, {});
+
   return *this;
 }
 

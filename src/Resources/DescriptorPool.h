@@ -25,16 +25,17 @@ public:
   DescriptorPool(DescriptorPool&& other) noexcept;
   DescriptorPool& operator=(DescriptorPool&& other) noexcept;
 
-  [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
-
-  const DescriptorPoolCreateInfo createInfo;
-  const VkDescriptorPool handle{VK_NULL_HANDLE};
+  [[nodiscard]] const DescriptorPoolCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] const VkDescriptorPool& getHandle() const { return handle_; }
+  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
 
 private:
   void invalidate();
   void destroy();
 
   VkDevice device_{VK_NULL_HANDLE};
+  DescriptorPoolCreateInfo createInfo_;
+  VkDescriptorPool handle_{VK_NULL_HANDLE};
 };
 
 } // namespace aur

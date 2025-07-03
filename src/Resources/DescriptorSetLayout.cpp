@@ -8,10 +8,11 @@ namespace aur {
 
 DescriptorSetLayout::DescriptorSetLayout(VkDevice device,
                                          const DescriptorSetLayoutCreateInfo& layoutCreateInfo)
-    : createInfo(layoutCreateInfo)
-    , handle([this, device]() {
+    : device_{device}
+    , createInfo_{layoutCreateInfo}
+    , handle_{[this, device]() {
       std::vector<VkDescriptorSetLayoutBinding> vkBindings;
-      for (const auto& binding : createInfo.bindings) {
+      for (const auto& binding : createInfo_.bindings) {
 
         vkBindings.push_back({
             .binding = binding.index,
@@ -28,45 +29,40 @@ DescriptorSetLayout::DescriptorSetLayout(VkDevice device,
           .pBindings = vkBindings.data(),
       };
 
-      VkDescriptorSetLayout hnd{VK_NULL_HANDLE};
+      VkDescriptorSetLayout hnd{};
       VK(vkCreateDescriptorSetLayout(device, &vkCreateInfo, nullptr, &hnd));
       return hnd;
-    }())
-    , device_(device) {}
+    }()} {}
 
 DescriptorSetLayout::~DescriptorSetLayout() {
   destroy();
 }
 
 DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
-    : createInfo(std::move(other.createInfo))
-    , handle(other.handle)
-    , device_(other.device_) {
-  other.invalidate();
-}
+    : device_{std::exchange(other.device_, {})}
+    , createInfo_{std::exchange(other.createInfo_, {})}
+    , handle_{std::exchange(other.handle_, {})} {}
 
 DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& other) noexcept {
-  if (this != &other) {
-    destroy();
+  if (this == &other)
+    return *this;
 
-    // Pilfer resources from other object
-    const_cast<DescriptorSetLayoutCreateInfo&>(createInfo) = std::move(other.createInfo);
-    const_cast<VkDescriptorSetLayout&>(handle) = other.handle;
-    device_ = other.device_;
+  destroy();
 
-    // Invalidate the other object
-    other.invalidate();
-  }
+  device_ = std::exchange(other.device_, {});
+  createInfo_ = std::exchange(other.createInfo_, {});
+  handle_ = std::exchange(other.handle_, {});
+
   return *this;
 }
 bool DescriptorSetLayout::isCompatible(const DescriptorSetLayout& other) const {
-  const u32 bindingCnt = static_cast<u32>(createInfo.bindings.size());
-  if (bindingCnt != other.createInfo.bindings.size())
+  const u32 bindingCnt = static_cast<u32>(createInfo_.bindings.size());
+  if (bindingCnt != other.createInfo_.bindings.size())
     return false;
 
   for (u32 i = 0; i < bindingCnt; ++i) {
-    const auto& thisBinding = createInfo.bindings[i];
-    const auto& otherBinding = other.createInfo.bindings[i];
+    const auto& thisBinding = createInfo_.bindings[i];
+    const auto& otherBinding = other.createInfo_.bindings[i];
     if (thisBinding != otherBinding)
       return false;
   }
@@ -74,13 +70,13 @@ bool DescriptorSetLayout::isCompatible(const DescriptorSetLayout& other) const {
 }
 
 void DescriptorSetLayout::invalidate() {
-  const_cast<VkDescriptorSetLayout&>(handle) = VK_NULL_HANDLE;
-  // not needed because device_ is not owned by DescriptorSetLayout
-  device_ = VK_NULL_HANDLE;
+  handle_ = VK_NULL_HANDLE;
 }
 void DescriptorSetLayout::destroy() {
-  if (isValid() && device_ != VK_NULL_HANDLE)
-    vkDestroyDescriptorSetLayout(device_, handle, nullptr);
+  if (!isValid())
+    return;
+
+  vkDestroyDescriptorSetLayout(device_, handle_, nullptr);
   invalidate();
 }
 

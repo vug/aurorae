@@ -40,18 +40,17 @@ public:
   PipelineLayout(PipelineLayout&& other) noexcept;
   PipelineLayout& operator=(PipelineLayout&& other) noexcept;
 
-  [[nodiscard]] const PipelineLayoutCreateInfo& getCreateInfo() const { return createInfo; }
-  [[nodiscard]] const VkPipelineLayout& getHandle() const { return handle; }
-  [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
-
-  const PipelineLayoutCreateInfo createInfo;
-  const VkPipelineLayout handle{VK_NULL_HANDLE};
+  [[nodiscard]] const PipelineLayoutCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] const VkPipelineLayout& getHandle() const { return handle_; }
+  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
 
 private:
-  VkDevice device_{VK_NULL_HANDLE};
-
   void invalidate();
   void destroy();
+
+  VkDevice device_{VK_NULL_HANDLE};
+  PipelineLayoutCreateInfo createInfo_;
+  VkPipelineLayout handle_{VK_NULL_HANDLE};
 };
 
 } // namespace aur

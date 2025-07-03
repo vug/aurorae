@@ -8,11 +8,12 @@
 
 namespace aur {
 DescriptorPool::DescriptorPool(VkDevice device, const DescriptorPoolCreateInfo& poolCreateInfo)
-    : createInfo(poolCreateInfo)
-    , handle([this, device, &poolCreateInfo]() {
+    : device_{device}
+    , createInfo_{poolCreateInfo}
+    , handle_{[this, device, &poolCreateInfo]() {
       std::vector<VkDescriptorPoolSize> vkPoolSizes;
-      vkPoolSizes.reserve(createInfo.poolSizes.size());
-      for (const auto& size : createInfo.poolSizes) {
+      vkPoolSizes.reserve(createInfo_.poolSizes.size());
+      for (const auto& size : createInfo_.poolSizes) {
         vkPoolSizes.push_back({
             .type = static_cast<VkDescriptorType>(size.type),
             .descriptorCount = size.count,
@@ -26,44 +27,41 @@ DescriptorPool::DescriptorPool(VkDevice device, const DescriptorPoolCreateInfo& 
           .pPoolSizes = vkPoolSizes.data(),
       };
 
-      VkDescriptorPool hnd;
+      VkDescriptorPool hnd{};
       VK(vkCreateDescriptorPool(device, &descPoolInfo, nullptr, &hnd));
       return hnd;
-    }())
-    , device_(device) {
-  log().trace("Renderer descriptor pool created.");
-}
+    }()} {}
 
 DescriptorPool::~DescriptorPool() {
   destroy();
 }
 
 DescriptorPool::DescriptorPool(DescriptorPool&& other) noexcept
-    : createInfo(std::move(other.createInfo))
-    , handle(other.handle)
-    , device_(other.device_) {
-  other.invalidate();
-}
+    : device_{std::exchange(other.device_, {})}
+    , createInfo_{std::exchange(other.createInfo_, {})}
+    , handle_{std::exchange(other.handle_, {})} {}
 
 DescriptorPool& DescriptorPool::operator=(DescriptorPool&& other) noexcept {
-  if (this != &other) {
-    destroy();
+  if (this == &other)
+    return *this;
 
-    // Pilfer resources from other object
-    const_cast<DescriptorPoolCreateInfo&>(createInfo) = std::move(other.createInfo);
-    const_cast<VkDescriptorPool&>(handle) = other.handle;
-    device_ = other.device_;
+  destroy();
 
-    other.invalidate();
-  }
+  device_ = std::exchange(other.device_, {});
+  createInfo_ = std::exchange(other.createInfo_, {});
+  handle_ = std::exchange(other.handle_, {});
   return *this;
 }
 
 void DescriptorPool::invalidate() {
-  const_cast<VkDescriptorPool&>(handle) = VK_NULL_HANDLE;
+  handle_ = VK_NULL_HANDLE;
 }
+
 void DescriptorPool::destroy() {
-  if (isValid() && device_ != VK_NULL_HANDLE)
-    vkDestroyDescriptorPool(device_, handle, nullptr);
+  if (!isValid())
+    return;
+
+  vkDestroyDescriptorPool(device_, handle_, nullptr);
+  invalidate();
 }
 } // namespace aur

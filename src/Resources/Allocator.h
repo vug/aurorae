@@ -30,6 +30,7 @@ public:
 
 private:
   friend class VulkanContext;
+
   void destroy();
   void invalidate();
 

@@ -7,10 +7,11 @@
 namespace aur {
 
 PipelineLayout::PipelineLayout(VkDevice device, const PipelineLayoutCreateInfo& layoutCreateInfo)
-    : createInfo(layoutCreateInfo)
-    , handle([this, device]() {
+    : device_{device}
+    , createInfo_{layoutCreateInfo}
+    , handle_{[this, device]() {
       std::vector<VkPushConstantRange> vkPushConstantRanges;
-      for (const PushConstant& pc : createInfo.pushConstants) {
+      for (const PushConstant& pc : createInfo_.pushConstants) {
         u32 offset{};
         vkPushConstantRanges.push_back({
             .stageFlags = toVkFlags(pc.stages),
@@ -21,10 +22,10 @@ PipelineLayout::PipelineLayout(VkDevice device, const PipelineLayoutCreateInfo& 
       }
 
       std::vector<VkDescriptorSetLayout> vkDescriptorSetLayouts;
-      for (const DescriptorSetLayout* dsl : createInfo.descriptorSetLayouts) {
+      for (const DescriptorSetLayout* dsl : createInfo_.descriptorSetLayouts) {
         if (!dsl)
           log().fatal("DescriptorSetLayout* given to PipelineLayoutCreateInfo is null.");
-        vkDescriptorSetLayouts.push_back(dsl->handle);
+        vkDescriptorSetLayouts.push_back(dsl->getHandle());
       }
       const VkPipelineLayoutCreateInfo vkCreateInfo{
           .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -37,45 +38,39 @@ PipelineLayout::PipelineLayout(VkDevice device, const PipelineLayoutCreateInfo& 
       VkPipelineLayout hnd{VK_NULL_HANDLE};
       VK(vkCreatePipelineLayout(device, &vkCreateInfo, nullptr, &hnd));
       return hnd;
-    }())
-    , device_(device) {}
+    }()} {}
 
 PipelineLayout::~PipelineLayout() {
   destroy();
 }
 
 PipelineLayout::PipelineLayout(PipelineLayout&& other) noexcept
-    : createInfo(std::move(other.createInfo))
-    , handle(other.handle)
-    , device_(other.device_) {
-  other.invalidate();
-}
+    : device_{std::exchange(other.device_, {})}
+    , createInfo_{std::exchange(other.createInfo_, {})}
+    , handle_{std::exchange(other.handle_, {})} {}
 
 PipelineLayout& PipelineLayout::operator=(PipelineLayout&& other) noexcept {
-  if (this != &other) {
-    destroy();
+  if (this == &other)
+    return *this;
 
-    // Pilfer resources from other object
-    const_cast<PipelineLayoutCreateInfo&>(createInfo) = std::move(other.createInfo);
-    const_cast<VkPipelineLayout&>(handle) = other.handle;
-    device_ = other.device_;
+  destroy();
 
-    // Invalidate the other object
-    other.invalidate();
-  }
+  device_ = std::exchange(other.device_, {});
+  createInfo_ = std::exchange(other.createInfo_, {});
+  handle_ = std::exchange(other.handle_, {});
+
   return *this;
 }
 
 void PipelineLayout::invalidate() {
-  const_cast<VkPipelineLayout&>(handle) = VK_NULL_HANDLE;
-  // device_ is not owned by PipelineLayout, so it's only set to VK_NULL_HANDLE
-  // to reflect that this object no longer uses a device, not to indicate destruction
-  device_ = VK_NULL_HANDLE;
+  handle_ = VK_NULL_HANDLE;
 }
 
 void PipelineLayout::destroy() {
-  if (isValid() && device_ != VK_NULL_HANDLE)
-    vkDestroyPipelineLayout(device_, handle, nullptr);
+  if (!isValid())
+    return;
+
+  vkDestroyPipelineLayout(device_, handle_, nullptr);
   invalidate();
 }
 

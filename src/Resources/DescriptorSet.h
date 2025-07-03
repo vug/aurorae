@@ -46,15 +46,12 @@ public:
   DescriptorSet(DescriptorSet&& other) noexcept;
   DescriptorSet& operator=(DescriptorSet&& other) noexcept;
 
-  [[nodiscard]] const DescriptorSetCreateInfo& getCreateInfo() const { return createInfo; }
-  [[nodiscard]] const VkDescriptorSet& getHandle() const { return handle; }
-  [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
-
-  const DescriptorSetCreateInfo createInfo{};
-  const VkDescriptorSet handle{VK_NULL_HANDLE};
+  [[nodiscard]] const DescriptorSetCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] const VkDescriptorSet& getHandle() const { return handle_; }
+  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
 
   // This method is called to actually bind resources to the descriptor set.
-  void update(const std::vector<WriteDescriptorSet>& writes);
+  void update(const std::vector<WriteDescriptorSet>& writes) const;
 
 private:
   void invalidate();
@@ -62,6 +59,8 @@ private:
 
   VkDevice device_{VK_NULL_HANDLE};
   VkDescriptorPool pool_{VK_NULL_HANDLE};
+  DescriptorSetCreateInfo createInfo_{};
+  VkDescriptorSet handle_{VK_NULL_HANDLE};
 };
 
 } // namespace aur

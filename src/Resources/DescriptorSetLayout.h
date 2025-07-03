@@ -30,18 +30,17 @@ public:
   DescriptorSetLayout(DescriptorSetLayout&& other) noexcept;
   DescriptorSetLayout& operator=(DescriptorSetLayout&& other) noexcept;
 
-  [[nodiscard]] const DescriptorSetLayoutCreateInfo& getCreateInfo() const { return createInfo; }
-  [[nodiscard]] const VkDescriptorSetLayout& getHandle() const { return handle; }
-  [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
+  [[nodiscard]] const DescriptorSetLayoutCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] const VkDescriptorSetLayout& getHandle() const { return handle_; }
+  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
 
-  const DescriptorSetLayoutCreateInfo createInfo;
-  const VkDescriptorSetLayout handle{VK_NULL_HANDLE};
-
-  bool isEqual(const DescriptorSetLayout& other) const { return handle == other.handle; }
+  bool isEqual(const DescriptorSetLayout& other) const { return handle_ == other.handle_; }
   bool isCompatible(const DescriptorSetLayout& other) const;
 
 private:
   VkDevice device_{VK_NULL_HANDLE};
+  DescriptorSetLayoutCreateInfo createInfo_;
+  VkDescriptorSetLayout handle_{VK_NULL_HANDLE};
 
   void invalidate();
   void destroy();

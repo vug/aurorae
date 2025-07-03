@@ -8,50 +8,54 @@
 namespace aur {
 
 ShaderModule::ShaderModule(VkDevice device, const ShaderModuleCreateInfo& shaderCreateInfo)
-    : createInfo(shaderCreateInfo)
-    , handle([this, device]() {
+    : device_{device}
+    , createInfo_{shaderCreateInfo}
+    , handle_{[this, device]() {
       VkShaderModuleCreateInfo vkCreateInfo{
           .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-          .codeSize = createInfo.codeBlob->size(),
-          .pCode = reinterpret_cast<const u32*>(createInfo.codeBlob->data()),
+          .codeSize = createInfo_.codeBlob->size(),
+          .pCode = reinterpret_cast<const u32*>(createInfo_.codeBlob->data()),
       };
       VkShaderModule hnd = VK_NULL_HANDLE;
       if (vkCreateShaderModule(device, &vkCreateInfo, nullptr, &hnd) != VK_SUCCESS)
         log().fatal("Failed to create shader module!");
 
       return hnd;
-    }())
-    , device_(device) {}
+    }()} {}
 
 ShaderModule::~ShaderModule() {
   destroy();
 }
 
 ShaderModule::ShaderModule(ShaderModule&& other) noexcept
-    : createInfo(std::move(other.createInfo))
-    , handle(std::move(other.handle))
-    , device_(std::move(other.device_)) {
+    : device_{std::exchange(other.device_, {})}
+    , createInfo_{std::exchange(other.createInfo_, {})}
+    , handle_{std::exchange(other.handle_, {})} {
   other.invalidate();
 }
 
 ShaderModule& ShaderModule::operator=(ShaderModule&& other) noexcept {
-  if (this != &other) {
-    destroy();
-    createInfo = std::move(other.createInfo);
-    handle = std::move(other.handle);
-    device_ = std::move(other.device_);
-    other.invalidate();
-  }
+  if (this == &other)
+    return *this;
+
+  destroy();
+
+  device_ = std::exchange(other.device_, {});
+  createInfo_ = std::exchange(other.createInfo_, {});
+  handle_ = std::exchange(other.handle_, {});
+
   return *this;
 }
 
 void ShaderModule::invalidate() {
-  const_cast<VkShaderModule&>(handle) = VK_NULL_HANDLE;
+  const_cast<VkShaderModule&>(handle_) = VK_NULL_HANDLE;
 }
 
 void ShaderModule::destroy() {
-  if (isValid() && device_ != VK_NULL_HANDLE)
-    vkDestroyShaderModule(device_, handle, nullptr);
+  if (!isValid())
+    return;
+
+  vkDestroyShaderModule(device_, handle_, nullptr);
   invalidate();
 }
 

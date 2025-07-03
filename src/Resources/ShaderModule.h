@@ -22,17 +22,17 @@ public:
   ShaderModule(ShaderModule&& other) noexcept;
   ShaderModule& operator=(ShaderModule&& other) noexcept;
 
-  [[nodiscard]] const ShaderModuleCreateInfo& getCreateInfo() const { return createInfo; }
-  [[nodiscard]] const VkShaderModule& getHandle() const { return handle; }
-  [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
+  [[nodiscard]] const ShaderModuleCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] const VkShaderModule& getHandle() const { return handle_; }
+  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
 
 private:
   void invalidate();
   void destroy();
 
-  ShaderModuleCreateInfo createInfo;
-  VkShaderModule handle{VK_NULL_HANDLE};
   VkDevice device_{VK_NULL_HANDLE};
+  ShaderModuleCreateInfo createInfo_;
+  VkShaderModule handle_{VK_NULL_HANDLE};
 };
 
 } // namespace aur

@@ -25,7 +25,7 @@ Allocator::Allocator(VkInstance instance, VkPhysicalDevice physicalDevice, VkDev
           .vulkanApiVersion = createInfo_.vulkanApiVersion,
       };
 
-      VmaAllocator hnd;
+      VmaAllocator hnd{};
       VK(vmaCreateAllocator(&vkCreateInfo, &hnd));
       return hnd;
     }()) {
@@ -38,23 +38,23 @@ Allocator::~Allocator() {
 }
 
 Allocator::Allocator(Allocator&& other) noexcept
-    : createInfo_(std::move(other.createInfo_))
-    , handle_(std::move(other.handle_)) {
-  other.invalidate();
-}
+    : createInfo_{std::exchange(other.createInfo_, {})}
+    , handle_{std::exchange(other.handle_, {})} {}
 
 Allocator& Allocator::operator=(Allocator&& other) noexcept {
-  if (this != &other) {
-    destroy();
-    createInfo_ = std::move(other.createInfo_);
-    handle_ = std::move(other.handle_);
-    other.invalidate();
-  }
+  if (this == &other)
+    return *this;
+
+  destroy();
+  createInfo_ = std::exchange(other.createInfo_, {});
+  handle_ = std::exchange(other.handle_, {});
   return *this;
 }
 void Allocator::destroy() {
-  if (isValid())
-    vmaDestroyAllocator(handle_);
+  if (!isValid())
+    return;
+
+  vmaDestroyAllocator(handle_);
   invalidate();
 }
 

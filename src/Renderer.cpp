@@ -463,8 +463,8 @@ void Renderer::endDebugLabel() const {
 
 void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
   const DescriptorSetLayout& layout1 =
-      *bindInfo.pipelineLayout->createInfo.descriptorSetLayouts[bindInfo.setNo];
-  const DescriptorSetLayout& layout2 = *bindInfo.descriptorSet->createInfo.layout;
+      *bindInfo.pipelineLayout->getCreateInfo().descriptorSetLayouts[bindInfo.setNo];
+  const DescriptorSetLayout& layout2 = *bindInfo.descriptorSet->getCreateInfo().layout;
   if (!layout1.isEqual(layout2) || !layout1.isCompatible(layout2))
     log().fatal("Incompatible pipeline layout and descriptor set's layout are not compatible.");
 
@@ -472,10 +472,10 @@ void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
       .sType = VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO_KHR,
       .pNext = nullptr,
       .stageFlags = toVkFlags(bindInfo.stages),
-      .layout = bindInfo.pipelineLayout->handle,
+      .layout = bindInfo.pipelineLayout->getHandle(),
       .firstSet = bindInfo.setNo,
       .descriptorSetCount = 1,
-      .pDescriptorSets = &bindInfo.descriptorSet->handle,
+      .pDescriptorSets = &bindInfo.descriptorSet->getHandle(),
       .dynamicOffsetCount = 0,
       .pDynamicOffsets = nullptr,
   };
@@ -500,7 +500,7 @@ void Renderer::bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* p
     VkPushConstantsInfoKHR /* [issue #7] */ vkPushConstantsInfo{
         .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
         .pNext = nullptr,
-        .layout = pipeline.getPipelineLayout().handle,
+        .layout = pipeline.getPipelineLayout().getHandle(),
         .stageFlags = toVkFlags(pushConstantInfoOpt->stages),
         .offset = 0,
         .size = pushConstantInfoOpt->sizeBytes,
@@ -659,7 +659,7 @@ DescriptorSetLayout Renderer::createDescriptorSetLayout(const DescriptorSetLayou
 }
 DescriptorSet Renderer::createDescriptorSet(const DescriptorSetCreateInfo& createInfo,
                                             std::string_view debugName) const {
-  DescriptorSet obj{getDevice(), descriptorPool_.handle, createInfo};
+  DescriptorSet obj{getDevice(), descriptorPool_.getHandle(), createInfo};
   setDebugName(obj, debugName);
   return obj;
 }
