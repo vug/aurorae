@@ -134,7 +134,7 @@ ShaderModule Renderer::createShaderModule(const ShaderModuleCreateInfo& createIn
 }
 
 Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
-                                           std::string_view debugName) const {
+                                           std::string_view debugName, std::optional<u32> itemCnt) const {
   // host visible, host coherent
   Buffer stagingBuffer = createBuffer(
       {
@@ -154,6 +154,7 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
           .sizeBytes = size,
           .usages = {usage, BufferUsage::TransferDst},
           .memoryUsage = MemoryUsage::GpuOnly,
+          .itemCnt = itemCnt,
       },
       std::string{debugName} + " Device");
 
@@ -541,8 +542,10 @@ void Renderer::drawVertices(const Pipeline& pipeline, const Buffer& vertexBuffer
 
   VkDeviceSize offset = 0;
   vkCmdBindVertexBuffers(getCommandBuffer(), 0, 1, &vertexBuffer.getHandle(), &offset);
-  const u32 vertexCnt = static_cast<u32>(vertexBuffer.getCreateInfo().sizeBytes / sizeof(Vertex));
-  vkCmdDraw(commandBuffer_, vertexCnt, 1, 0, 0);
+  const std::optional<u32>& vertexCnt = vertexBuffer.getCreateInfo().itemCnt;
+  if (!vertexCnt.has_value())
+    log().fatal("Vertex buffer item count is not set.");
+  vkCmdDraw(commandBuffer_, vertexCnt.value(), 1, 0, 0);
 }
 
 void Renderer::drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer, const Buffer& indexBuffer,
@@ -553,8 +556,10 @@ void Renderer::drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer,
   VkDeviceSize offset = 0;
   vkCmdBindVertexBuffers(getCommandBuffer(), 0, 1, &vertexBuffer.getHandle(), &offset);
   vkCmdBindIndexBuffer(getCommandBuffer(), indexBuffer.getHandle(), 0, VK_INDEX_TYPE_UINT32);
-  const u32 indexCnt = static_cast<u32>(indexBuffer.getCreateInfo().sizeBytes / sizeof(u32));
-  vkCmdDrawIndexed(commandBuffer_, indexCnt, 1, 0, 0, 0);
+  const std::optional<u32>& indexCnt = indexBuffer.getCreateInfo().itemCnt;
+  if (!indexCnt.has_value())
+    log().fatal("Index buffer item count is not set.");
+  vkCmdDrawIndexed(commandBuffer_, indexCnt.value(), 1, 0, 0, 0);
 }
 
 void Renderer::deviceWaitIdle() const {
@@ -622,10 +627,9 @@ render::Mesh Renderer::upload(Handle<asset::Mesh> meshHnd) const {
   render::Mesh rMesh;
   const asset::Mesh& aMesh = meshHnd.get();
   rMesh.vertexBuffer =
-      createBufferAndUploadData(aMesh.vertices.data(), aMesh.vertices.size() * sizeof(Vertex),
-                                BufferUsage::Vertex, aMesh.debugName + " Vertex Buffer");
-  rMesh.indexBuffer = createBufferAndUploadData(aMesh.indices.data(), aMesh.indices.size() * sizeof(u32),
-                                                BufferUsage::Index, aMesh.debugName + " Index Buffer");
+      createBufferAndUploadData(aMesh.vertices, BufferUsage::Vertex, aMesh.debugName + " Vertex Buffer");
+  rMesh.indexBuffer =
+      createBufferAndUploadData(aMesh.indices, BufferUsage::Index, aMesh.debugName + " Index Buffer");
   rMesh.asset = meshHnd;
   return rMesh;
 }

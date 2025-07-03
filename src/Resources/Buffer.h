@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "../Utils.h"
 #include "../VulkanWrappers.h"
 
@@ -9,6 +11,7 @@ struct BufferCreateInfo {
   u64 sizeBytes{};
   std::vector<BufferUsage> usages;
   MemoryUsage memoryUsage{}; // default 0 is VMA_MEMORY_USAGE_UNKNOWN
+  std::optional<u32> itemCnt;
 };
 
 class Buffer {

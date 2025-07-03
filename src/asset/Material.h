@@ -26,7 +26,7 @@ struct Material {
 
   // render::Material
   Pipeline* pipeline;
-  DescriptorSet desriptorSet;
+  DescriptorSet descriptorSet;
 };
 
 } // namespace aur::asset

@@ -1,6 +1,4 @@
 /*
-TODO(vug): item count or size to Buffer
-TODO(vug): make createInfo and handle members non-const
 TODO(vug): constructors for render::Shader and render::Mesh instead of Renderer::upload functions
 TODO(vug): Bring DrawSpans to render::Mesh.
 TODO(vug): continue going over clang-tidy settings from modernize-avoid-bind.

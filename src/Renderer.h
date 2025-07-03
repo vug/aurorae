@@ -131,7 +131,18 @@ public:
                                                 std::string_view debugName = "") const;
 
   [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
-                                                 std::string_view debugName) const;
+                                                 std::string_view debugName,
+                                                 std::optional<u32> itemCnt = {}) const;
+  template <std::ranges::contiguous_range TRange>
+  [[nodiscard]] Buffer createBufferAndUploadData(const TRange& items, BufferUsage usage,
+                                                 std::string_view debugName) const {
+    using TItem = std::ranges::range_value_t<TRange>;
+    const auto itemCnt = static_cast<u32>(std::ranges::size(items));
+    const auto sizeBytes = itemCnt * sizeof(TItem);
+
+    Buffer buffer = createBufferAndUploadData(items.data(), sizeBytes, usage, debugName, itemCnt);
+    return buffer;
+  }
 
   PerFrameData perFrameData;
   [[nodiscard]] render::Mesh upload(Handle<asset::Mesh> meshHnd) const;
