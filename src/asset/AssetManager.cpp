@@ -23,9 +23,13 @@ Handle<asset::Shader> AssetManager::loadShaderFromFile(const std::filesystem::pa
   if (!std::filesystem::exists(fragmentPath))
     log().fatal("Fragment shader file not found: {}", fragmentPath.string());
 
-  asset::Shader& shader = shaders_.emplace_back(vertexPath, fragmentPath);
-  shader.vertPath = vertexPath;
-  shader.fragPath = fragmentPath;
+  asset::Shader shader = {
+      .vertPath = vertexPath,
+      .fragPath = fragmentPath,
+      .vertBlob = readBinaryFile(vertexPath.string()),
+      .fragBlob = readBinaryFile(fragmentPath.string()),
+  };
+  shaders_.push_back(std::move(shader));
 
   return Handle<asset::Shader>{static_cast<u32>(shaders_.size() - 1)};
 }

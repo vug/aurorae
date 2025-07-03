@@ -47,28 +47,18 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
 
       return renderer_->createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
     }()) {
-  const asset::Shader& shader = createInfo.shader.get();
-  const ShaderModuleCreateInfo vertShaderModuleCreateInfo{
-      .filePath = shader.vertPath,
-  };
-  const ShaderModuleCreateInfo fragShaderModuleCreateInfo{
-      .filePath = shader.fragPath,
-  };
-
-  // TODO(vug): later migrate to render::Shader
-  ShaderModule vertShaderModule = renderer.createShaderModule(vertShaderModuleCreateInfo);
-  ShaderModule fragShaderModule = renderer.createShaderModule(fragShaderModuleCreateInfo);
+  render::Shader shader = renderer.upload(createInfo.shader);
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_VERTEX_BIT,
-      .module = vertShaderModule.handle,
+      .module = shader.vertModule.getHandle(),
       .pName = "main",
   };
   const VkPipelineShaderStageCreateInfo fragShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .module = fragShaderModule.handle,
+      .module = shader.fragModule.getHandle(),
       .pName = "main",
   };
   std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};

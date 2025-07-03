@@ -30,6 +30,8 @@ public:
   DescriptorSetLayout(DescriptorSetLayout&& other) noexcept;
   DescriptorSetLayout& operator=(DescriptorSetLayout&& other) noexcept;
 
+  [[nodiscard]] const DescriptorSetLayoutCreateInfo& getCreateInfo() const { return createInfo; }
+  [[nodiscard]] const VkDescriptorSetLayout& getHandle() const { return handle; }
   [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
 
   const DescriptorSetLayoutCreateInfo createInfo;

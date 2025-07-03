@@ -12,6 +12,7 @@
 #include "VulkanContext.h"
 #include "asset/Handle.h"
 #include "render/Mesh.h"
+#include "render/Shader.h"
 
 struct GLFWwindow;
 
@@ -23,7 +24,8 @@ struct PipelineLayoutCreateInfo;
 struct PushConstantsInfo;
 namespace asset {
 struct Mesh;
-}
+struct Shader;
+} // namespace asset
 
 struct BindDescriptorSetInfo {
   const PipelineLayout* pipelineLayout{};
@@ -112,7 +114,7 @@ public:
     VkDebugUtilsObjectNameInfoEXT nameInfo{
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
         .objectType = objType,
-        .objectHandle = reinterpret_cast<u64>(obj.handle),
+        .objectHandle = reinterpret_cast<u64>(obj.getHandle()),
         .pObjectName = name.data(),
     };
     setDebugNameWrapper(nameInfo);
@@ -132,7 +134,8 @@ public:
                                                  std::string_view debugName) const;
 
   PerFrameData perFrameData;
-  render::Mesh upload(Handle<asset::Mesh> mesh) const;
+  [[nodiscard]] render::Mesh upload(Handle<asset::Mesh> meshHnd) const;
+  [[nodiscard]] render::Shader upload(Handle<asset::Shader> shaderHnd) const;
 
 private:
   void createPerFrameDataResources();

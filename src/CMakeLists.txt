@@ -96,6 +96,7 @@ add_executable(Aurorae
         asset/Material.h asset/Material.cpp
         asset/Mesh.h asset/Mesh.cpp
         asset/AssimpUtils.h asset/AssimpUtils.cpp
+        render/Shader.h render/Shader.cpp
         render/Mesh.h render/Mesh.cpp
 )
 

@@ -24,6 +24,9 @@ public:
   Buffer& operator=(const Buffer&) = delete;
   Buffer(Buffer&& other) noexcept;
   Buffer& operator=(Buffer&& other) noexcept;
+
+  [[nodiscard]] const BufferCreateInfo& getCreateInfo() const { return createInfo; }
+  [[nodiscard]] const VkBuffer& getHandle() const { return handle; }
   [[nodiscard]] bool isValid() const { return handle != VK_NULL_HANDLE; }
 
 private:

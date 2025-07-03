@@ -1,6 +1,8 @@
 /*
-TODO(vug): asset::Shader should read binary blobs when loaded
-TODO(vug): Bring DrawSpans to render::Mesh. Be able to get asset::Mesh from render::Mesh
+TODO(vug): all move constructor and assignment functions should use std::move
+TODO(vug): make createInfo and handle members non-const
+TODO(vug): constructors for render::Shader and render::Mesh instead of Renderer::upload functions
+TODO(vug): Bring DrawSpans to render::Mesh.
 TODO(vug): Introduce the PipelineCache.
 TODO(vug): store debug names with objects
 TODO(vug): Introduce asset::Material, render::Material

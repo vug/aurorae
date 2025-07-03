@@ -29,9 +29,11 @@ struct Mesh {
   std::vector<Vertex> vertices;
   std::vector<u32> indices;
   std::vector<MaterialSpan> materialSpans;
-  std::string debugName;
+
   // TODO(vug): Decouple transform from mesh. An entity in a Scene will have both.
   glm::mat4 transform{1};
+
+  std::string debugName;
 
   static Mesh makeTriangle();
   // TODO(vug): quads are used a lot, could be nice to generate them procedurally

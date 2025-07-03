@@ -34,8 +34,8 @@ public:
   Pipeline(Pipeline&& other) noexcept;
   Pipeline& operator=(Pipeline&& other) noexcept;
 
-  const VkPipeline& getHandle() const { return handle_; }
-  const PipelineCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] const PipelineCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] const VkPipeline& getHandle() const { return handle_; }
   [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
 
   const PipelineLayout& getPipelineLayout() const { return pipelineLayout_; }

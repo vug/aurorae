@@ -618,15 +618,26 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageMemory_ = VK_NULL_HANDLE;
 }
 
-render::Mesh Renderer::upload(Handle<asset::Mesh> mesh) const {
+render::Mesh Renderer::upload(Handle<asset::Mesh> meshHnd) const {
   render::Mesh rMesh;
-  const asset::Mesh& aMesh = mesh.get();
+  const asset::Mesh& aMesh = meshHnd.get();
   rMesh.vertexBuffer =
       createBufferAndUploadData(aMesh.vertices.data(), aMesh.vertices.size() * sizeof(Vertex),
                                 BufferUsage::Vertex, aMesh.debugName + " Vertex Buffer");
   rMesh.indexBuffer = createBufferAndUploadData(aMesh.indices.data(), aMesh.indices.size() * sizeof(u32),
                                                 BufferUsage::Index, aMesh.debugName + " Index Buffer");
+  rMesh.asset = meshHnd;
   return rMesh;
+}
+
+render::Shader Renderer::upload(Handle<asset::Shader> shaderHnd) const {
+  render::Shader rShader;
+  const asset::Shader& aShader = shaderHnd.get();
+  ShaderModuleCreateInfo vertCreateInfo{.codeBlob = &aShader.vertBlob};
+  rShader.vertModule = createShaderModule(vertCreateInfo, aShader.debugName + " Module");
+  ShaderModuleCreateInfo fragCreateInfo{.codeBlob = &aShader.fragBlob};
+  rShader.fragModule = createShaderModule(fragCreateInfo, aShader.debugName + " Module");
+  return rShader;
 }
 
 void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {

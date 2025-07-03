@@ -46,6 +46,8 @@ public:
   DescriptorSet(DescriptorSet&& other) noexcept;
   DescriptorSet& operator=(DescriptorSet&& other) noexcept;
 
+  [[nodiscard]] const DescriptorSetCreateInfo& getCreateInfo() const { return createInfo; }
+  [[nodiscard]] const VkDescriptorSet& getHandle() const { return handle; }
   [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
 
   const DescriptorSetCreateInfo createInfo{};

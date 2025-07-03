@@ -40,6 +40,8 @@ public:
   PipelineLayout(PipelineLayout&& other) noexcept;
   PipelineLayout& operator=(PipelineLayout&& other) noexcept;
 
+  [[nodiscard]] const PipelineLayoutCreateInfo& getCreateInfo() const { return createInfo; }
+  [[nodiscard]] const VkPipelineLayout& getHandle() const { return handle; }
   [[nodiscard]] inline bool isValid() const { return handle != VK_NULL_HANDLE; }
 
   const PipelineLayoutCreateInfo createInfo;
