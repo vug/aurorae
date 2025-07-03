@@ -10,23 +10,25 @@
 namespace aur {
 Allocator::Allocator(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device,
                      const AllocatorCreateInfo& allocatorCreateInfo)
-    : createInfo(allocatorCreateInfo) {
-  VmaVulkanFunctions vmaVulkanFunctions = {
-      .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
-      .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
-  };
+    : createInfo_(allocatorCreateInfo)
+    , handle_([this, &instance, &physicalDevice, &device]() {
+      VmaVulkanFunctions vmaVulkanFunctions = {
+          .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+          .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
+      };
 
-  const VmaAllocatorCreateInfo vkCreateInfo = {
-      .physicalDevice = physicalDevice,
-      .device = device,
-      .pVulkanFunctions = &vmaVulkanFunctions,
-      .instance = instance,
-      .vulkanApiVersion = createInfo.vulkanApiVersion,
-  };
+      const VmaAllocatorCreateInfo vkCreateInfo = {
+          .physicalDevice = physicalDevice,
+          .device = device,
+          .pVulkanFunctions = &vmaVulkanFunctions,
+          .instance = instance,
+          .vulkanApiVersion = createInfo_.vulkanApiVersion,
+      };
 
-  VmaAllocator hnd;
-  VK(vmaCreateAllocator(&vkCreateInfo, &hnd));
-  const_cast<VmaAllocator&>(handle) = hnd;
+      VmaAllocator hnd;
+      VK(vmaCreateAllocator(&vkCreateInfo, &hnd));
+      return hnd;
+    }()) {
 
   log().trace("VMA allocator created.");
 }
@@ -36,27 +38,28 @@ Allocator::~Allocator() {
 }
 
 Allocator::Allocator(Allocator&& other) noexcept
-    : handle(other.handle) {
+    : createInfo_(std::move(other.createInfo_))
+    , handle_(std::move(other.handle_)) {
   other.invalidate();
 }
 
 Allocator& Allocator::operator=(Allocator&& other) noexcept {
   if (this != &other) {
     destroy();
-
-    const_cast<VmaAllocator&>(handle) = other.handle;
+    createInfo_ = std::move(other.createInfo_);
+    handle_ = std::move(other.handle_);
     other.invalidate();
   }
   return *this;
 }
 void Allocator::destroy() {
   if (isValid())
-    vmaDestroyAllocator(handle);
+    vmaDestroyAllocator(handle_);
   invalidate();
 }
 
 void Allocator::invalidate() {
-  const_cast<VmaAllocator&>(handle) = VK_NULL_HANDLE;
+  handle_ = VK_NULL_HANDLE;
 }
 
 } // namespace aur
