@@ -1,5 +1,6 @@
 /*
 TODO(vug): constructors for render::Shader and render::Mesh instead of Renderer::upload functions
+           (Follow the roadmap)
 TODO(vug): Bring DrawSpans to render::Mesh.
 TODO(vug): continue going over clang-tidy settings from modernize-avoid-bind.
            https://clang.llvm.org/extra/clang-tidy/checks/list.html
@@ -56,6 +57,10 @@ TODO(vug): normal maps
 TODO(vug): Indirect rendering (various brush shapes for painterly render), 2D/3D gaussian splats,
            order independent transparency, differential rendering, bring Mitsuba, PBRT etc
 TODO(vug): Whenever updating GPU drivers, check whether `vkCmdPushConstants2` is now available [issue #7]
+TODO(vug): do screen-space GI Global Illumination for Poor People | TurboGI Devlog - YouTube
+           https://www.youtube.com/watch?v=dmdyqzelBIY
+TODO(vug): Consider using https://en.cppreference.com/w/cpp/execution.html,
+           here is an implementation https://github.com/NVIDIA/stdexec
 */
 
 #include "Application.h"

@@ -6,9 +6,9 @@
 
 #include <glm/mat4x4.hpp>
 
+#include "../Handle.h"
 #include "../Utils.h"
 #include "../Vertex.h"
-#include "Handle.h"
 
 namespace aur {
 namespace asset {

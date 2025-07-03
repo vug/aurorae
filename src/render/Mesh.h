@@ -2,8 +2,8 @@
 
 #include <string>
 
+#include "../Handle.h"
 #include "../Resources/Buffer.h"
-#include "../asset/Handle.h"
 
 namespace aur::asset {
 struct Mesh;

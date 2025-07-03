@@ -90,7 +90,7 @@ add_executable(Aurorae
         Resources/PipelineLayout.h Resources/PipelineLayout.cpp
         Resources/ShaderModule.h Resources/ShaderModule.cpp
         Vertex.h Vertex.cpp
-        asset/Handle.h asset/Handle.cpp
+        Handle.h Handle.cpp
         asset/AssetManager.h asset/AssetManager.cpp
         asset/Shader.h asset/Shader.cpp
         asset/Material.h asset/Material.cpp

@@ -1,8 +1,7 @@
 #pragma once
 
+#include "../Handle.h"
 #include "../Resources/DescriptorSet.h"
-#include "../Resources/ShaderModule.h"
-#include "Handle.h"
 
 namespace aur::asset {
 

@@ -3,6 +3,7 @@
 #include <glm/mat4x4.hpp>
 
 #include "FileIO.h"
+#include "Handle.h"
 #include "Resources/Buffer.h"
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
@@ -10,7 +11,6 @@
 #include "Resources/ShaderModule.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
-#include "asset/Handle.h"
 #include "render/Mesh.h"
 #include "render/Shader.h"
 
