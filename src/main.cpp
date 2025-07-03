@@ -15,8 +15,9 @@ TODO(vug): add STL includes to a precompiled header pch_stl.h
            every file into pch_aur.h. and maybe a pch_dependencies
 TODO(vug): bring a texture (stb or oiio)
 TODO(vug): introduce RenderDoc
-TODO(vug): Apparently const_cast a const member is really UB and I shouldn't do it. Migrate to const getter
-           for handles and create infos.
+TODO(vug): bring https://github.com/Neargye/magic_enum and use it for auto enum -> string conversions.
+           consider https://github.com/stephenberry/glaze for JSON serde
+           and https://github.com/getml/reflect-cpp for general reflection
 TODO(vug): Introduce a default material, and a missing material.
 TODO(vug): Introduce AssetManager that stores assets in unordered_maps to shared_ptr of asset type. It's
            responsible of loading and unloading of assets and keeping them alive.

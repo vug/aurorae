@@ -48,7 +48,7 @@ ShaderModule& ShaderModule::operator=(ShaderModule&& other) noexcept {
 }
 
 void ShaderModule::invalidate() {
-  const_cast<VkShaderModule&>(handle_) = VK_NULL_HANDLE;
+  handle_ = VK_NULL_HANDLE;
 }
 
 void ShaderModule::destroy() {
