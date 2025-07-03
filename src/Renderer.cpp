@@ -167,7 +167,7 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
       .dstOffset = 0,
       .size = size,
   };
-  vkCmdCopyBuffer(commandBufferOneShot_, stagingBuffer.handle, deviceBuffer.handle, 1, &copyRegion);
+  vkCmdCopyBuffer(commandBufferOneShot_, stagingBuffer.getHandle(), deviceBuffer.getHandle(), 1, &copyRegion);
   VK(vkEndCommandBuffer(commandBufferOneShot_));
 
   VkFenceCreateInfo fenceInfo{
@@ -540,8 +540,8 @@ void Renderer::drawVertices(const Pipeline& pipeline, const Buffer& vertexBuffer
   setDynamicPipelineState();
 
   VkDeviceSize offset = 0;
-  vkCmdBindVertexBuffers(getCommandBuffer(), 0, 1, &vertexBuffer.handle, &offset);
-  const u32 vertexCnt = static_cast<u32>(vertexBuffer.createInfo.sizeBytes / sizeof(Vertex));
+  vkCmdBindVertexBuffers(getCommandBuffer(), 0, 1, &vertexBuffer.getHandle(), &offset);
+  const u32 vertexCnt = static_cast<u32>(vertexBuffer.getCreateInfo().sizeBytes / sizeof(Vertex));
   vkCmdDraw(commandBuffer_, vertexCnt, 1, 0, 0);
 }
 
@@ -551,9 +551,9 @@ void Renderer::drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer,
   setDynamicPipelineState();
 
   VkDeviceSize offset = 0;
-  vkCmdBindVertexBuffers(getCommandBuffer(), 0, 1, &vertexBuffer.handle, &offset);
-  vkCmdBindIndexBuffer(getCommandBuffer(), indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32);
-  const u32 indexCnt = static_cast<u32>(indexBuffer.createInfo.sizeBytes / sizeof(u32));
+  vkCmdBindVertexBuffers(getCommandBuffer(), 0, 1, &vertexBuffer.getHandle(), &offset);
+  vkCmdBindIndexBuffer(getCommandBuffer(), indexBuffer.getHandle(), 0, VK_INDEX_TYPE_UINT32);
+  const u32 indexCnt = static_cast<u32>(indexBuffer.getCreateInfo().sizeBytes / sizeof(u32));
   vkCmdDrawIndexed(commandBuffer_, indexCnt, 1, 0, 0, 0);
 }
 

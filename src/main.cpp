@@ -1,5 +1,7 @@
 /*
-TODO(vug): all move constructor and assignment functions should use std::move
+TODO(vug): all move constructor and assignment functions should use std::move, uniform initialization in
+constructors
+TODO(vug): item count or size to Buffer
 TODO(vug): make createInfo and handle members non-const
 TODO(vug): constructors for render::Shader and render::Mesh instead of Renderer::upload functions
 TODO(vug): Bring DrawSpans to render::Mesh.

@@ -31,10 +31,10 @@ Buffer::~Buffer() {
 }
 
 Buffer::Buffer(Buffer&& other) noexcept
-    : allocator_{other.allocator_}
-    , allocation_{other.allocation_}
-    , handle{other.handle}
-    , createInfo{other.createInfo} {
+    : allocator_(std::move(other.allocator_))
+    , allocation_(std::move(other.allocation_))
+    , createInfo(std::move(other.createInfo))
+    , handle(std::move(other.handle)) {
   other.invalidate();
 }
 
@@ -44,14 +44,25 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept {
     destroy();
 
     // Pilfer the resources from the other object
-    allocator_ = other.allocator_;
-    allocation_ = other.allocation_;
-    const_cast<VkBuffer&>(handle) = other.handle;
-    const_cast<BufferCreateInfo&>(createInfo) = other.createInfo;
+    allocator_ = std::move(other.allocator_);
+    allocation_ = std::move(other.allocation_);
+    createInfo = std::move(other.createInfo);
+    handle = std::move(other.handle);
 
     other.invalidate();
   }
   return *this;
+}
+
+void Buffer::destroy() {
+  if (isValid() && allocation_ != VK_NULL_HANDLE)
+    vmaDestroyBuffer(allocator_, handle, allocation_);
+  invalidate();
+}
+
+void Buffer::invalidate() {
+  handle = VK_NULL_HANDLE;
+  allocation_ = VK_NULL_HANDLE;
 }
 
 void* Buffer::map() const {
@@ -62,18 +73,6 @@ void* Buffer::map() const {
 
 void Buffer::unmap() const {
   vmaUnmapMemory(allocator_, allocation_);
-}
-void Buffer::invalidate() {
-  const_cast<VkBuffer&>(handle) = VK_NULL_HANDLE;
-  allocation_ = VK_NULL_HANDLE;
-  // not needed because not owned by Buffer
-  allocator_ = VK_NULL_HANDLE;
-}
-
-void Buffer::destroy() {
-  if (isValid() && allocation_ != VK_NULL_HANDLE && allocator_ != VK_NULL_HANDLE)
-    vmaDestroyBuffer(allocator_, handle, allocation_);
-  invalidate();
 }
 
 } // namespace aur

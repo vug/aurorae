@@ -29,14 +29,6 @@ public:
   [[nodiscard]] const VkBuffer& getHandle() const { return handle; }
   [[nodiscard]] bool isValid() const { return handle != VK_NULL_HANDLE; }
 
-private:
-  VmaAllocator allocator_{VK_NULL_HANDLE};
-  VmaAllocation allocation_{VK_NULL_HANDLE};
-
-public:
-  const BufferCreateInfo createInfo{};
-  const VkBuffer handle{VK_NULL_HANDLE};
-
   void* map() const;
   void unmap() const;
 
@@ -45,6 +37,11 @@ private:
   void invalidate();
   // destroy the resource
   void destroy();
+
+  VmaAllocator allocator_{VK_NULL_HANDLE};
+  VmaAllocation allocation_{VK_NULL_HANDLE};
+  BufferCreateInfo createInfo{};
+  VkBuffer handle{VK_NULL_HANDLE};
 };
 
 } // namespace aur

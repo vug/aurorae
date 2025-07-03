@@ -74,7 +74,7 @@ void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) {
   for (const auto& write : writes) {
     const DescriptorBufferInfo& bufferInfo = *write.bufferInfo;
     const VkDescriptorBufferInfo& vkBufferInfo =
-        vkBufferInfos.emplace_back(bufferInfo.buffer.handle, bufferInfo.offset, bufferInfo.range);
+        vkBufferInfos.emplace_back(bufferInfo.buffer.getHandle(), bufferInfo.offset, bufferInfo.range);
     vkWrites.push_back({.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                         .dstSet = write.dstSet.handle,
                         .dstBinding = write.binding,
