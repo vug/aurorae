@@ -18,7 +18,8 @@ struct Mesh;
 
 class AssetManager {
 public:
-  Handle<asset::Shader> loadShaderFromFile(const std::filesystem::path& path);
+  Handle<asset::Shader> loadShaderFromFile(const std::filesystem::path& vertexPath,
+                                           const std::filesystem::path& fragmentPath);
   std::vector<Handle<asset::Mesh>> loadMeshFromFile(const std::filesystem::path& path);
   Handle<asset::Mesh> loadExistingMesh(const asset::Mesh& mesh);
 

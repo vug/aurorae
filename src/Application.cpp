@@ -44,14 +44,10 @@ Application::~Application() {
 
 void Application::run() {
   // "Asset Library"
-  Handle<asset::Shader> unlitVert =
-      assetManager_.loadShaderFromFile(std::filesystem::path{kShadersFolder} / "unlit.vert.spv");
-  Handle<asset::Shader> unlitFrag =
-      assetManager_.loadShaderFromFile(std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
-  PipelineCreateInfo pipelineCreateInfo{
-      .vert = unlitVert,
-      .frag = unlitFrag,
-  };
+  Handle<asset::Shader> unlitShader =
+      assetManager_.loadShaderFromFile(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
+                                       std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
+  PipelineCreateInfo pipelineCreateInfo{.shader = unlitShader};
   Pipeline unlitPipeline{renderer_, pipelineCreateInfo};
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";

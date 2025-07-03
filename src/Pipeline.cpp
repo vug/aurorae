@@ -47,13 +47,12 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
 
       return renderer_->createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
     }()) {
-  const asset::Shader& vertShader = createInfo.vert.get();
+  const asset::Shader& shader = createInfo.shader.get();
   const ShaderModuleCreateInfo vertShaderModuleCreateInfo{
-      .filePath = vertShader.filePath,
+      .filePath = shader.vertPath,
   };
-  const asset::Shader& fragShader = createInfo.frag.get();
   const ShaderModuleCreateInfo fragShaderModuleCreateInfo{
-      .filePath = fragShader.filePath,
+      .filePath = shader.fragPath,
   };
 
   // TODO(vug): later migrate to render::Shader

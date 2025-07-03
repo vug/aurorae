@@ -15,12 +15,11 @@ struct Shader;
 }
 
 struct PipelineCreateInfo {
-  Handle<asset::Shader> vert;
-  Handle<asset::Shader> frag;
+  Handle<asset::Shader> shader;
   CullMode cullMode{CullMode::Back};
 
   // Compare members in a fixed order.
-  auto identifier() const { return std::tie(vert.id, frag.id, cullMode); }
+  auto identifier() const { return std::tie(shader.id, cullMode); }
   bool operator<(const PipelineCreateInfo& other) const { return identifier() < other.identifier(); }
 };
 
