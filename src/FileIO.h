@@ -1,4 +1,6 @@
 #pragma once
+#include <filesystem>
+#include <vector>
 
 namespace std {
 // Forward declare std::string_view. Lol.
@@ -35,5 +37,6 @@ private:
 
 // Utility function to read a binary file
 BinaryBlob readBinaryFile(std::string_view filename);
+std::vector<std::byte> readBinaryFile(const std::filesystem::path& filePath);
 
 } // namespace aur

@@ -44,18 +44,19 @@ Application::~Application() {
 
 void Application::run() {
   // "Asset Library"
-  Handle<asset::Shader> unlitShader =
-      assetManager_.loadShaderFromFile(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
-                                       std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
-  PipelineCreateInfo pipelineCreateInfo{.shader = unlitShader};
-  Pipeline unlitPipeline{renderer_, pipelineCreateInfo};
+  const asset::ShaderDefinition unlitShaderDef{
+      .vertPath = std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
+      .fragPath = std::filesystem::path{kShadersFolder} / "unlit.frag.spv"};
+  const Handle<asset::Shader> unlitShader = assetManager_.loadShaderFromDefinition(unlitShaderDef);
+  const PipelineCreateInfo pipelineCreateInfo{.shader = unlitShader};
+  const Pipeline unlitPipeline{renderer_, pipelineCreateInfo};
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
-  Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromFile(modelPath)[0];
-  render::Mesh boxRenderMesh = renderer_.upload(boxMeshHandle);
-  asset::Mesh triangleMesh = asset::Mesh::makeTriangle();
-  Handle<asset::Mesh> triangleMeshHandle = assetManager_.loadExistingMesh(triangleMesh);
-  render::Mesh triangleRenderMesh = renderer_.upload(triangleMeshHandle);
+  const Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromFile(modelPath)[0];
+  const render::Mesh boxRenderMesh = renderer_.upload(boxMeshHandle);
+  const asset::Mesh triangleMesh = asset::Mesh::makeTriangle();
+  const Handle<asset::Mesh> triangleMeshHandle = assetManager_.loadExistingMesh(triangleMesh);
+  const render::Mesh triangleRenderMesh = renderer_.upload(triangleMeshHandle);
   log().trace("Created assets...");
 
   log().debug("Starting main loop...");
@@ -63,7 +64,7 @@ void Application::run() {
     Window::pollEvents();
 
     if (window_.wasResized()) {
-      int w, h;
+      int w{}, h{};
       window_.getFramebufferSize(w, h);
       while (w == 0 || h == 0) { // Handle minimization
         log().debug("Window minimized ({}x{}), waiting...", w, h);
@@ -98,7 +99,7 @@ void Application::run() {
     renderer_.setClearColor(0.25f, 0.25f, 0.25f);
 
     glm::mat4 worldFromObject1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 1.5));
-    PushConstantsInfo pcInfo1{
+    const PushConstantsInfo pcInfo1{
         .pipelineLayout = unlitPipeline.getPipelineLayout(),
         .stages = {ShaderStage::Vertex},
         .sizeBytes = sizeof(worldFromObject1),
@@ -108,7 +109,7 @@ void Application::run() {
                           &pcInfo1);
 
     glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-    PushConstantsInfo pcInfo2{
+    const PushConstantsInfo pcInfo2{
         .pipelineLayout = unlitPipeline.getPipelineLayout(),
         .stages = {ShaderStage::Vertex},
         .sizeBytes = sizeof(worldFromObject2),

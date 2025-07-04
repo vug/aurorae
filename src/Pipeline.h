@@ -11,7 +11,7 @@ namespace aur {
 class Renderer;
 class AssetManager;
 namespace asset {
-struct Shader;
+class Shader;
 }
 
 struct PipelineCreateInfo {

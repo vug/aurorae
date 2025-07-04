@@ -12,25 +12,17 @@
 #include "../Logger.h"
 #include "AssimpUtils.h"
 #include "Mesh.h"
+#include "Shader.h"
 
 namespace aur {
 
-Handle<asset::Shader> AssetManager::loadShaderFromFile(const std::filesystem::path& vertexPath,
-                                                       const std::filesystem::path& fragmentPath) {
-  // could return an invalid handle instead
-  if (!std::filesystem::exists(vertexPath))
-    log().fatal("Vertex shader file not found: {}", vertexPath.string());
-  if (!std::filesystem::exists(fragmentPath))
-    log().fatal("Fragment shader file not found: {}", fragmentPath.string());
+Handle<asset::Shader> AssetManager::loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef) {
 
-  asset::Shader shader = {
-      .vertPath = vertexPath,
-      .fragPath = fragmentPath,
-      .vertBlob = readBinaryFile(vertexPath.string()),
-      .fragBlob = readBinaryFile(fragmentPath.string()),
-  };
-  shaders_.push_back(std::move(shader));
+  auto shaderOpt = asset::Shader::create(shaderDef);
+  if (!shaderOpt)
+    return {};
 
+  shaders_.push_back(std::move(*shaderOpt));
   return Handle<asset::Shader>{static_cast<u32>(shaders_.size() - 1)};
 }
 

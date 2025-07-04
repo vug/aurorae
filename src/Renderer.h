@@ -24,7 +24,7 @@ struct PipelineLayoutCreateInfo;
 struct PushConstantsInfo;
 namespace asset {
 struct Mesh;
-struct Shader;
+class Shader;
 } // namespace asset
 
 struct BindDescriptorSetInfo {

@@ -5,7 +5,7 @@
 
 namespace aur::asset {
 
-struct Shader;
+class Shader;
 struct Pipeline;
 
 struct MaterialCreateInfo {

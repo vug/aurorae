@@ -8,7 +8,7 @@ namespace aur {
 class BinaryBlob;
 
 struct ShaderModuleCreateInfo {
-  const BinaryBlob* codeBlob;
+  const std::vector<std::byte>* codeBlob{};
 };
 
 class ShaderModule {
@@ -31,7 +31,7 @@ private:
   void destroy();
 
   VkDevice device_{VK_NULL_HANDLE};
-  ShaderModuleCreateInfo createInfo_;
+  ShaderModuleCreateInfo createInfo_{};
   VkShaderModule handle_{VK_NULL_HANDLE};
 };
 

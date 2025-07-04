@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Handle.h"
+#include "../Handle.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
@@ -18,8 +18,7 @@ struct Mesh;
 
 class AssetManager {
 public:
-  Handle<asset::Shader> loadShaderFromFile(const std::filesystem::path& vertexPath,
-                                           const std::filesystem::path& fragmentPath);
+  Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
   std::vector<Handle<asset::Mesh>> loadMeshFromFile(const std::filesystem::path& path);
   Handle<asset::Mesh> loadExistingMesh(const asset::Mesh& mesh);
 

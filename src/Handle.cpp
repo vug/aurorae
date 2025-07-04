@@ -7,7 +7,7 @@ namespace aur {
 
 namespace asset {
 struct Mesh;
-struct Shader;
+class Shader;
 struct Material;
 } // namespace asset
 

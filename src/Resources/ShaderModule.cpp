@@ -11,7 +11,7 @@ ShaderModule::ShaderModule(VkDevice device, const ShaderModuleCreateInfo& shader
     : device_{device}
     , createInfo_{shaderCreateInfo}
     , handle_{[this, device]() {
-      VkShaderModuleCreateInfo vkCreateInfo{
+      const VkShaderModuleCreateInfo vkCreateInfo{
           .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
           .codeSize = createInfo_.codeBlob->size(),
           .pCode = reinterpret_cast<const u32*>(createInfo_.codeBlob->data()),

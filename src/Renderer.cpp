@@ -637,10 +637,10 @@ render::Mesh Renderer::upload(Handle<asset::Mesh> meshHnd) const {
 render::Shader Renderer::upload(Handle<asset::Shader> shaderHnd) const {
   render::Shader rShader;
   const asset::Shader& aShader = shaderHnd.get();
-  ShaderModuleCreateInfo vertCreateInfo{.codeBlob = &aShader.vertBlob};
-  rShader.vertModule = createShaderModule(vertCreateInfo, aShader.debugName + " Module");
-  ShaderModuleCreateInfo fragCreateInfo{.codeBlob = &aShader.fragBlob};
-  rShader.fragModule = createShaderModule(fragCreateInfo, aShader.debugName + " Module");
+  const ShaderModuleCreateInfo vertCreateInfo{.codeBlob = &aShader.getVertBlob()};
+  rShader.vertModule = createShaderModule(vertCreateInfo, aShader.getDebugName() + " Module");
+  const ShaderModuleCreateInfo fragCreateInfo{.codeBlob = &aShader.getFragBlob()};
+  rShader.fragModule = createShaderModule(fragCreateInfo, aShader.getDebugName() + " Module");
   return rShader;
 }
 
