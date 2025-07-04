@@ -45,9 +45,9 @@ Application::~Application() {
 
 void Application::run() {
   // "Asset Library"
-  const asset::ShaderDefinition unlitShaderDef{
-      .vertPath = std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
-      .fragPath = std::filesystem::path{kShadersFolder} / "unlit.frag.spv"};
+  const asset::ShaderDefinition unlitShaderDef =
+      assetProcessor_.processShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
+                                    std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
   const Handle<asset::Shader> unlitShader = assetManager_.loadShaderFromDefinition(unlitShaderDef);
   const PipelineCreateInfo pipelineCreateInfo{.shader = unlitShader};
   const Pipeline unlitPipeline{renderer_, pipelineCreateInfo};

@@ -39,14 +39,14 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
           .stages = {ShaderStage::Vertex},
           .size = sizeof(glm::mat4),
       };
-      PipelineLayoutCreateInfo layoutCreateInfo{
+      const PipelineLayoutCreateInfo layoutCreateInfo{
           .descriptorSetLayouts = {&renderer_->getPerFrameDescriptorSetLayout()},
           .pushConstants = {pushConstant},
       };
 
       return renderer_->createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
     }()} {
-  render::Shader shader = renderer.upload(createInfo.shader);
+  const render::Shader shader = renderer.upload(createInfo.shader);
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,

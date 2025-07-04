@@ -44,7 +44,7 @@ std::vector<Handle<asset::Mesh>> AssetManager::loadMeshFromFile(const std::files
   log().info("Scene {} has {} materials.", scene->mName.C_Str(), materialCnt);
   auto materials = scene->mMaterials;
   const aiMaterial* mat = materials[0];
-  asset::printMaterialProperties(mat);
+  // asset::printMaterialProperties(mat);
 
   std::vector<Handle<asset::Mesh>> meshes;
   // aur: Model is made of Meshes and meshes have DrawSpans (Materials)

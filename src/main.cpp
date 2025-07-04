@@ -1,7 +1,5 @@
 /*
-TODO(vug): Start an AssetProcessor class. Put all DCC file -> Asset Definitions (binary blobs) there.
-           For now AssetManager takes an AssetDefinition and produces an asset file by moving the definition
-           into the asset class.
+TODO(vug): Move MeshDefinition creation logic to AssetProcessor
 TODO(vug): MeshDefinition, asset:Mesh::create, AssetManager::loadMeshFromDefinition
 TODO(vug): vector<asset::MeshDefinition> meshDefs = AssetManager::readModelFile();
 TODO(vug): constructors for render::Shader and render::Mesh instead of Renderer::upload functions
@@ -66,6 +64,7 @@ TODO(vug): do screen-space GI Global Illumination for Poor People | TurboGI Devl
            https://www.youtube.com/watch?v=dmdyqzelBIY
 TODO(vug): Consider using https://en.cppreference.com/w/cpp/execution.html,
            here is an implementation https://github.com/NVIDIA/stdexec
+TODO(vug): Make AssetProcessor to persist cooked/processed blob assets
 */
 
 #include "Application.h"

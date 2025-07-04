@@ -7,6 +7,8 @@ namespace aur::asset {
 struct ShaderDefinition {
   std::filesystem::path vertPath;
   std::filesystem::path fragPath;
+  std::vector<std::byte> vertBlob;
+  std::vector<std::byte> fragBlob;
 };
 
 class Shader {
@@ -20,15 +22,15 @@ public:
   Shader(Shader&& other) noexcept;
   Shader& operator=(Shader&& other) noexcept;
 
-  [[nodiscard]] const std::vector<std::byte>& getVertBlob() const { return vertBlob; }
-  [[nodiscard]] const std::vector<std::byte>& getFragBlob() const { return fragBlob; }
+  [[nodiscard]] const ShaderDefinition& getDefinition() const { return def_; }
+  [[nodiscard]] const std::vector<std::byte>& getVertexBlob() const { return def_.vertBlob; }
+  [[nodiscard]] const std::vector<std::byte>& getFragmentBlob() const { return def_.fragBlob; }
   [[nodiscard]] const std::string& getDebugName() const { return debugName; }
 
 private:
   Shader() = default;
-  std::vector<std::byte> vertBlob;
-  std::vector<std::byte> fragBlob;
 
+  ShaderDefinition def_;
   std::string debugName;
 };
 
