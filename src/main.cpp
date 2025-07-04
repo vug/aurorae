@@ -1,4 +1,6 @@
 /*
+TODO(vug): MeshDefinition, asset:Mesh::create, AssetManager::loadMeshFromDefinition
+TODO(vug): vector<asset::MeshDefinition> meshDefs = AssetManager::readModelFile();
 TODO(vug): constructors for render::Shader and render::Mesh instead of Renderer::upload functions
            (Follow the roadmap)
 TODO(vug): Bring DrawSpans to render::Mesh.
