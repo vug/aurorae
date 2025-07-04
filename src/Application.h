@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "Window.h"
 #include "asset/AssetManager.h"
+#include "asset/AssetProcessor.h"
 
 namespace aur {
 
@@ -26,14 +27,20 @@ private:
   public:
     Initializer();
     ~Initializer();
+
+    Initializer(const Initializer& other) = delete;
+    Initializer(Initializer&& other) noexcept = delete;
+    Initializer& operator=(const Initializer& other) = delete;
+    Initializer& operator=(Initializer&& other) noexcept = delete;
   };
   const char* appName_;
   Initializer initializer_;
+  AssetProcessor assetProcessor_;
+  AssetManager assetManager_;
   // Order of declaration matters for construction (Window then Renderer) and destruction (Renderer
   // then Window).
   Window window_;
   Renderer renderer_;
-  AssetManager assetManager_;
 };
 
 } // namespace aur

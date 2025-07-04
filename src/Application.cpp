@@ -26,14 +26,15 @@ Application::Initializer::~Initializer() {
 
 Application::Application(u32 initialWidth, u32 initialHeight, const char* appName)
     : appName_(appName)
-    , initializer_{} // Initialize spdlog and glfw
+    , initializer_{} // Initializes spdlog and glfw
+    , assetProcessor_{}
+    , assetManager_{}
     , window_(initialWidth, initialHeight, appName_)
-    , renderer_(window_.getGLFWwindow(), appName_, initialWidth, initialHeight)
-    , assetManager_{} {
+    , renderer_(window_.getGLFWwindow(), appName_, initialWidth, initialHeight) {
   log().info("Application starting... Build Type: {}", static_cast<uint8_t>(kBuildType));
   log().info("App Name: {}, Initial Dimensions: {}x{}", appName_, initialWidth, initialHeight);
 
-  AppContext::initialize(renderer_, assetManager_);
+  AppContext::initialize(assetProcessor_, assetManager_, renderer_);
   log().trace("Application constructed successfully.");
 }
 
