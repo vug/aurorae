@@ -1,4 +1,7 @@
 /*
+TODO(vug): Start an AssetProcessor class. Put all DCC file -> Asset Definitions (binary blobs) there.
+           For now AssetManager takes an AssetDefinition and produces an asset file by moving the definition
+           into the asset class.
 TODO(vug): MeshDefinition, asset:Mesh::create, AssetManager::loadMeshFromDefinition
 TODO(vug): vector<asset::MeshDefinition> meshDefs = AssetManager::readModelFile();
 TODO(vug): constructors for render::Shader and render::Mesh instead of Renderer::upload functions
