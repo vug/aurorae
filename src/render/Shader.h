@@ -4,11 +4,25 @@
 #include "../Resources/ShaderModule.h"
 #include "../asset/Shader.h"
 
-namespace aur::render {
-struct Shader {
-  ShaderModule vertModule;
-  ShaderModule fragModule;
+namespace aur {
+class Renderer;
+}
 
-  Handle<asset::Shader> asset;
+namespace aur::render {
+class Shader {
+public:
+  Shader() = default;
+  Shader(const Renderer& renderer, Handle<asset::Shader> asset);
+
+  [[nodiscard]] const Handle<asset::Shader>& getAssetHandle() const { return assetHandle_; }
+  [[nodiscard]] const ShaderModule& getVertexShaderModule() const { return vertModule_; }
+  [[nodiscard]] const ShaderModule& getFragmentShaderModule() const { return fragModule_; }
+
+private:
+  const Renderer* renderer_;
+  Handle<asset::Shader> assetHandle_;
+
+  ShaderModule vertModule_;
+  ShaderModule fragModule_;
 };
 } // namespace aur::render

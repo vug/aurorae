@@ -51,13 +51,13 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_VERTEX_BIT,
-      .module = shader.vertModule.getHandle(),
+      .module = shader.getVertexShaderModule().getHandle(),
       .pName = "main",
   };
   const VkPipelineShaderStageCreateInfo fragShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .module = shader.fragModule.getHandle(),
+      .module = shader.getFragmentShaderModule().getHandle(),
       .pName = "main",
   };
   std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
