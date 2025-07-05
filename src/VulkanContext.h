@@ -12,6 +12,7 @@ namespace aur {
 class VulkanContext {
 public:
   VulkanContext(GLFWwindow* window, const char* appName);
+  ~VulkanContext() = default;
 
   // Delete copy/move constructors to prevent accidental duplication
   VulkanContext(const VulkanContext&) = delete;
@@ -41,10 +42,15 @@ private:
   // RAIIify vkb Instance
   class VkbInstanceWrapper : public vkb::Instance {
   public:
+    VkbInstanceWrapper() = default;
     ~VkbInstanceWrapper() {
       vkb::destroy_surface(*this, surface);
       vkb::destroy_instance(*this);
     };
+    VkbInstanceWrapper(const VkbInstanceWrapper& other) = delete;
+    VkbInstanceWrapper(VkbInstanceWrapper&& other) noexcept = default;
+    VkbInstanceWrapper& operator=(const VkbInstanceWrapper& other) = delete;
+    VkbInstanceWrapper& operator=(VkbInstanceWrapper&& other) noexcept = default;
 
     VkbInstanceWrapper& operator=(const vkb::Instance& otherInstance) {
       vkb::Instance::operator=(otherInstance);
@@ -57,10 +63,15 @@ private:
   // RAIIify vkb Device
   class VkbDeviceWrapper : public vkb::Device {
   public:
+    VkbDeviceWrapper() = default;
     ~VkbDeviceWrapper() { vkb::destroy_device(*this); };
+    VkbDeviceWrapper(const VkbDeviceWrapper& other) = delete;
+    VkbDeviceWrapper(VkbDeviceWrapper&& other) noexcept = default;
+    VkbDeviceWrapper& operator=(const VkbDeviceWrapper& other) = delete;
+    VkbDeviceWrapper& operator=(VkbDeviceWrapper&& other) noexcept = default;
 
-    VkbDeviceWrapper& operator=(const vkb::Device& otherDevice) {
-      vkb::Device::operator=(otherDevice);
+    VkbDeviceWrapper& operator=(const vkb::Device& other) {
+      vkb::Device::operator=(other);
       return *this;
     };
   };

@@ -8,15 +8,16 @@
 
 namespace aur {
 
-Window::Window(uint32_t width, uint32_t height, std::string_view title)
+Window::Window(u32 width, u32 height, std::string_view title)
     : currentWidth_(width)
     , currentHeight_(height) {
-  // GLFW initialization is expected to be done by the Application class
-
   // Tell GLFW not to create an OpenGL/ES context
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
+  // glfwWindow_ initialization via CreateWindow cannot be done via constructor member initializer
+  // and is expected to be done by the Application class
+  // NOLINTNEXTLINE(cppcoreguidelines-prefer-member-initializer)
   glfwWindow_ =
       glfwCreateWindow(static_cast<int>(width), static_cast<int>(height), title.data(), nullptr, nullptr);
   if (!glfwWindow_)
@@ -54,8 +55,7 @@ void Window::getFramebufferSize(i32& width, i32& height) const {
 }
 
 void Window::framebufferResizeCallback(GLFWwindow* glfwWin, i32 width, i32 height) {
-  auto windowInstance = static_cast<Window*>(glfwGetWindowUserPointer(glfwWin));
-  if (windowInstance) {
+  if (auto windowInstance = static_cast<Window*>(glfwGetWindowUserPointer(glfwWin))) {
     windowInstance->framebufferResized_ = true;
     windowInstance->currentWidth_ = static_cast<u32>(width);
     windowInstance->currentHeight_ = static_cast<u32>(height);

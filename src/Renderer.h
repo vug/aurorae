@@ -93,38 +93,11 @@ public:
   void drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer, const Buffer& indexBuffer,
                    const PushConstantsInfo* pushConstantInfoOpt) const;
   void drawSpan(const render::DrawSpan drawSpan) const;
-  void deviceWaitIdle() const;
 
+  void deviceWaitIdle() const;
   // Call this when the window framebuffer size has changed.
   void notifyResize(u32 newWidth, u32 newHeight);
 
-  template <typename TObject>
-  void setDebugName(const TObject& obj, const std::string_view name) const {
-    VkObjectType objType = VK_OBJECT_TYPE_UNKNOWN;
-    if constexpr (std::is_same_v<TObject, Buffer>)
-      objType = VK_OBJECT_TYPE_BUFFER;
-    else if constexpr (std::is_same_v<TObject, DescriptorPool>)
-      objType = VK_OBJECT_TYPE_DESCRIPTOR_POOL;
-    else if constexpr (std::is_same_v<TObject, DescriptorSetLayout>)
-      objType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
-    else if constexpr (std::is_same_v<TObject, DescriptorSet>)
-      objType = VK_OBJECT_TYPE_DESCRIPTOR_SET;
-    else if constexpr (std::is_same_v<TObject, PipelineLayout>)
-      objType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
-    else if constexpr (std::is_same_v<TObject, ShaderModule>)
-      objType = VK_OBJECT_TYPE_SHADER_MODULE;
-    else if constexpr (std::is_same_v<TObject, Pipeline>)
-      objType = VK_OBJECT_TYPE_PIPELINE;
-    else
-      static_assert("Unsupported type TObject for setting debug name");
-    VkDebugUtilsObjectNameInfoEXT nameInfo{
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-        .objectType = objType,
-        .objectHandle = reinterpret_cast<u64>(obj.getHandle()),
-        .pObjectName = name.data(),
-    };
-    setDebugNameWrapper(nameInfo);
-  }
   [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo,
                                     std::string_view debugName = "") const;
   [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
@@ -143,16 +116,19 @@ public:
                                                     std::string_view debugName = "") const;
   [[nodiscard]] const Pipeline* createOrGetPipeline(const PipelineCreateInfo& createInfo,
                                                     std::string_view debugName = "");
-
-  PerFrameData perFrameData;
+  template <typename TObject>
+  void setDebugName(const TObject& obj, const std::string_view name) const;
 
   [[nodiscard]] Handle<render::Shader> upload(Handle<asset::Shader> shaderHnd);
   [[nodiscard]] Handle<render::Mesh> upload(Handle<asset::Mesh> meshHnd);
-
-  [[nodiscard]] const render::Shader* get(Handle<render::Shader> handle) const {
+  [[nodiscard]] inline const render::Shader* get(Handle<render::Shader> handle) const {
     return &shaders_.at(handle);
   }
-  [[nodiscard]] const render::Mesh* get(Handle<render::Mesh> handle) const { return &meshes_.at(handle); }
+  [[nodiscard]] inline const render::Mesh* get(Handle<render::Mesh> handle) const {
+    return &meshes_.at(handle);
+  }
+
+  PerFrameData perFrameData;
 
 private:
   void createPerFrameDataResources();
@@ -216,6 +192,34 @@ template <std::ranges::contiguous_range TRange>
 
   Buffer buffer = createBufferAndUploadData(items.data(), sizeBytes, usage, debugName, itemCnt);
   return buffer;
+}
+
+template <typename TObject>
+void Renderer::setDebugName(const TObject& obj, const std::string_view name) const {
+  VkObjectType objType = VK_OBJECT_TYPE_UNKNOWN;
+  if constexpr (std::is_same_v<TObject, Buffer>)
+    objType = VK_OBJECT_TYPE_BUFFER;
+  else if constexpr (std::is_same_v<TObject, DescriptorPool>)
+    objType = VK_OBJECT_TYPE_DESCRIPTOR_POOL;
+  else if constexpr (std::is_same_v<TObject, DescriptorSetLayout>)
+    objType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+  else if constexpr (std::is_same_v<TObject, DescriptorSet>)
+    objType = VK_OBJECT_TYPE_DESCRIPTOR_SET;
+  else if constexpr (std::is_same_v<TObject, PipelineLayout>)
+    objType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
+  else if constexpr (std::is_same_v<TObject, ShaderModule>)
+    objType = VK_OBJECT_TYPE_SHADER_MODULE;
+  else if constexpr (std::is_same_v<TObject, Pipeline>)
+    objType = VK_OBJECT_TYPE_PIPELINE;
+  else
+    static_assert("Unsupported type TObject for setting debug name");
+  VkDebugUtilsObjectNameInfoEXT nameInfo{
+      .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+      .objectType = objType,
+      .objectHandle = reinterpret_cast<u64>(obj.getHandle()),
+      .pObjectName = name.data(),
+  };
+  setDebugNameWrapper(nameInfo);
 }
 
 } // namespace aur

@@ -52,9 +52,9 @@ public:
   Mesh(Mesh&& other) noexcept = default;
   Mesh& operator=(Mesh&& other) noexcept = default;
 
-  std::vector<Vertex> getVertices() const { return def_.vertices; }
-  std::vector<u32> getIndicates() const { return def_.indices; }
-  std::vector<SubMesh> getSubMeshes() const { return def_.materialSpans; }
+  [[nodiscard]] std::vector<Vertex> getVertices() const { return def_.vertices; }
+  [[nodiscard]] std::vector<u32> getIndicates() const { return def_.indices; }
+  [[nodiscard]] std::vector<SubMesh> getSubMeshes() const { return def_.materialSpans; }
 
   std::string debugName;
 

@@ -67,29 +67,6 @@ BinaryBlob& BinaryBlob::operator=(BinaryBlob&& other) noexcept {
 
 //----------------------------------------------------------------
 
-BinaryBlob readBinaryFile(std::string_view filename) {
-  const FileHandle file(filename.data(), "rb");
-
-  // Seek to the end of the file to determine its size
-  std::fseek(file, 0, SEEK_END);
-  const long fileSizeLong = std::ftell(file);
-  if (fileSizeLong < 0)
-    log().fatal("Failed to determine size of file (ftell failed): {}", filename);
-
-  // Seek back to the beginning of the file
-  std::fseek(file, 0, SEEK_SET);
-
-  const size_t fileSize = static_cast<size_t>(fileSizeLong);
-  BinaryBlob buffer(fileSize);
-
-  assert(buffer.size() == fileSize);
-  const size_t bytesRead = std::fread(buffer.data(), 1, fileSize, file);
-
-  if (bytesRead != fileSize)
-    log().fatal("Failed to read the entire file (read {} of {} bytes): {}", bytesRead, fileSize, filename);
-
-  return buffer;
-}
 std::vector<std::byte> readBinaryFile(const std::filesystem::path& filePath) {
   const FileHandle file(filePath.string(), "rb");
 

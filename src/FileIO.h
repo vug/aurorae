@@ -26,9 +26,9 @@ public:
   BinaryBlob(const BinaryBlob&) = delete;
   BinaryBlob& operator=(const BinaryBlob&) = delete;
 
-  const std::byte* data() const { return data_; }
+  [[nodiscard]] const std::byte* data() const { return data_; }
   std::byte* data() { return data_; }
-  size_t size() const { return size_; }
+  [[nodiscard]] size_t size() const { return size_; }
 
 private:
   std::byte* data_;
@@ -36,7 +36,6 @@ private:
 };
 
 // Utility function to read a binary file
-BinaryBlob readBinaryFile(std::string_view filename);
 std::vector<std::byte> readBinaryFile(const std::filesystem::path& filePath);
 
 } // namespace aur

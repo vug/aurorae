@@ -27,29 +27,8 @@ struct Vertex {
   glm::vec3 position;
   glm::vec4 color;
 
-  static std::array<VertexInputBindingDescription, 1> getVertexInputBindingDescription() {
-    return {VertexInputBindingDescription{
-        .stride = sizeof(Vertex),
-        .inputRate = VertexInputRate::Vertex,
-    }};
-  }
-
-  static std::array<VertexInputAttributeDescription, 2> getVertexInputAttributeDescription() {
-    return {
-        VertexInputAttributeDescription{
-            .location = 0,
-            .binding = 0,
-            .format = Format::R32G32B32_SFLOAT,
-            .offset = offsetof(Vertex, position),
-        },
-        VertexInputAttributeDescription{
-            .location = 1,
-            .binding = 0,
-            .format = Format::R32G32B32A32_SFLOAT,
-            .offset = offsetof(Vertex, color),
-        },
-    };
-  }
+  static std::array<VertexInputBindingDescription, 1> getVertexInputBindingDescription();
+  static std::array<VertexInputAttributeDescription, 2> getVertexInputAttributeDescription();
 
   /*
     static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
@@ -73,5 +52,29 @@ struct Vertex {
     }
   */
 };
+
+inline std::array<VertexInputBindingDescription, 1> Vertex::getVertexInputBindingDescription() {
+  return {VertexInputBindingDescription{
+      .stride = sizeof(Vertex),
+      .inputRate = VertexInputRate::Vertex,
+  }};
+}
+
+inline std::array<VertexInputAttributeDescription, 2> Vertex::getVertexInputAttributeDescription() {
+  return {
+      VertexInputAttributeDescription{
+          .location = 0,
+          .binding = 0,
+          .format = Format::R32G32B32_SFLOAT,
+          .offset = offsetof(Vertex, position),
+      },
+      VertexInputAttributeDescription{
+          .location = 1,
+          .binding = 0,
+          .format = Format::R32G32B32A32_SFLOAT,
+          .offset = offsetof(Vertex, color),
+      },
+  };
+}
 
 } // namespace aur

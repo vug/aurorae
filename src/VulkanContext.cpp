@@ -60,7 +60,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   vkb::Result<vkb::Instance> vkbInstanceResult = vkbInstanceBuilder.build();
   if (!vkbInstanceResult)
     log().fatal("Failed to create Vulkan instance: {}", vkbInstanceResult.error().message());
-  vkbInstance_ = vkbInstanceResult.value();
+  vkbInstance_ = std::move(vkbInstanceResult.value());
   volkLoadInstance(vkbInstance_); // loads Vulkan instance-level function pointers
 
   // Create Vulkan surface

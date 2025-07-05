@@ -1,6 +1,5 @@
 /*
-TODO(vug): Introduce the PipelineCache via unordered map, and VkPipelineCache
-TODO(vug): GLFWWindow -> GlfwWindow
+TODO(vug): VkPipelineCache
 TODO(vug): render::Material
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
@@ -16,6 +15,7 @@ TODO(vug): add STL includes to a precompiled header pch_stl.h
            Also add headers such as utils and logger that are included in
            every file into pch_aur.h. and maybe a pch_dependencies
 TODO(vug): introduce RenderDoc
+TODO(vug): Delete BinaryBlob
 TODO(vug): Very simple scene abstraction that has a vector entities w/render mesh handles and transforms.
 TODO(vug): bring https://github.com/Neargye/magic_enum and use it for auto enum -> string conversions.
            consider https://github.com/stephenberry/glaze for JSON serde
@@ -65,14 +65,8 @@ TODO(vug): Make AssetProcessor to persist cooked/processed blob assets
 
 #include "Application.h"
 
-namespace aur {
-void main() {
-  Application app(1024, 768, "Aurorae");
-  app.run();
-}
-} // namespace aur
-
 int main() {
-  aur::main();
+  aur::Application app(1024, 768, "Aurorae");
+  app.run();
   return 0;
 }

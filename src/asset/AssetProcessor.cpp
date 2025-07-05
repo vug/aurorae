@@ -28,7 +28,7 @@ std::optional<asset::ShaderDefinition> AssetProcessor::processShader(const std::
       .fragBlob = readBinaryFile(fragPath),
   };
 
-  if (!validateSPIRV(def.vertBlob) || !validateSPIRV(def.fragBlob))
+  if (!validateSpirV(def.vertBlob) || !validateSpirV(def.fragBlob))
     return {};
 
   return def;
@@ -64,7 +64,7 @@ std::string getSpirvGeneratorString(uint32_t generator) {
   return vendorName + " (Version " + std::to_string(toolVersion) + ")";
 }
 
-bool AssetProcessor::validateSPIRV(const std::vector<std::byte>& blob) {
+bool AssetProcessor::validateSpirV(const std::vector<std::byte>& blob) {
   // A SPIR-V should have at least the first 5 words (magic, version, generator, bound, schema)
   if (blob.size() < sizeof(u32) * 5)
     return false;

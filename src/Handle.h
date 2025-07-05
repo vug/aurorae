@@ -12,13 +12,14 @@ struct Handle {
       : id(id) {}
 
   u32 id{kInvalidId};
-  bool isValid() const { return id != kInvalidId; }
+  [[nodiscard]] bool isValid() const { return id != kInvalidId; }
 
   const TAsset& get() const;
 
   bool operator==(const Handle<TAsset>& other) const { return id == other.id; }
   // for using as a key in maps
   bool operator<(const Handle<TAsset>& other) const { return id < other.id; }
-  operator u32() const { return id; }
+  // Intentional implicit conversion: Handle can be used as u32 where needed
+  operator u32() const { return id; } // NOLINT(google-explicit-constructor)
 };
 } // namespace aur

@@ -23,9 +23,15 @@ public:
   Handle<asset::Mesh> registerExistingMesh(asset::Mesh& mesh);
 
   // asset::Texture* get(Handle<asset::Texture> handle);
-  inline const asset::Shader* get(Handle<asset::Shader> handle) const { return &shaders_.at(handle); }
-  inline const asset::Material* get(Handle<asset::Material> handle) const { return &materials_.at(handle); }
-  inline const asset::Mesh* get(Handle<asset::Mesh> handle) const { return &meshes_.at(handle); };
+  [[nodiscard]] inline const asset::Shader* get(Handle<asset::Shader> handle) const {
+    return &shaders_.at(handle);
+  }
+  [[nodiscard]] inline const asset::Material* get(Handle<asset::Material> handle) const {
+    return &materials_.at(handle);
+  }
+  [[nodiscard]] inline const asset::Mesh* get(Handle<asset::Mesh> handle) const {
+    return &meshes_.at(handle);
+  };
 
 private:
   // The manager OWNS the actual asset data in vectors.

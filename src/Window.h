@@ -27,26 +27,26 @@ public:
   Window(Window&&) = delete;
   Window& operator=(Window&&) = delete;
 
-  bool shouldClose() const;
+  [[nodiscard]] bool shouldClose() const;
   static void pollEvents();
   static void waitEvents();
 
-  GLFWwindow* getGLFWwindow() const { return glfwWindow_; }
-  bool wasResized() const { return framebufferResized_; }
+  [[nodiscard]] GLFWwindow* getGLFWwindow() const { return glfwWindow_; }
+  [[nodiscard]] bool wasResized() const { return framebufferResized_; }
   void clearResizedFlag() { framebufferResized_ = false; }
-  u32 getWitdh() const { return currentWidth_; }
-  u32 getHeight() const { return currentHeight_; }
+  [[nodiscard]] u32 getWidth() const { return currentWidth_; }
+  [[nodiscard]] u32 getHeight() const { return currentHeight_; }
   void getFramebufferSize(i32& width, i32& height) const;
 
 private:
   static void framebufferResizeCallback(GLFWwindow* window, i32 width, i32 height);
   static void keyCallback(GLFWwindow* glfwWin, int key, int scancode, int action, int mods);
 
-  GLFWwindow* glfwWindow_{nullptr};
-  bool framebufferResized_{false};
   // Store current dimensions, updated by resize callback and constructor
   u32 currentWidth_;
   u32 currentHeight_;
+  GLFWwindow* glfwWindow_{nullptr};
+  bool framebufferResized_{false};
 };
 
 } // namespace aur
