@@ -662,5 +662,12 @@ PipelineLayout Renderer::createPipelineLayout(const PipelineLayoutCreateInfo& cr
   setDebugName(obj, debugName);
   return obj;
 }
+const Pipeline* Renderer::createOrGetPipeline(const PipelineCreateInfo& createInfo,
+                                              std::string_view debugName) {
+  auto [iter, _] = pipelineCache_.try_emplace(createInfo, *this, createInfo);
+  const auto& pipeline = iter->second;
+  setDebugName(pipeline, debugName);
+  return &pipeline;
+}
 
 } // namespace aur

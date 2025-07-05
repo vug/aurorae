@@ -1,6 +1,7 @@
 /*
-TODO(vug): render::Material
 TODO(vug): Introduce the PipelineCache via unordered map, and VkPipelineCache
+TODO(vug): GLFWWindow -> GlfwWindow
+TODO(vug): render::Material
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "../Handle.h"
 #include "../Resources/Buffer.h"
 

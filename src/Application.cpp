@@ -53,7 +53,7 @@ void Application::run() {
   const Handle<asset::Shader> unlitAShader = assetManager_.loadShaderFromDefinition(*unlitShaderDefOpt);
   const Handle<render::Shader> unlitRShader = renderer_.upload(unlitAShader);
   const PipelineCreateInfo pipelineCreateInfo{.shader = unlitRShader};
-  const Pipeline unlitPipeline{renderer_, pipelineCreateInfo};
+  const Pipeline* unlitPipeline = renderer_.createOrGetPipeline(pipelineCreateInfo);
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
   const std::vector<asset::MeshDefinition> meshDefs = assetProcessor_.processMeshes(modelPath);
@@ -105,22 +105,22 @@ void Application::run() {
 
     glm::mat4 worldFromObject1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 1.5));
     const PushConstantsInfo pcInfo1{
-        .pipelineLayout = unlitPipeline.getPipelineLayout(),
+        .pipelineLayout = unlitPipeline->getPipelineLayout(),
         .stages = {ShaderStage::Vertex},
         .sizeBytes = sizeof(worldFromObject1),
         .data = glm::value_ptr(worldFromObject1),
     };
-    renderer_.drawIndexed(unlitPipeline, triangleMeshRenderHandle.get().getVertexBuffer(),
+    renderer_.drawIndexed(*unlitPipeline, triangleMeshRenderHandle.get().getVertexBuffer(),
                           triangleMeshRenderHandle.get().getIndexBuffer(), &pcInfo1);
 
     glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
     const PushConstantsInfo pcInfo2{
-        .pipelineLayout = unlitPipeline.getPipelineLayout(),
+        .pipelineLayout = unlitPipeline->getPipelineLayout(),
         .stages = {ShaderStage::Vertex},
         .sizeBytes = sizeof(worldFromObject2),
         .data = glm::value_ptr(worldFromObject2),
     };
-    renderer_.drawIndexed(unlitPipeline, boxMeshRenderHandle.get().getVertexBuffer(),
+    renderer_.drawIndexed(*unlitPipeline, boxMeshRenderHandle.get().getVertexBuffer(),
                           boxMeshRenderHandle.get().getIndexBuffer(), &pcInfo2);
     renderer_.endFrame();
   }

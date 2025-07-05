@@ -119,7 +119,7 @@ enum class MemoryUsage {
   GpuToCpu = 4,
 };
 
-enum class CullMode {
+enum class CullMode : u32 {
   None = 0,
   Front = 1,
   Back = 2,

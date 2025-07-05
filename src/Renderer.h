@@ -1,9 +1,12 @@
 #pragma once
 
+#include <unordered_map>
+
 #include <glm/mat4x4.hpp>
 
 #include "FileIO.h"
 #include "Handle.h"
+#include "Pipeline.h"
 #include "Resources/Buffer.h"
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
@@ -18,7 +21,6 @@ struct GLFWwindow;
 
 namespace aur {
 
-class Pipeline;
 class PipelineLayout;
 struct PipelineLayoutCreateInfo;
 struct PushConstantsInfo;
@@ -111,6 +113,8 @@ public:
       objType = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
     else if constexpr (std::is_same_v<TObject, ShaderModule>)
       objType = VK_OBJECT_TYPE_SHADER_MODULE;
+    else if constexpr (std::is_same_v<TObject, Pipeline>)
+      objType = VK_OBJECT_TYPE_PIPELINE;
     else
       static_assert("Unsupported type TObject for setting debug name");
     VkDebugUtilsObjectNameInfoEXT nameInfo{
@@ -123,28 +127,22 @@ public:
   }
   [[nodiscard]] Buffer createBuffer(const BufferCreateInfo& createInfo,
                                     std::string_view debugName = "") const;
+  [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
+                                                 std::string_view debugName,
+                                                 std::optional<u32> itemCnt = {}) const;
+  template <std::ranges::contiguous_range TRange>
+  [[nodiscard]] Buffer createBufferAndUploadData(const TRange& items, BufferUsage usage,
+                                                 std::string_view debugName) const;
+  [[nodiscard]] ShaderModule createShaderModule(const ShaderModuleCreateInfo& createInfo,
+                                                std::string_view debugName = "") const;
   [[nodiscard]] DescriptorSetLayout createDescriptorSetLayout(const DescriptorSetLayoutCreateInfo& createInfo,
                                                               std::string_view debugName = "") const;
   [[nodiscard]] DescriptorSet createDescriptorSet(const DescriptorSetCreateInfo& createInfo,
                                                   std::string_view debugName = "") const;
   [[nodiscard]] PipelineLayout createPipelineLayout(const PipelineLayoutCreateInfo& createInfo,
                                                     std::string_view debugName = "") const;
-  [[nodiscard]] ShaderModule createShaderModule(const ShaderModuleCreateInfo& createInfo,
-                                                std::string_view debugName = "") const;
-
-  [[nodiscard]] Buffer createBufferAndUploadData(const void* data, size_t size, BufferUsage usage,
-                                                 std::string_view debugName,
-                                                 std::optional<u32> itemCnt = {}) const;
-  template <std::ranges::contiguous_range TRange>
-  [[nodiscard]] Buffer createBufferAndUploadData(const TRange& items, BufferUsage usage,
-                                                 std::string_view debugName) const {
-    using TItem = std::ranges::range_value_t<TRange>;
-    const auto itemCnt = static_cast<u32>(std::ranges::size(items));
-    const auto sizeBytes = itemCnt * sizeof(TItem);
-
-    Buffer buffer = createBufferAndUploadData(items.data(), sizeBytes, usage, debugName, itemCnt);
-    return buffer;
-  }
+  [[nodiscard]] const Pipeline* createOrGetPipeline(const PipelineCreateInfo& createInfo,
+                                                    std::string_view debugName = "");
 
   PerFrameData perFrameData;
 
@@ -204,8 +202,20 @@ private:
   // Default depth is 1.0 (far plane), stencil is 0
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
 
+  std::unordered_map<PipelineCreateInfo, Pipeline> pipelineCache_;
   std::vector<render::Shader> shaders_;
   std::vector<render::Mesh> meshes_;
 };
+
+template <std::ranges::contiguous_range TRange>
+[[nodiscard]] Buffer Renderer::createBufferAndUploadData(const TRange& items, BufferUsage usage,
+                                                         std::string_view debugName) const {
+  using TItem = std::ranges::range_value_t<TRange>;
+  const auto itemCnt = static_cast<u32>(std::ranges::size(items));
+  const auto sizeBytes = itemCnt * sizeof(TItem);
+
+  Buffer buffer = createBufferAndUploadData(items.data(), sizeBytes, usage, debugName, itemCnt);
+  return buffer;
+}
 
 } // namespace aur
