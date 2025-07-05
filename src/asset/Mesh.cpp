@@ -1,20 +1,18 @@
 #include "Mesh.h"
 #include <glm/gtc/type_ptr.hpp>
 
-namespace aur {
-namespace asset {
+namespace aur::asset {
 
-Mesh Mesh::makeTriangle() {
-  return Mesh{.vertices =
-                  {
-                      {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}},   // Bottom vertex (Red)
-                      {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}}, // Right top vertex (Green)
-                      {{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}   // Left top vertex (Blue)
-                  },
-              .indices = {0, 1, 2},
-              .debugName = "Procedural Triangle"};
+MeshDefinition MeshDefinition::makeTriangle() {
+  return {.vertices =
+              {
+                  {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}},   // Bottom vertex (Red)
+                  {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}}, // Right top vertex (Green)
+                  {{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}   // Left top vertex (Blue)
+              },
+          .indices = {0, 1, 2}};
 }
-Mesh Mesh::makeCube() {
+MeshDefinition MeshDefinition::makeCube() {
   return {.vertices =
               {
                   // Front face
@@ -29,17 +27,20 @@ Mesh Mesh::makeCube() {
                   {{1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},   // 6: White
                   {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}}   // 7: Black
               },
-          .indices =
-              {
-                  0, 1, 2, 2, 3, 0, // Front face
-                  1, 5, 6, 6, 2, 1, // Right face
-                  7, 6, 5, 5, 4, 7, // Back face
-                  4, 0, 3, 3, 7, 4, // Left face
-                  3, 2, 6, 6, 7, 3, // Top face
-                  4, 5, 1, 1, 0, 4  // Bottom face
-              },
-          .debugName = "Procedural Cube"};
+          .indices = {
+              0, 1, 2, 2, 3, 0, // Front face
+              1, 5, 6, 6, 2, 1, // Right face
+              7, 6, 5, 5, 4, 7, // Back face
+              4, 0, 3, 3, 7, 4, // Left face
+              3, 2, 6, 6, 7, 3, // Top face
+              4, 5, 1, 1, 0, 4  // Bottom face
+          }};
+}
+Mesh Mesh::create(const MeshDefinition& meshDef) {
+  Mesh mesh;
+  mesh.def_ = meshDef;
+
+  return mesh;
 }
 
-} // namespace asset
-} // namespace aur
+} // namespace aur::asset

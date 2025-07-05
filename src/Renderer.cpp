@@ -627,9 +627,9 @@ render::Mesh Renderer::upload(Handle<asset::Mesh> meshHnd) const {
   render::Mesh rMesh;
   const asset::Mesh& aMesh = meshHnd.get();
   rMesh.vertexBuffer =
-      createBufferAndUploadData(aMesh.vertices, BufferUsage::Vertex, aMesh.debugName + " Vertex Buffer");
+      createBufferAndUploadData(aMesh.getVertices(), BufferUsage::Vertex, aMesh.debugName + " Vertex Buffer");
   rMesh.indexBuffer =
-      createBufferAndUploadData(aMesh.indices, BufferUsage::Index, aMesh.debugName + " Index Buffer");
+      createBufferAndUploadData(aMesh.getIndicates(), BufferUsage::Index, aMesh.debugName + " Index Buffer");
   rMesh.asset = meshHnd;
   return rMesh;
 }

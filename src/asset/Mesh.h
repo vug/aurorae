@@ -10,10 +10,27 @@
 #include "../Utils.h"
 #include "../Vertex.h"
 
-namespace aur {
-namespace asset {
+namespace aur::asset {
 
 struct Material;
+
+struct MeshDefinition {
+  struct SubMesh {
+    std::string materialAssetName;
+    u32 offset{};
+    u32 count{};
+  };
+
+  std::vector<Vertex> vertices;
+  std::vector<u32> indices;
+  std::vector<SubMesh> materialSpans;
+  glm::mat4 objetFromModel{1};
+
+  static MeshDefinition makeTriangle();
+  // TODO(vug): quads are used a lot, could be nice to generate them procedurally
+  // static MeshDefinition makeQuad();
+  static MeshDefinition makeCube();
+};
 
 // A SubMesh,
 // A 1D span, a contiguous range in the index memory block of the Mesh at meshIx in a Model
@@ -25,21 +42,27 @@ struct MaterialSpan {
   u32 count{};
 };
 
-struct Mesh {
-  std::vector<Vertex> vertices;
-  std::vector<u32> indices;
-  std::vector<MaterialSpan> materialSpans;
+class Mesh {
+public:
+  static Mesh create(const MeshDefinition& meshDef);
 
-  // TODO(vug): Decouple transform from mesh. An entity in a Scene will have both.
-  glm::mat4 transform{1};
+  ~Mesh() = default;
+  Mesh(const Mesh& other) = delete;
+  Mesh& operator=(const Mesh& other) = delete;
+  Mesh(Mesh&& other) noexcept = default;
+  Mesh& operator=(Mesh&& other) noexcept = default;
+
+  std::vector<Vertex> getVertices() const { return def_.vertices; }
+  std::vector<u32> getIndicates() const { return def_.indices; }
 
   std::string debugName;
 
-  static Mesh makeTriangle();
-  // TODO(vug): quads are used a lot, could be nice to generate them procedurally
-  // static Mesh makeQuad();
-  static Mesh makeCube();
+private:
+  Mesh() = default;
+
+  MeshDefinition def_;
+  // TODO(vug): Decouple transform from mesh. An entity in a Scene will have both.
+  glm::mat4 transform{1};
 };
 
-}; // namespace asset
-} // namespace aur
+} // namespace aur::asset

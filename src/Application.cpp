@@ -45,18 +45,21 @@ Application::~Application() {
 
 void Application::run() {
   // "Asset Library"
-  const asset::ShaderDefinition unlitShaderDef =
+  const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
       assetProcessor_.processShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
                                     std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
-  const Handle<asset::Shader> unlitShader = assetManager_.loadShaderFromDefinition(unlitShaderDef);
+  if (!unlitShaderDefOpt.has_value())
+    log().fatal("Failed to load unlit shader!");
+  const Handle<asset::Shader> unlitShader = assetManager_.loadShaderFromDefinition(*unlitShaderDefOpt);
   const PipelineCreateInfo pipelineCreateInfo{.shader = unlitShader};
   const Pipeline unlitPipeline{renderer_, pipelineCreateInfo};
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
-  const Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromFile(modelPath)[0];
+  const std::vector<asset::MeshDefinition> meshDefs = assetProcessor_.processMeshes(modelPath);
+  const Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromDefinition(meshDefs[0]);
   const render::Mesh boxRenderMesh = renderer_.upload(boxMeshHandle);
-  const asset::Mesh triangleMesh = asset::Mesh::makeTriangle();
-  const Handle<asset::Mesh> triangleMeshHandle = assetManager_.loadExistingMesh(triangleMesh);
+  const asset::MeshDefinition triangleMesh = asset::MeshDefinition::makeTriangle();
+  const Handle<asset::Mesh> triangleMeshHandle = assetManager_.loadMeshFromDefinition(triangleMesh);
   const render::Mesh triangleRenderMesh = renderer_.upload(triangleMeshHandle);
   log().trace("Created assets...");
 

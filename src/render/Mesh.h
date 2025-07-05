@@ -6,7 +6,7 @@
 #include "../Resources/Buffer.h"
 
 namespace aur::asset {
-struct Mesh;
+class Mesh;
 }
 
 namespace aur::render {

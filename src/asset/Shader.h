@@ -13,14 +13,14 @@ struct ShaderDefinition {
 
 class Shader {
 public:
-  static std::optional<Shader> create(const ShaderDefinition& shaderDef);
+  static Shader create(const ShaderDefinition& shaderDef);
 
   ~Shader() = default;
 
   Shader(const Shader& other) = delete;
   Shader& operator=(const Shader& other) = delete;
-  Shader(Shader&& other) noexcept;
-  Shader& operator=(Shader&& other) noexcept;
+  Shader(Shader&& other) noexcept = default;
+  Shader& operator=(Shader&& other) noexcept = default;
 
   [[nodiscard]] const ShaderDefinition& getDefinition() const { return def_; }
   [[nodiscard]] const std::vector<std::byte>& getVertexBlob() const { return def_.vertBlob; }

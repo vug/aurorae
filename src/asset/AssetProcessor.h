@@ -2,16 +2,18 @@
 
 #include <filesystem>
 
+#include "Mesh.h"
 #include "Shader.h"
 
 namespace aur {
 
 class AssetProcessor {
 public:
-  asset::ShaderDefinition static processShader(const std::filesystem::path& vertPath,
-                                               const std::filesystem::path& fragPath);
+  std::optional<asset::ShaderDefinition> static processShader(const std::filesystem::path& vertPath,
+                                                              const std::filesystem::path& fragPath);
 
-  // Validate a SPIR-V shader binary
+  std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
+
   static bool validateSPIRV(const std::vector<std::byte>& blob);
 };
 

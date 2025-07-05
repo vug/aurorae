@@ -1,11 +1,22 @@
 #include "AssetProcessor.h"
+
+#include <filesystem>
+#include <ranges>
+
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "../FileIO.h"
 #include "../Logger.h"
 #include "../Utils.h"
+#include "AssimpUtils.h"
 
 namespace aur {
-asset::ShaderDefinition AssetProcessor::processShader(const std::filesystem::path& vertPath,
-                                                      const std::filesystem::path& fragPath) {
+
+std::optional<asset::ShaderDefinition> AssetProcessor::processShader(const std::filesystem::path& vertPath,
+                                                                     const std::filesystem::path& fragPath) {
 
   if (!std::filesystem::exists(vertPath) || !std::filesystem::exists(fragPath))
     return {};
@@ -80,6 +91,99 @@ bool AssetProcessor::validateSPIRV(const std::vector<std::byte>& blob) {
     return false;
 
   return true;
+}
+
+std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::filesystem::path& modelPath) {
+  std::vector<asset::MeshDefinition> defs;
+  Assimp::Importer importer;
+
+  // aiProcess_MakeLeftHanded flag for RUF import instead of RUB import
+  // aiProcess_FlipWindingOrder for CW face winding order instead of CCW
+  // aiProcess_FlipUVs to put (0, 0) to top left
+  const aiScene* scene = importer.ReadFile(
+      modelPath.string().c_str(), aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenNormals |
+                                      aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+  // Could return an empty vector instead
+  if (!scene) {
+    log().warn("Failed to load mesh from file: {}", modelPath.string());
+    return {};
+  }
+
+  // TODO(vug): Do something with the materials
+  const u32 materialCnt = scene->mNumMaterials;
+  log().info("Scene '{}' has {} materials.", scene->mName.C_Str(), materialCnt);
+  // asset::printMaterialProperties(mat);
+
+  // aur: Model is made of Meshes and meshes have DrawSpans (Materials)
+  // ai: Scene is a Model. Made of Nodes. Each node is a aur::Mesh.
+  // a node can have child nodes, and meshes. aiMeshes are DrawSpans.
+  std::function<void(const aiNode*, const aiMatrix4x4*)> traverse =
+      [&scene, &defs, &traverse](const aiNode* node, const aiMatrix4x4* parentTransform) {
+        // post-order traversal for no reason
+        aiMatrix4x4 transform = *parentTransform * node->mTransformation;
+        for (u32 i = 0; i < node->mNumChildren; ++i)
+          traverse(node->mChildren[i], &transform);
+
+        // if there are no aiMeshes in this aiNode, we don't have to read geometry from it
+        if (node->mNumMeshes == 0)
+          return;
+
+        // count vertices and indices in this aiNode / aur::Mesh for allocation
+        namespace rv = std::views;
+        namespace r = std::ranges;
+        auto aiMeshes = std::span(node->mMeshes, node->mNumMeshes) |
+                        rv::transform([&scene](u32 ix) { return scene->mMeshes[ix]; });
+        const u32 vertexCnt = r::fold_left(aiMeshes | rv::transform(&aiMesh::mNumVertices), 0u, std::plus{});
+        const u32 indexCnt = r::fold_left(aiMeshes | rv::transform([](const aiMesh* m) {
+                                            return std::span<const aiFace>{m->mFaces, m->mNumFaces};
+                                          }) | rv::join |
+                                              rv::transform(&aiFace::mNumIndices),
+                                          0u, std::plus{});
+
+        // each aiNode correspond to an aur::Mesh
+        asset::MeshDefinition& def = defs.emplace_back();
+        def.vertices.reserve(vertexCnt);
+        def.indices.reserve(indexCnt);
+        def.objetFromModel = glm::make_mat4(reinterpret_cast<f32*>(&transform));
+
+        // each aiMesh corresponds to an aur::DrawSpan and includes geometry for that span
+        u32 spanOffset{};
+        for (const aiMesh* m : aiMeshes) {
+          // assert(m->mNumVertices > 0);
+          // assert(m->mNumFaces > 0);
+          // copy vertex attributes data in this aiMesh to mesh by appending fat vertices
+          for (u32 vertIx = 0; vertIx < m->mNumVertices; ++vertIx) {
+            const aiVector3D& pos = m->mVertices[vertIx];
+            const aiColor4D& col0 = m->mColors[0][vertIx];
+            Vertex v{{pos.x, pos.y, pos.z}, {col0.r, col0.g, col0.b, col0.a}};
+            def.vertices.push_back(v);
+          }
+
+          // copy index data in this aiMesh to mesh by appending its indices
+          std::span faces{m->mFaces, m->mNumFaces};
+          u32 aiMeshIndexCnt{};
+          for (const aiFace& face : faces) {
+            // assert(face.mNumIndices == 3);
+            std::span indices{face.mIndices, face.mNumIndices};
+            for (u32 index : indices)
+              def.indices.push_back(index);
+            aiMeshIndexCnt += face.mNumIndices;
+          }
+
+          // TODO(vug): bring material data to aur too.
+          // Record a DrawSpan for this chunk of geometry in the Mesh
+          const std::string tempMatAssetName = std::format(
+              "material[{}]{}", m->mMaterialIndex, scene->mMaterials[m->mMaterialIndex]->GetName().C_Str());
+          def.materialSpans.emplace_back(asset::MeshDefinition::SubMesh{
+              .materialAssetName = tempMatAssetName, .offset = spanOffset, .count = aiMeshIndexCnt});
+          spanOffset += aiMeshIndexCnt;
+        }
+      };
+
+  aiMatrix4x4 identity;
+  traverse(scene->mRootNode, &identity);
+
+  return defs;
 }
 
 } // namespace aur
