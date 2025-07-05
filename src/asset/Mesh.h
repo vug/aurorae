@@ -14,13 +14,13 @@ namespace aur::asset {
 
 struct Material;
 
-struct MeshDefinition {
-  struct SubMesh {
-    std::string materialAssetName;
-    u32 offset{};
-    u32 count{};
-  };
+struct SubMesh {
+  std::string materialAssetName;
+  u32 offset{};
+  u32 count{};
+};
 
+struct MeshDefinition {
   std::vector<Vertex> vertices;
   std::vector<u32> indices;
   std::vector<SubMesh> materialSpans;
@@ -54,6 +54,7 @@ public:
 
   std::vector<Vertex> getVertices() const { return def_.vertices; }
   std::vector<u32> getIndicates() const { return def_.indices; }
+  std::vector<SubMesh> getSubMeshes() const { return def_.materialSpans; }
 
   std::string debugName;
 

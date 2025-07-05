@@ -623,15 +623,9 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageMemory_ = VK_NULL_HANDLE;
 }
 
-render::Mesh Renderer::upload(Handle<asset::Mesh> meshHnd) const {
-  render::Mesh rMesh;
-  const asset::Mesh& aMesh = meshHnd.get();
-  rMesh.vertexBuffer =
-      createBufferAndUploadData(aMesh.getVertices(), BufferUsage::Vertex, aMesh.debugName + " Vertex Buffer");
-  rMesh.indexBuffer =
-      createBufferAndUploadData(aMesh.getIndicates(), BufferUsage::Index, aMesh.debugName + " Index Buffer");
-  rMesh.asset = meshHnd;
-  return rMesh;
+Handle<render::Mesh> Renderer::upload(Handle<asset::Mesh> meshHnd) {
+  meshes_.emplace_back(*this, meshHnd);
+  return Handle<render::Mesh>(static_cast<u32>(meshes_.size() - 1));
 }
 
 Handle<render::Shader> Renderer::upload(Handle<asset::Shader> shaderHnd) {

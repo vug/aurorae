@@ -1,20 +1,20 @@
 /*
-TODO(vug): constructors for render::Mesh instead of Renderer::upload functions
-           Renderer owns render objects, keep their handles. (Follow the roadmap)
-TODO(vug): Bring DrawSpans to render::Mesh.
 TODO(vug): continue going over clang-tidy settings from modernize-avoid-bind.
            https://clang.llvm.org/extra/clang-tidy/checks/list.html
-TODO(vug): Introduce the PipelineCache.
+TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
+TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
+TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
+TODO(vug): asset::Texture, render::Texture
+TODO(vug): bring a Khronos sample asset with textures
+TODO(vug): bring a texture (stb or oiio)
 TODO(vug): store debug names with objects
+TODO(vug): Introduce the PipelineCache.
 TODO(vug): Convert asset::Material to the new MaterialDefinition system. -> render::Material
 TODO(vug): First create (dummy) Materials (with different debug names) -> store them in AssetManager
            then create asset::Mesh and MaterialSpans.
-TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
-TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): add STL includes to a precompiled header pch_stl.h
            Also add headers such as utils and logger that are included in
            every file into pch_aur.h. and maybe a pch_dependencies
-TODO(vug): bring a texture (stb or oiio)
 TODO(vug): introduce RenderDoc
 TODO(vug): Very simple scene abstraction that has a vector entities w/render mesh handles and transforms.
 TODO(vug): bring https://github.com/Neargye/magic_enum and use it for auto enum -> string conversions.
@@ -30,10 +30,9 @@ TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPo
 TODO(vug): bring Open Image IO (does not have to support all formats/backends. One HDR, one lossless, and one
            compressed is enough)
 TODO(vug): Add Renderer Vertex, Index, Uniform, Storage, Staging buffer creation via VMA methods (?)
-TODO(vug): Introduce more resource abstractions (Image/Texture, Sampler... Concrete Buffer types?) then
-           introduce CRTP base class generalization. (See chat) I can give VulkanContext as context so that
-           everything necessary will be available for creation
-TODO(vug): add Renderer Texture, Depth/Stencil Image, Offscreen Render Target creation via VMA
+TODO(vug)  introduce CRTP Resource base class generalization. (See chat) I can give VulkanContext as context
+           so that everything necessary will be available for creation
+TODO(vug): add Depth/Stencil Image, Offscreen Render Target creation via VMA
            methods
 TODO(vug): Can I abstract away currentInFlightImageIx and sync objects?
 TODO(vug): use slang as the shader language, and import global and per-frame uniforms and default vertex

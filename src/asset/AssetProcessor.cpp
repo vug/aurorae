@@ -174,7 +174,7 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
           // Record a DrawSpan for this chunk of geometry in the Mesh
           const std::string tempMatAssetName = std::format(
               "material[{}]{}", m->mMaterialIndex, scene->mMaterials[m->mMaterialIndex]->GetName().C_Str());
-          def.materialSpans.emplace_back(asset::MeshDefinition::SubMesh{
+          def.materialSpans.emplace_back(asset::SubMesh{
               .materialAssetName = tempMatAssetName, .offset = spanOffset, .count = aiMeshIndexCnt});
           spanOffset += aiMeshIndexCnt;
         }

@@ -147,7 +147,7 @@ public:
   PerFrameData perFrameData;
 
   [[nodiscard]] Handle<render::Shader> upload(Handle<asset::Shader> shaderHnd);
-  [[nodiscard]] render::Mesh upload(Handle<asset::Mesh> meshHnd) const;
+  [[nodiscard]] Handle<render::Mesh> upload(Handle<asset::Mesh> meshHnd);
 
   inline const render::Shader* get(Handle<render::Shader> handle) const { return &shaders_.at(handle); }
   inline const render::Mesh* get(Handle<render::Mesh> handle) const { return &meshes_.at(handle); }

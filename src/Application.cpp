@@ -57,11 +57,11 @@ void Application::run() {
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
   const std::vector<asset::MeshDefinition> meshDefs = assetProcessor_.processMeshes(modelPath);
-  const Handle<asset::Mesh> boxMeshHandle = assetManager_.loadMeshFromDefinition(meshDefs[0]);
-  const render::Mesh boxRenderMesh = renderer_.upload(boxMeshHandle);
+  const Handle<asset::Mesh> boxMeshAssetHandle = assetManager_.loadMeshFromDefinition(meshDefs[0]);
+  const Handle<render::Mesh> boxMeshRenderHandle = renderer_.upload(boxMeshAssetHandle);
   const asset::MeshDefinition triangleMesh = asset::MeshDefinition::makeTriangle();
-  const Handle<asset::Mesh> triangleMeshHandle = assetManager_.loadMeshFromDefinition(triangleMesh);
-  const render::Mesh triangleRenderMesh = renderer_.upload(triangleMeshHandle);
+  const Handle<asset::Mesh> triangleMeshAssetHandle = assetManager_.loadMeshFromDefinition(triangleMesh);
+  const Handle<render::Mesh> triangleMeshRenderHandle = renderer_.upload(triangleMeshAssetHandle);
   log().trace("Created assets...");
 
   log().debug("Starting main loop...");
@@ -110,8 +110,8 @@ void Application::run() {
         .sizeBytes = sizeof(worldFromObject1),
         .data = glm::value_ptr(worldFromObject1),
     };
-    renderer_.drawIndexed(unlitPipeline, triangleRenderMesh.vertexBuffer, triangleRenderMesh.indexBuffer,
-                          &pcInfo1);
+    renderer_.drawIndexed(unlitPipeline, triangleMeshRenderHandle.get().getVertexBuffer(),
+                          triangleMeshRenderHandle.get().getIndexBuffer(), &pcInfo1);
 
     glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
     const PushConstantsInfo pcInfo2{
@@ -120,7 +120,8 @@ void Application::run() {
         .sizeBytes = sizeof(worldFromObject2),
         .data = glm::value_ptr(worldFromObject2),
     };
-    renderer_.drawIndexed(unlitPipeline, boxRenderMesh.vertexBuffer, boxRenderMesh.indexBuffer, &pcInfo2);
+    renderer_.drawIndexed(unlitPipeline, boxMeshRenderHandle.get().getVertexBuffer(),
+                          boxMeshRenderHandle.get().getIndexBuffer(), &pcInfo2);
     renderer_.endFrame();
   }
 
