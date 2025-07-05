@@ -12,7 +12,7 @@
 
 namespace aur::asset {
 
-struct Material;
+class Material;
 
 struct SubMesh {
   std::string materialAssetName;

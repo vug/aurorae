@@ -8,10 +8,8 @@ namespace aur::asset {
 class Shader;
 struct Pipeline;
 
-struct MaterialCreateInfo {
-  // plan for asset::Material
-  Handle<Shader> vertexHandle;
-  Handle<Shader> fragHandle;
+struct MaterialDefinition {
+  Handle<Shader> shaderHandle;
 
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
@@ -19,12 +17,23 @@ struct MaterialCreateInfo {
   // Pipeline object, and corresponding buffers and images
 };
 
-struct Material {
-  // asset::Material
-  // will contain a reference to asset::Shader
+class Material {
+public:
+  static Material create(const MaterialDefinition& createInfo);
 
-  // render::Material
-  Pipeline* pipeline;
+  ~Material() = default;
+  Material(const Material&) = delete;
+  Material& operator=(const Material&) = delete;
+  Material(Material&& other) noexcept = default;
+  Material& operator=(Material&& other) noexcept = default;
+
+private:
+  Material() = default;
+
+  MaterialDefinition def_;
+
+  // TO render::Material
+  Pipeline* pipeline{};
   DescriptorSet descriptorSet;
 };
 

@@ -155,17 +155,17 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
           for (u32 vertIx = 0; vertIx < m->mNumVertices; ++vertIx) {
             const aiVector3D& pos = m->mVertices[vertIx];
             const aiColor4D& col0 = m->mColors[0][vertIx];
-            Vertex v{{pos.x, pos.y, pos.z}, {col0.r, col0.g, col0.b, col0.a}};
+            const Vertex v{.position = {pos.x, pos.y, pos.z}, .color = {col0.r, col0.g, col0.b, col0.a}};
             def.vertices.push_back(v);
           }
 
           // copy index data in this aiMesh to mesh by appending its indices
-          std::span faces{m->mFaces, m->mNumFaces};
+          const std::span faces{m->mFaces, m->mNumFaces};
           u32 aiMeshIndexCnt{};
           for (const aiFace& face : faces) {
             // assert(face.mNumIndices == 3);
-            std::span indices{face.mIndices, face.mNumIndices};
-            for (u32 index : indices)
+            const std::span indices{face.mIndices, face.mNumIndices};
+            for (const u32 index : indices)
               def.indices.push_back(index);
             aiMeshIndexCnt += face.mNumIndices;
           }

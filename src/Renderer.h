@@ -83,12 +83,14 @@ public:
   void bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const;
   void bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* pushConstantInfoOpt) const;
   void setDynamicPipelineState() const;
+
   void drawWithoutVertexInput(const Pipeline& pipeline, u32 vertexCnt,
                               const PushConstantsInfo* pushConstantInfoOpt = {}) const;
   void drawVertices(const Pipeline& pipeline, const Buffer& vertexBuffer,
                     const PushConstantsInfo* pushConstantInfoOpt) const;
   void drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer, const Buffer& indexBuffer,
                    const PushConstantsInfo* pushConstantInfoOpt) const;
+  void drawSpan(const render::DrawSpan drawSpan) const;
   void deviceWaitIdle() const;
 
   // Call this when the window framebuffer size has changed.
@@ -149,8 +151,10 @@ public:
   [[nodiscard]] Handle<render::Shader> upload(Handle<asset::Shader> shaderHnd);
   [[nodiscard]] Handle<render::Mesh> upload(Handle<asset::Mesh> meshHnd);
 
-  inline const render::Shader* get(Handle<render::Shader> handle) const { return &shaders_.at(handle); }
-  inline const render::Mesh* get(Handle<render::Mesh> handle) const { return &meshes_.at(handle); }
+  [[nodiscard]] const render::Shader* get(Handle<render::Shader> handle) const {
+    return &shaders_.at(handle);
+  }
+  [[nodiscard]] const render::Mesh* get(Handle<render::Mesh> handle) const { return &meshes_.at(handle); }
 
 private:
   void createPerFrameDataResources();
