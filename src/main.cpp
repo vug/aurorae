@@ -23,6 +23,7 @@ TODO(vug): bring https://github.com/Neargye/magic_enum and use it for auto enum 
 TODO(vug): Introduce a default material, and a missing material.
 TODO(vug): AssetManager has a vector[handle.id] = Asset. Add a cache[def.uniqueIdStr] = handle to not reload
            same asset twice.
+           Similarly Renderer also has a cache for render objects it uploaded from asset handles.
 TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
            methods.
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
@@ -39,6 +40,7 @@ TODO(vug): use slang as the shader language, and import global and per-frame uni
            attributes etc. from there
 TODO(vug): generate layouts from shader reflection
 TODO(vug): basic geometry assets: quad
+TODO(vug): ability to delete asset and render objects. Need an HandleManager that'll mark removed obj indices.
 .
 TODO(vug): Initially Material can be stored in files. Later, split materials and pipelines. Store pipelines in
            files, and store materials in files, where they refer to a pipeline and has some parameters.
