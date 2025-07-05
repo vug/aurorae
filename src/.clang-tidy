@@ -31,7 +31,34 @@ Checks: >
   misc-unused-parameters,
   misc-unused-using-decls,
   misc-use-anonymous-namespace,
-  misc-use-internal-linkage
+  misc-use-internal-linkage,
+  modernize-concat-nested-namespaces,
+  modernize-deprecated-headers,
+  modernize-loop-convert,
+  modernize-make-shared,
+  modernize-make-unique,
+  modernize-min-max-use-initializer-list,
+  modernize-raw-string-literal,
+  modernize-redundant-void-arg,
+  modernize-type-traits,
+  modernize-use-auto,
+  modernize-use-constraints,
+  modernize-use-default-member-init,
+  modernize-use-designated-initializers,
+  modernize-use-emplace,
+  modernize-use-equals-default,
+  modernize-use-equals-delete,
+  modernize-use-integer-sign-comparison,
+  modernize-use-nodiscard,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-ranges,
+  modernize-use-starts-ends-with,
+  modernize-use-std-numbers,
+  modernize-use-std-print,
+  modernize-use-transparent-functors,
+  modernize-use-using
+
 CheckOptions:
   - key: cppcoreguidelines-pro-type-const-cast.StrictMode
     value: true

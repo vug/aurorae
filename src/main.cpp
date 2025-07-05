@@ -1,6 +1,4 @@
 /*
-TODO(vug): continue going over clang-tidy settings from modernize-avoid-bind.
-           https://clang.llvm.org/extra/clang-tidy/checks/list.html
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
@@ -12,6 +10,8 @@ TODO(vug): Introduce the PipelineCache.
 TODO(vug): Convert asset::Material to the new MaterialDefinition system. -> render::Material
 TODO(vug): First create (dummy) Materials (with different debug names) -> store them in AssetManager
            then create asset::Mesh and MaterialSpans.
+TODO(vug): continue going over clang-tidy settings from performance-.
+           https://clang.llvm.org/extra/clang-tidy/checks/list.html
 TODO(vug): add STL includes to a precompiled header pch_stl.h
            Also add headers such as utils and logger that are included in
            every file into pch_aur.h. and maybe a pch_dependencies
