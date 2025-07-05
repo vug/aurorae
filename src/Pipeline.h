@@ -10,12 +10,12 @@ namespace aur {
 
 class Renderer;
 class AssetManager;
-namespace asset {
+namespace render {
 class Shader;
 }
 
 struct PipelineCreateInfo {
-  Handle<asset::Shader> shader;
+  Handle<render::Shader> shader;
   CullMode cullMode{CullMode::Back};
 
   // Compare members in a fixed order.

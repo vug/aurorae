@@ -46,8 +46,7 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
 
       return renderer_->createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
     }()} {
-  const Handle<render::Shader> shaderHnd = renderer.upload(createInfo.shader);
-  const render::Shader& shader = shaderHnd.get();
+  const render::Shader& shader = createInfo.shader.get();
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,

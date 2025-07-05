@@ -50,8 +50,9 @@ void Application::run() {
                                     std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
   if (!unlitShaderDefOpt.has_value())
     log().fatal("Failed to load unlit shader!");
-  const Handle<asset::Shader> unlitShader = assetManager_.loadShaderFromDefinition(*unlitShaderDefOpt);
-  const PipelineCreateInfo pipelineCreateInfo{.shader = unlitShader};
+  const Handle<asset::Shader> unlitAShader = assetManager_.loadShaderFromDefinition(*unlitShaderDefOpt);
+  const Handle<render::Shader> unlitRShader = renderer_.upload(unlitAShader);
+  const PipelineCreateInfo pipelineCreateInfo{.shader = unlitRShader};
   const Pipeline unlitPipeline{renderer_, pipelineCreateInfo};
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
