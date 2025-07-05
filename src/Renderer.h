@@ -145,8 +145,12 @@ public:
   }
 
   PerFrameData perFrameData;
+
+  [[nodiscard]] Handle<render::Shader> upload(Handle<asset::Shader> shaderHnd);
   [[nodiscard]] render::Mesh upload(Handle<asset::Mesh> meshHnd) const;
-  [[nodiscard]] render::Shader upload(Handle<asset::Shader> shaderHnd) const;
+
+  inline const render::Shader* get(Handle<render::Shader> handle) const { return &shaders_.at(handle); }
+  inline const render::Mesh* get(Handle<render::Mesh> handle) const { return &meshes_.at(handle); }
 
 private:
   void createPerFrameDataResources();
@@ -195,6 +199,9 @@ private:
   VkClearColorValue clearColor_{0.1f, 0.1f, 0.1f, 1.0f};
   // Default depth is 1.0 (far plane), stencil is 0
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
+
+  std::vector<render::Shader> shaders_;
+  std::vector<render::Mesh> meshes_;
 };
 
 } // namespace aur

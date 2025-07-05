@@ -30,7 +30,7 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
   return vkAttributeDescription;
 }
 
-Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInfo)
+Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
     : createInfo_{createInfo}
     , renderer_{&renderer}
     , pipelineLayout_{[this]() {
@@ -46,7 +46,8 @@ Pipeline::Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInf
 
       return renderer_->createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
     }()} {
-  const render::Shader shader = renderer.upload(createInfo.shader);
+  const Handle<render::Shader> shaderHnd = renderer.upload(createInfo.shader);
+  const render::Shader& shader = shaderHnd.get();
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,

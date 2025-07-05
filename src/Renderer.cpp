@@ -634,8 +634,9 @@ render::Mesh Renderer::upload(Handle<asset::Mesh> meshHnd) const {
   return rMesh;
 }
 
-render::Shader Renderer::upload(Handle<asset::Shader> shaderHnd) const {
-  return {*this, shaderHnd};
+Handle<render::Shader> Renderer::upload(Handle<asset::Shader> shaderHnd) {
+  shaders_.emplace_back(*this, shaderHnd);
+  return Handle<render::Shader>(static_cast<u32>(shaders_.size() - 1));
 }
 
 void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {

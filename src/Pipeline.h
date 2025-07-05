@@ -26,7 +26,7 @@ struct PipelineCreateInfo {
 class Pipeline {
 public:
   Pipeline() = default;
-  Pipeline(const Renderer& renderer, const PipelineCreateInfo& createInfo);
+  Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo);
   ~Pipeline();
 
   Pipeline(const Pipeline&) = delete;

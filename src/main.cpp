@@ -1,4 +1,5 @@
 /*
+TODO(vug): createInfo structs should have render handles not asset handles, e.g. PipelineCreateInfo
 TODO(vug): constructors for render::Mesh instead of Renderer::upload functions
            Renderer owns render objects, keep their handles. (Follow the roadmap)
 TODO(vug): Bring DrawSpans to render::Mesh.
