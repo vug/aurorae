@@ -1,4 +1,6 @@
 /*
+TODO(vug): render::Material
+TODO(vug): Introduce the PipelineCache via unordered map, and VkPipelineCache
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
@@ -6,10 +8,7 @@ TODO(vug): asset::Texture, render::Texture
 TODO(vug): bring a Khronos sample asset with textures
 TODO(vug): bring a texture (stb or oiio)
 TODO(vug): store debug names with objects
-TODO(vug): Introduce the PipelineCache.
-TODO(vug): Convert asset::Material to the new MaterialDefinition system. -> render::Material
-TODO(vug): First create (dummy) Materials (with different debug names) -> store them in AssetManager
-           then create asset::Mesh and MaterialSpans.
+TODO(vug): Create some default Materials (with different debug names) -> store them in AssetManager
 TODO(vug): continue going over clang-tidy settings from performance-.
            https://clang.llvm.org/extra/clang-tidy/checks/list.html
 TODO(vug): add STL includes to a precompiled header pch_stl.h
