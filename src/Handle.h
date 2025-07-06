@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "Utils.h"
 
 namespace aur {
@@ -23,3 +25,10 @@ struct Handle {
   operator u32() const { return id; } // NOLINT(google-explicit-constructor)
 };
 } // namespace aur
+
+template <typename TAsset>
+struct std::hash<aur::Handle<TAsset>> {
+  size_t operator()(const aur::Handle<TAsset>& handle) const noexcept {
+    return std::hash<aur::u32>{}(handle.id);
+  }
+}; // namespace std
