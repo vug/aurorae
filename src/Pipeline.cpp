@@ -135,7 +135,7 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
       .pDynamicStates = dynamicStates.data(),
   };
 
-  const VkFormat colorAttachmentFormat = renderer.getSwapchainColorImageFormat();
+  const VkFormat colorAttachmentFormat = renderer.getSwapchainColorImageVkFormat();
   const VkPipelineRenderingCreateInfoKHR pipelineRenderingCreateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
       .colorAttachmentCount = 1,
@@ -162,12 +162,13 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
   };
 
   // VkPipeline hnd{VK_NULL_HANDLE};
-  VK(vkCreateGraphicsPipelines(renderer.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &handle_));
+  VK(vkCreateGraphicsPipelines(renderer.getVkDevice(), renderer_->getVkPipelineCache(), 1, &pipelineInfo,
+                               nullptr, &handle_));
 }
 
 Pipeline::~Pipeline() {
   if (handle_ != VK_NULL_HANDLE) {
-    vkDestroyPipeline(renderer_->getDevice(), handle_, nullptr);
+    vkDestroyPipeline(renderer_->getVkDevice(), handle_, nullptr);
     handle_ = VK_NULL_HANDLE;
   }
 }
@@ -198,7 +199,7 @@ void Pipeline::invalidate() {
 
 void Pipeline::destroy() {
   if (isValid())
-    vkDestroyPipeline(renderer_->getDevice(), handle_, nullptr);
+    vkDestroyPipeline(renderer_->getVkDevice(), handle_, nullptr);
   invalidate();
 }
 } // namespace aur

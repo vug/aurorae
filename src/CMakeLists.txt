@@ -48,6 +48,7 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 # --- Find Dependencies ---
 # Find Vulkan (usually provided by the SDK)
 #find_package(Vulkan REQUIRED)
+#message(STATUS "Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
 #message(STATUS "Found Vulkan: ${Vulkan_LIBRARIES}")
 #get_target_property(VULKAN_LIBRARY Vulkan::Vulkan LOCATION)
 #message(STATUS "Vulkan target location: ${VULKAN_LIBRARY}")
@@ -57,6 +58,8 @@ get_target_property(VOLK_LIBRARY volk::volk LOCATION)
 message(STATUS "Volk target location: ${VOLK_LIBRARY}")
 get_target_property(VOLK_INCLUDE_DIR volk::volk INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "Volk include dirs: ${VOLK_INCLUDE_DIR}")
+message(STATUS "Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
+
 
 find_package(vk-bootstrap REQUIRED)
 find_package(spdlog REQUIRED)

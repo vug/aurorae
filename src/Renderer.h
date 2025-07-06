@@ -63,13 +63,14 @@ public:
   [[nodiscard]] inline const DescriptorSetLayout& getPerFrameDescriptorSetLayout() const {
     return perFrameDescriptorSetLayout_;
   }
-  [[nodiscard]] inline const VkDevice& getDevice() const { return vulkanContext_.getDevice(); }
+  [[nodiscard]] inline const VkDevice& getVkDevice() const { return vulkanContext_.getDevice(); }
   [[nodiscard]] inline const Allocator& getAllocator() const { return vulkanContext_.getAllocator(); }
   [[nodiscard]] inline u32 getSwapchainImageCount() const { return swapchain_.getImageCount(); }
-  [[nodiscard]] inline const VkFormat& getSwapchainColorImageFormat() const {
+  [[nodiscard]] inline const VkFormat& getSwapchainColorImageVkFormat() const {
     return swapchain_.getImageFormat();
   }
   [[nodiscard]] inline const VkFormat& getSwapchainDepthImageFormat() const { return depthFormat_; }
+  [[nodiscard]] inline const VkPipelineCache& getVkPipelineCache() const { return vkPipelineCache_; }
 
   // Returns true if frame rendering can proceed.
   // Returns false if the swapchain was recreated (or another non-fatal issue) and the caller should skip
@@ -150,6 +151,7 @@ private:
   VkCommandPool commandPoolOneShot_{VK_NULL_HANDLE};
   VkCommandBuffer commandBuffer_{VK_NULL_HANDLE};
   VkCommandBuffer commandBufferOneShot_{VK_NULL_HANDLE};
+  VkPipelineCache vkPipelineCache_{VK_NULL_HANDLE};
 
   VkImage depthImage_{VK_NULL_HANDLE};
   VmaAllocation depthImageMemory_{VK_NULL_HANDLE};

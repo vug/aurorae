@@ -58,6 +58,15 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   VK(vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfoOneShot, &commandBufferOneShot_));
   log().trace("Renderer main and one-shot command buffers are created/allocated.");
 
+  constexpr VkPipelineCacheCreateInfo pipelineCacheCrateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+      .initialDataSize = 0,
+      .pInitialData = nullptr,
+  };
+  VK(vkCreatePipelineCache(vulkanContext_.getDevice(), &pipelineCacheCrateInfo, nullptr, &vkPipelineCache_));
+
   const DescriptorPoolCreateInfo descPoolInfo{
       .maxSets = 512,
       .poolSizes = {
@@ -69,7 +78,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
           // {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 32},            // For render targets or compute images
           // Add other types as needed (e.g., INVOCATION_GRAPHICS_NV, ACCELERATION_STRUCTURE_KHR)
       }};
-  descriptorPool_ = DescriptorPool(getDevice(), descPoolInfo);
+  descriptorPool_ = DescriptorPool(getVkDevice(), descPoolInfo);
 
   constexpr VkSemaphoreCreateInfo semaphoreInfo{.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
   for (auto& semaphore : imageAvailableSemaphores_)
@@ -91,6 +100,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
 Renderer::~Renderer() {
   // Ensure GPU is idle before destroying resources
   deviceWaitIdle();
+  vkDestroyPipelineCache(vulkanContext_.getDevice(), vkPipelineCache_, nullptr);
 
   cleanupSwapchainDepthResources(); // Destroy depth buffer
 
@@ -128,7 +138,7 @@ Renderer::~Renderer() {
 
 ShaderModule Renderer::createShaderModule(const ShaderModuleCreateInfo& createInfo,
                                           std::string_view debugName) const {
-  ShaderModule obj{getDevice(), createInfo};
+  ShaderModule obj{getVkDevice(), createInfo};
   setDebugName(obj, debugName);
   return obj;
 }
@@ -175,7 +185,7 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
       .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
   };
   VkFence uploadFence;
-  VK(vkCreateFence(getDevice(), &fenceInfo, nullptr, &uploadFence));
+  VK(vkCreateFence(getVkDevice(), &fenceInfo, nullptr, &uploadFence));
   const VkSubmitInfo submitInfo{
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
       .commandBufferCount = 1,
@@ -183,8 +193,8 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
   };
   VK(vkQueueSubmit(vulkanContext_.getGraphicsQueue(), 1, &submitInfo, uploadFence));
   constexpr u64 oneSec = 1'000'000'000;
-  VK(vkWaitForFences(getDevice(), 1, &uploadFence, VK_TRUE, oneSec));
-  vkDestroyFence(getDevice(), uploadFence, nullptr);
+  VK(vkWaitForFences(getVkDevice(), 1, &uploadFence, VK_TRUE, oneSec));
+  vkDestroyFence(getVkDevice(), uploadFence, nullptr);
 
   return deviceBuffer;
 }
@@ -635,7 +645,7 @@ Handle<render::Shader> Renderer::upload(Handle<asset::Shader> shaderHnd) {
 
 void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {
   if constexpr (kBuildType == BuildType::Debug) {
-    VK(vkSetDebugUtilsObjectNameEXT(getDevice(), &nameInfo));
+    VK(vkSetDebugUtilsObjectNameEXT(getVkDevice(), &nameInfo));
   }
 }
 
@@ -646,19 +656,19 @@ Buffer Renderer::createBuffer(const BufferCreateInfo& createInfo, std::string_vi
 }
 DescriptorSetLayout Renderer::createDescriptorSetLayout(const DescriptorSetLayoutCreateInfo& createInfo,
                                                         std::string_view debugName) const {
-  DescriptorSetLayout obj{getDevice(), createInfo};
+  DescriptorSetLayout obj{getVkDevice(), createInfo};
   setDebugName(obj, debugName);
   return obj;
 }
 DescriptorSet Renderer::createDescriptorSet(const DescriptorSetCreateInfo& createInfo,
                                             std::string_view debugName) const {
-  DescriptorSet obj{getDevice(), descriptorPool_.getHandle(), createInfo};
+  DescriptorSet obj{getVkDevice(), descriptorPool_.getHandle(), createInfo};
   setDebugName(obj, debugName);
   return obj;
 }
 PipelineLayout Renderer::createPipelineLayout(const PipelineLayoutCreateInfo& createInfo,
                                               std::string_view debugName) const {
-  PipelineLayout obj{getDevice(), createInfo};
+  PipelineLayout obj{getVkDevice(), createInfo};
   setDebugName(obj, debugName);
   return obj;
 }
