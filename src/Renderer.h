@@ -11,6 +11,7 @@
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
 #include "Resources/DescriptorSetLayout.h"
+#include "Resources/PipelineCache.h"
 #include "Resources/ShaderModule.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
@@ -70,7 +71,9 @@ public:
     return swapchain_.getImageFormat();
   }
   [[nodiscard]] inline const VkFormat& getSwapchainDepthImageFormat() const { return depthFormat_; }
-  [[nodiscard]] inline const VkPipelineCache& getVkPipelineCache() const { return vkPipelineCache_; }
+  [[nodiscard]] inline const VkPipelineCache& getVkPipelineCache() const {
+    return pipelineCache_.getHandle();
+  }
 
   // Returns true if frame rendering can proceed.
   // Returns false if the swapchain was recreated (or another non-fatal issue) and the caller should skip
@@ -151,7 +154,7 @@ private:
   VkCommandPool commandPoolOneShot_{VK_NULL_HANDLE};
   VkCommandBuffer commandBuffer_{VK_NULL_HANDLE};
   VkCommandBuffer commandBufferOneShot_{VK_NULL_HANDLE};
-  VkPipelineCache vkPipelineCache_{VK_NULL_HANDLE};
+  PipelineCache pipelineCache_{};
 
   VkImage depthImage_{VK_NULL_HANDLE};
   VmaAllocation depthImageMemory_{VK_NULL_HANDLE};
@@ -180,7 +183,7 @@ private:
   // Default depth is 1.0 (far plane), stencil is 0
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
 
-  std::unordered_map<PipelineCreateInfo, Pipeline> pipelineCache_;
+  std::unordered_map<PipelineCreateInfo, Pipeline> pipelineCacheMap_;
   std::vector<render::Shader> shaders_;
   std::vector<render::Mesh> meshes_;
 };

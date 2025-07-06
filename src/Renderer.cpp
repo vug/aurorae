@@ -30,7 +30,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
       .flags = 0,
       .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
   };
-  VK(vkCreateCommandPool(vulkanContext_.getDevice(), &cmdPoolInfo, nullptr, &commandPool_));
+  VK(vkCreateCommandPool(getVkDevice(), &cmdPoolInfo, nullptr, &commandPool_));
   log().trace("Renderer main command pool created.");
 
   const VkCommandPoolCreateInfo cmdPoolOneShotInfo{
@@ -38,7 +38,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
       .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
       .queueFamilyIndex = vulkanContext_.getGraphicsQueueFamilyIndex(),
   };
-  VK(vkCreateCommandPool(vulkanContext_.getDevice(), &cmdPoolOneShotInfo, nullptr, &commandPoolOneShot_));
+  VK(vkCreateCommandPool(getVkDevice(), &cmdPoolOneShotInfo, nullptr, &commandPoolOneShot_));
   log().trace("Renderer one shot command pool created.");
 
   // Command Buffers
@@ -48,24 +48,20 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
       .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
       .commandBufferCount = 1,
   };
-  VK(vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfo, &commandBuffer_));
+  VK(vkAllocateCommandBuffers(getVkDevice(), &allocInfo, &commandBuffer_));
   const VkCommandBufferAllocateInfo allocInfoOneShot{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = commandPoolOneShot_,
       .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
       .commandBufferCount = 1,
   };
-  VK(vkAllocateCommandBuffers(vulkanContext_.getDevice(), &allocInfoOneShot, &commandBufferOneShot_));
+  VK(vkAllocateCommandBuffers(getVkDevice(), &allocInfoOneShot, &commandBufferOneShot_));
   log().trace("Renderer main and one-shot command buffers are created/allocated.");
 
-  constexpr VkPipelineCacheCreateInfo pipelineCacheCrateInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0,
-      .initialDataSize = 0,
-      .pInitialData = nullptr,
+  PipelineCacheCreateInfo pipelineCacheCrateInfo{
+      .initialData = {},
   };
-  VK(vkCreatePipelineCache(vulkanContext_.getDevice(), &pipelineCacheCrateInfo, nullptr, &vkPipelineCache_));
+  pipelineCache_ = PipelineCache(getVkDevice(), pipelineCacheCrateInfo);
 
   const DescriptorPoolCreateInfo descPoolInfo{
       .maxSets = 512,
@@ -82,13 +78,13 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
 
   constexpr VkSemaphoreCreateInfo semaphoreInfo{.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
   for (auto& semaphore : imageAvailableSemaphores_)
-    VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &semaphore));
+    VK(vkCreateSemaphore(getVkDevice(), &semaphoreInfo, nullptr, &semaphore));
   for (auto& semaphore : renderFinishedSemaphores_)
-    VK(vkCreateSemaphore(vulkanContext_.getDevice(), &semaphoreInfo, nullptr, &semaphore));
+    VK(vkCreateSemaphore(getVkDevice(), &semaphoreInfo, nullptr, &semaphore));
 
   constexpr VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
                                         .flags = VK_FENCE_CREATE_SIGNALED_BIT};
-  VK(vkCreateFence(vulkanContext_.getDevice(), &fenceInfo, nullptr, &inFlightFence_));
+  VK(vkCreateFence(getVkDevice(), &fenceInfo, nullptr, &inFlightFence_));
   log().trace("Renderer sync objects created.");
 
   createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
@@ -100,33 +96,32 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
 Renderer::~Renderer() {
   // Ensure GPU is idle before destroying resources
   deviceWaitIdle();
-  vkDestroyPipelineCache(vulkanContext_.getDevice(), vkPipelineCache_, nullptr);
 
   cleanupSwapchainDepthResources(); // Destroy depth buffer
 
   // Clean up sync objects
   for (auto& semaphore : imageAvailableSemaphores_) {
     if (semaphore != VK_NULL_HANDLE)
-      vkDestroySemaphore(vulkanContext_.getDevice(), semaphore, nullptr);
+      vkDestroySemaphore(getVkDevice(), semaphore, nullptr);
     semaphore = VK_NULL_HANDLE;
   }
   for (auto& semaphore : renderFinishedSemaphores_) {
     if (semaphore != VK_NULL_HANDLE)
-      vkDestroySemaphore(vulkanContext_.getDevice(), semaphore, nullptr);
+      vkDestroySemaphore(getVkDevice(), semaphore, nullptr);
     semaphore = VK_NULL_HANDLE;
   }
   if (inFlightFence_ != VK_NULL_HANDLE)
-    vkDestroyFence(vulkanContext_.getDevice(), inFlightFence_, nullptr);
+    vkDestroyFence(getVkDevice(), inFlightFence_, nullptr);
   inFlightFence_ = VK_NULL_HANDLE;
 
   if (commandPool_ != VK_NULL_HANDLE) {
     // Command buffers allocated from this pool are implicitly freed
-    vkDestroyCommandPool(vulkanContext_.getDevice(), commandPool_, nullptr);
+    vkDestroyCommandPool(getVkDevice(), commandPool_, nullptr);
     commandPool_ = VK_NULL_HANDLE;
     commandBuffer_ = VK_NULL_HANDLE;
   }
   if (commandPoolOneShot_ != VK_NULL_HANDLE) {
-    vkDestroyCommandPool(vulkanContext_.getDevice(), commandPoolOneShot_, nullptr);
+    vkDestroyCommandPool(getVkDevice(), commandPoolOneShot_, nullptr);
     commandPoolOneShot_ = VK_NULL_HANDLE;
     commandBufferOneShot_ = VK_NULL_HANDLE;
   }
@@ -256,7 +251,7 @@ void Renderer::internalRecreateSwapchain() {
 }
 
 bool Renderer::beginFrame() {
-  VK(vkWaitForFences(vulkanContext_.getDevice(), 1, &inFlightFence_, VK_TRUE, UINT64_MAX));
+  VK(vkWaitForFences(getVkDevice(), 1, &inFlightFence_, VK_TRUE, UINT64_MAX));
 
   if (framebufferWasResized_ || swapchainIsStale_) {
     internalRecreateSwapchain();
@@ -266,7 +261,7 @@ bool Renderer::beginFrame() {
     // fails with out-of-date, we'll handle it below.
   }
 
-  VkResult result = vkAcquireNextImageKHR(vulkanContext_.getDevice(), swapchain_.getSwapchain(), UINT64_MAX,
+  VkResult result = vkAcquireNextImageKHR(getVkDevice(), swapchain_.getSwapchain(), UINT64_MAX,
                                           imageAvailableSemaphores_[currentInFlightImageIx_], VK_NULL_HANDLE,
                                           &currentSwapchainImageIx_);
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
@@ -279,7 +274,7 @@ bool Renderer::beginFrame() {
   }
 
   // Only reset the fence if we are sure we will submit work that signals it
-  VK(vkResetFences(vulkanContext_.getDevice(), 1, &inFlightFence_));
+  VK(vkResetFences(getVkDevice(), 1, &inFlightFence_));
 
   // TODO(vug): introduce a scopedMap -> when it goes out of scope, it unmaps automatically.
   {
@@ -290,7 +285,7 @@ bool Renderer::beginFrame() {
 
   // Reset the command pool (which resets all command buffers allocated from it)
   // more performant than to reset each command buffer individually
-  VK(vkResetCommandPool(vulkanContext_.getDevice(), commandPool_, 0));
+  VK(vkResetCommandPool(getVkDevice(), commandPool_, 0));
 
   constexpr VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -573,7 +568,7 @@ void Renderer::drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer,
 }
 
 void Renderer::deviceWaitIdle() const {
-  VK(vkDeviceWaitIdle(vulkanContext_.getDevice()));
+  VK(vkDeviceWaitIdle(getVkDevice()));
 }
 
 void Renderer::createSwapchainDepthResources() {
@@ -619,13 +614,13 @@ void Renderer::createSwapchainDepthResources() {
           },
   };
 
-  VK(vkCreateImageView(vulkanContext_.getDevice(), &viewInfo, nullptr, &depthImageView_));
+  VK(vkCreateImageView(getVkDevice(), &viewInfo, nullptr, &depthImageView_));
   log().debug("Depth resources created (Format: {}).", static_cast<int>(depthFormat_));
 }
 
 void Renderer::cleanupSwapchainDepthResources() {
   if (depthImageView_ != VK_NULL_HANDLE)
-    vkDestroyImageView(vulkanContext_.getDevice(), depthImageView_, nullptr);
+    vkDestroyImageView(getVkDevice(), depthImageView_, nullptr);
   if (depthImage_ != VK_NULL_HANDLE) // Memory is freed with vmaDestroyImage
     vmaDestroyImage(getAllocator().getHandle(), depthImage_, depthImageMemory_);
   depthImageView_ = VK_NULL_HANDLE;
@@ -674,7 +669,7 @@ PipelineLayout Renderer::createPipelineLayout(const PipelineLayoutCreateInfo& cr
 }
 const Pipeline* Renderer::createOrGetPipeline(const PipelineCreateInfo& createInfo,
                                               std::string_view debugName) {
-  auto [iter, _] = pipelineCache_.try_emplace(createInfo, *this, createInfo);
+  auto [iter, _] = pipelineCacheMap_.try_emplace(createInfo, *this, createInfo);
   const auto& pipeline = iter->second;
   setDebugName(pipeline, debugName);
   return &pipeline;
