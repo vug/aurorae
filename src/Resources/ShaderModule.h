@@ -3,34 +3,31 @@
 #include <filesystem>
 
 #include "../VulkanWrappers.h"
+#include "VulkanResource.h"
 
 namespace aur {
 struct ShaderModuleCreateInfo {
   const std::vector<std::byte>* codeBlob{};
 };
 
-class ShaderModule {
+class ShaderModule : public VulkanResource<ShaderModule, VkShaderModule, ShaderModuleCreateInfo, VkDevice> {
 public:
   ShaderModule() = default;
   ShaderModule(VkDevice device, const ShaderModuleCreateInfo& createInfo);
   ~ShaderModule();
 
-  ShaderModule(const ShaderModule&) = delete;
-  ShaderModule& operator=(const ShaderModule&) = delete;
-  ShaderModule(ShaderModule&& other) noexcept;
-  ShaderModule& operator=(ShaderModule&& other) noexcept;
-
-  [[nodiscard]] const ShaderModuleCreateInfo& getCreateInfo() const { return createInfo_; }
-  [[nodiscard]] const VkShaderModule& getHandle() const { return handle_; }
-  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
+  ShaderModule(ShaderModule&& other) noexcept = default;
+  ShaderModule& operator=(ShaderModule&& other) noexcept = default;
 
 private:
-  void invalidate();
-  void destroy();
+  // Grant access to the base class to call implementation methods.
+  friend class VulkanResource<ShaderModule, VkShaderModule, ShaderModuleCreateInfo, VkDevice>;
 
-  VkDevice device_{VK_NULL_HANDLE};
-  ShaderModuleCreateInfo createInfo_{};
-  VkShaderModule handle_{VK_NULL_HANDLE};
+  // The static creator function called by the base class constructor.
+  static VkShaderModule createImpl(const ShaderModuleCreateInfo& createInfo,
+                                   const std::tuple<VkDevice>& context);
+  // The destroyer function called by the base class.
+  void destroyImpl();
 };
 
 } // namespace aur

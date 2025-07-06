@@ -85,6 +85,7 @@ add_executable(Aurorae
         Renderer.h Renderer.cpp
         AppContext.h AppContext.cpp
         Pipeline.h Pipeline.cpp
+        Resources/VulkanResource.h Resources/VulkanResource.cpp
         Resources/Allocator.h Resources/Allocator.cpp
         Resources/Buffer.h Resources/Buffer.cpp
         Resources/DescriptorPool.h Resources/DescriptorPool.cpp

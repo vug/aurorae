@@ -8,55 +8,29 @@
 namespace aur {
 
 ShaderModule::ShaderModule(VkDevice device, const ShaderModuleCreateInfo& shaderCreateInfo)
-    : device_{device}
-    , createInfo_{shaderCreateInfo}
-    , handle_{[this, device]() {
-      const VkShaderModuleCreateInfo vkCreateInfo{
-          .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-          .codeSize = createInfo_.codeBlob->size(),
-          .pCode = reinterpret_cast<const u32*>(createInfo_.codeBlob->data()),
-      };
-      VkShaderModule hnd = VK_NULL_HANDLE;
-      if (vkCreateShaderModule(device, &vkCreateInfo, nullptr, &hnd) != VK_SUCCESS)
-        log().fatal("Failed to create shader module!");
-
-      return hnd;
-    }()} {}
+    : VulkanResource{shaderCreateInfo, device} {}
 
 ShaderModule::~ShaderModule() {
   destroy();
 }
 
-ShaderModule::ShaderModule(ShaderModule&& other) noexcept
-    : device_{std::exchange(other.device_, {})}
-    , createInfo_{std::exchange(other.createInfo_, {})}
-    , handle_{std::exchange(other.handle_, {})} {
-  other.invalidate();
+// Static method to create the handle, called by the base class.
+VkShaderModule ShaderModule::createImpl(const ShaderModuleCreateInfo& createInfo,
+                                        const std::tuple<VkDevice>& context) {
+  const VkShaderModuleCreateInfo vkCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+      .codeSize = createInfo.codeBlob->size(),
+      .pCode = reinterpret_cast<const uint32_t*>(createInfo.codeBlob->data()),
+  };
+  VkShaderModule hnd = VK_NULL_HANDLE;
+  if (vkCreateShaderModule(std::get<0>(context), &vkCreateInfo, nullptr, &hnd) != VK_SUCCESS)
+    log().fatal("Failed to create shader module!");
+
+  return hnd;
 }
 
-ShaderModule& ShaderModule::operator=(ShaderModule&& other) noexcept {
-  if (this == &other)
-    return *this;
-
-  destroy();
-
-  device_ = std::exchange(other.device_, {});
-  createInfo_ = std::exchange(other.createInfo_, {});
-  handle_ = std::exchange(other.handle_, {});
-
-  return *this;
-}
-
-void ShaderModule::invalidate() {
-  handle_ = VK_NULL_HANDLE;
-}
-
-void ShaderModule::destroy() {
-  if (!isValid())
-    return;
-
-  vkDestroyShaderModule(device_, handle_, nullptr);
-  invalidate();
+void ShaderModule::destroyImpl() {
+  vkDestroyShaderModule(std::get<0>(context_), handle_, nullptr);
 }
 
 } // namespace aur
