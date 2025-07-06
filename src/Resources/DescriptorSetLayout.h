@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
-
 #include "../VulkanWrappers.h"
+#include "VulkanResource.h"
+#include <vector>
 
 namespace aur {
 
@@ -19,7 +19,8 @@ struct DescriptorSetLayoutCreateInfo {
   std::vector<DescriptorSetLayoutBinding> bindings;
 };
 
-class DescriptorSetLayout {
+class DescriptorSetLayout : public VulkanResource<DescriptorSetLayout, VkDescriptorSetLayout,
+                                                  DescriptorSetLayoutCreateInfo, VkDevice> {
 public:
   DescriptorSetLayout() = default;
   DescriptorSetLayout(VkDevice device, const DescriptorSetLayoutCreateInfo& createInfo);
@@ -27,22 +28,19 @@ public:
 
   DescriptorSetLayout(const DescriptorSetLayout&) = delete;
   DescriptorSetLayout& operator=(const DescriptorSetLayout&) = delete;
-  DescriptorSetLayout(DescriptorSetLayout&& other) noexcept;
-  DescriptorSetLayout& operator=(DescriptorSetLayout&& other) noexcept;
-
-  [[nodiscard]] const DescriptorSetLayoutCreateInfo& getCreateInfo() const { return createInfo_; }
-  [[nodiscard]] const VkDescriptorSetLayout& getHandle() const { return handle_; }
-  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
+  DescriptorSetLayout(DescriptorSetLayout&& other) noexcept = default;
+  DescriptorSetLayout& operator=(DescriptorSetLayout&& other) noexcept = default;
 
   [[nodiscard]] bool isEqual(const DescriptorSetLayout& other) const { return handle_ == other.handle_; }
   [[nodiscard]] bool isCompatible(const DescriptorSetLayout& other) const;
 
 private:
-  VkDevice device_{VK_NULL_HANDLE};
-  DescriptorSetLayoutCreateInfo createInfo_;
-  VkDescriptorSetLayout handle_{VK_NULL_HANDLE};
+  friend class VulkanResource<DescriptorSetLayout, VkDescriptorSetLayout, DescriptorSetLayoutCreateInfo,
+                              VkDevice>;
 
-  void invalidate();
-  void destroy();
+  static VkDescriptorSetLayout createImpl(const DescriptorSetLayoutCreateInfo& createInfo,
+                                          const std::tuple<VkDevice>& context);
+  void destroyImpl() const;
 };
+
 } // namespace aur
