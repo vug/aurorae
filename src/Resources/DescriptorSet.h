@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../VulkanWrappers.h"
+#include "VulkanResource.h"
 
 namespace aur {
 
@@ -35,32 +36,28 @@ struct DescriptorSetCreateInfo {
   const DescriptorSetLayout* layout;
 };
 
-class DescriptorSet {
+class DescriptorSet : public VulkanResource<DescriptorSet, VkDescriptorSet, DescriptorSetCreateInfo, VkDevice,
+                                            VkDescriptorPool> {
 public:
   DescriptorSet() = default;
   DescriptorSet(VkDevice device, VkDescriptorPool pool, const DescriptorSetCreateInfo& createInfo);
   ~DescriptorSet();
 
-  DescriptorSet(const DescriptorSet&) = delete;
-  DescriptorSet& operator=(const DescriptorSet&) = delete;
-  DescriptorSet(DescriptorSet&& other) noexcept;
-  DescriptorSet& operator=(DescriptorSet&& other) noexcept;
+  DescriptorSet(DescriptorSet&& other) noexcept = default;
+  DescriptorSet& operator=(DescriptorSet&& other) noexcept = default;
 
-  [[nodiscard]] const DescriptorSetCreateInfo& getCreateInfo() const { return createInfo_; }
-  [[nodiscard]] const VkDescriptorSet& getHandle() const { return handle_; }
-  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
-
-  // This method is called to actually bind resources to the descriptor set.
   void update(const std::vector<WriteDescriptorSet>& writes) const;
 
 private:
-  void invalidate();
-  void destroy();
+  friend class VulkanResource<DescriptorSet, VkDescriptorSet, DescriptorSetCreateInfo, VkDevice,
+                              VkDescriptorPool>;
 
-  VkDevice device_{VK_NULL_HANDLE};
-  VkDescriptorPool pool_{VK_NULL_HANDLE};
-  DescriptorSetCreateInfo createInfo_{};
-  VkDescriptorSet handle_{VK_NULL_HANDLE};
+  // Static creation method for the handle
+  static VkDescriptorSet createImpl(const DescriptorSetCreateInfo& createInfo,
+                                    const std::tuple<VkDevice, VkDescriptorPool>& context);
+
+  // Method to destroy the handle
+  void destroyImpl() const;
 };
 
 } // namespace aur
