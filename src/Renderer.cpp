@@ -628,9 +628,15 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageMemory_ = VK_NULL_HANDLE;
 }
 
-Handle<render::Shader> Renderer::upload(Handle<asset::Shader> shaderHnd) {
+Handle<render::Shader> Renderer::uploadOrGet(Handle<asset::Shader> shaderHnd) {
+  if (const auto it = shaderAssetToRenderHandleMap_.find(shaderHnd);
+      it != shaderAssetToRenderHandleMap_.end())
+    return it->second;
+
   shaders_.emplace_back(*this, shaderHnd);
-  return Handle<render::Shader>(static_cast<u32>(shaders_.size() - 1));
+  Handle<render::Shader> renderHandle = Handle<render::Shader>(static_cast<u32>(shaders_.size() - 1));
+  shaderAssetToRenderHandleMap_.emplace(shaderHnd, renderHandle);
+  return renderHandle;
 }
 
 Handle<render::Material> Renderer::upload(Handle<asset::Material> materialHnd) {

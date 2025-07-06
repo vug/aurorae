@@ -124,7 +124,7 @@ public:
   template <typename TObject>
   void setDebugName(const TObject& obj, const std::string_view name) const;
 
-  [[nodiscard]] Handle<render::Shader> upload(Handle<asset::Shader> shaderHnd);
+  [[nodiscard]] Handle<render::Shader> uploadOrGet(Handle<asset::Shader> shaderHnd);
   [[nodiscard]] Handle<render::Material> upload(Handle<asset::Material> materialHnd);
   [[nodiscard]] Handle<render::Mesh> upload(Handle<asset::Mesh> meshHnd);
   [[nodiscard]] inline const render::Shader* get(Handle<render::Shader> handle) const {
@@ -192,6 +192,9 @@ private:
   std::vector<render::Shader> shaders_;
   std::vector<render::Material> materials_;
   std::vector<render::Mesh> meshes_;
+  std::unordered_map<Handle<asset::Shader>, Handle<render::Shader>> shaderAssetToRenderHandleMap_;
+  std::unordered_map<Handle<asset::Material>, Handle<render::Material>> materialAssetToRenderHandleMap_;
+  std::unordered_map<Handle<asset::Mesh>, Handle<render::Mesh>> meshAssetToRenderHandleMap_;
 };
 
 template <std::ranges::contiguous_range TRange>
