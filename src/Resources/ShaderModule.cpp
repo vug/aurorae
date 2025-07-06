@@ -15,7 +15,8 @@ ShaderModule::~ShaderModule() {
 }
 
 // Static method to create the handle, called by the base class.
-VkShaderModule ShaderModule::createImpl(const ShaderModuleCreateInfo& createInfo,
+VkShaderModule ShaderModule::createImpl([[maybe_unused]] ShaderModule* self,
+                                        const ShaderModuleCreateInfo& createInfo,
                                         const std::tuple<VkDevice>& context) {
   const VkShaderModuleCreateInfo vkCreateInfo{
       .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,

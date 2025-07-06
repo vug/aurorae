@@ -20,7 +20,7 @@ Allocator::~Allocator() {
   destroy();
 }
 
-VmaAllocator Allocator::createImpl(const AllocatorCreateInfo& createInfo,
+VmaAllocator Allocator::createImpl([[maybe_unused]] Allocator* self, const AllocatorCreateInfo& createInfo,
                                    const std::tuple<VkInstance, VkPhysicalDevice, VkDevice>& context) {
   const auto& [instance, physicalDevice, device] = context; // Unpack the context tuple
 

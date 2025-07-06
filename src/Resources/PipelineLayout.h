@@ -42,7 +42,7 @@ public:
 
 private:
   friend class VulkanResource<PipelineLayout, VkPipelineLayout, PipelineLayoutCreateInfo, VkDevice>;
-  static VkPipelineLayout createImpl(const PipelineLayoutCreateInfo& createInfo,
+  static VkPipelineLayout createImpl(PipelineLayout* self, const PipelineLayoutCreateInfo& createInfo,
                                      const std::tuple<VkDevice>& context);
   // The destroyer function called by the base class.
   void destroyImpl() const;

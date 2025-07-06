@@ -28,7 +28,7 @@ public:
 private:
   friend class VulkanResource<DescriptorPool, VkDescriptorPool, DescriptorPoolCreateInfo, VkDevice>;
 
-  static VkDescriptorPool createImpl(const DescriptorPoolCreateInfo& createInfo,
+  static VkDescriptorPool createImpl(DescriptorPool* self, const DescriptorPoolCreateInfo& createInfo,
                                      const std::tuple<VkDevice>& context);
   void destroyImpl() const;
 };

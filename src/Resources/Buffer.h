@@ -32,7 +32,8 @@ private:
   friend class VulkanResource<Buffer, VkBuffer, BufferCreateInfo, VmaAllocator>;
 
   // Static creation method for the handle
-  static VkBuffer createImpl(const BufferCreateInfo& createInfo, const std::tuple<VmaAllocator>& context);
+  static VkBuffer createImpl(Buffer* self, const BufferCreateInfo& createInfo,
+                             const std::tuple<VmaAllocator>& context);
 
   void destroyImpl();
 

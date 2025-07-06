@@ -12,7 +12,8 @@ DescriptorSetLayout::~DescriptorSetLayout() {
   destroy();
 }
 
-VkDescriptorSetLayout DescriptorSetLayout::createImpl(const DescriptorSetLayoutCreateInfo& createInfo,
+VkDescriptorSetLayout DescriptorSetLayout::createImpl([[maybe_unused]] DescriptorSetLayout* self,
+                                                      const DescriptorSetLayoutCreateInfo& createInfo,
                                                       const std::tuple<VkDevice>& context) {
   std::vector<VkDescriptorSetLayoutBinding> vkBindings;
   for (const auto& binding : createInfo.bindings) {

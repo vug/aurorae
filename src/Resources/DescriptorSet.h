@@ -53,7 +53,7 @@ private:
                               VkDescriptorPool>;
 
   // Static creation method for the handle
-  static VkDescriptorSet createImpl(const DescriptorSetCreateInfo& createInfo,
+  static VkDescriptorSet createImpl(DescriptorSet* self, const DescriptorSetCreateInfo& createInfo,
                                     const std::tuple<VkDevice, VkDescriptorPool>& context);
 
   // Method to destroy the handle

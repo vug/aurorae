@@ -13,7 +13,8 @@ DescriptorPool::~DescriptorPool() {
   destroy();
 }
 
-VkDescriptorPool DescriptorPool::createImpl(const DescriptorPoolCreateInfo& createInfo,
+VkDescriptorPool DescriptorPool::createImpl([[maybe_unused]] DescriptorPool* self,
+                                            const DescriptorPoolCreateInfo& createInfo,
                                             const std::tuple<VkDevice>& context) {
   std::vector<VkDescriptorPoolSize> vkPoolSizes;
   vkPoolSizes.reserve(createInfo.poolSizes.size());

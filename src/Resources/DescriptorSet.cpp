@@ -15,7 +15,8 @@ DescriptorSet::~DescriptorSet() {
   destroy();
 }
 
-VkDescriptorSet DescriptorSet::createImpl(const DescriptorSetCreateInfo& createInfo,
+VkDescriptorSet DescriptorSet::createImpl([[maybe_unused]] DescriptorSet* self,
+                                          const DescriptorSetCreateInfo& createInfo,
                                           const std::tuple<VkDevice, VkDescriptorPool>& context) {
   const VkDescriptorSetAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,

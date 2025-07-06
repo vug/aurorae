@@ -34,7 +34,8 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept {
   return *this;
 }
 
-VkBuffer Buffer::createImpl(const BufferCreateInfo& createInfo, const std::tuple<VmaAllocator>& context) {
+VkBuffer Buffer::createImpl(Buffer* self, const BufferCreateInfo& createInfo,
+                            const std::tuple<VmaAllocator>& context) {
   const VkBufferCreateInfo bufferInfo = {
       .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
       .size = createInfo.sizeBytes,

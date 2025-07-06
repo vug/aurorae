@@ -9,7 +9,8 @@ namespace aur {
 PipelineLayout::PipelineLayout(VkDevice device, const PipelineLayoutCreateInfo& createInfo)
     : VulkanResource{createInfo, device} {}
 
-VkPipelineLayout PipelineLayout::createImpl(const PipelineLayoutCreateInfo& createInfo,
+VkPipelineLayout PipelineLayout::createImpl([[maybe_unused]] PipelineLayout* self,
+                                            const PipelineLayoutCreateInfo& createInfo,
                                             const std::tuple<VkDevice>& context) {
   std::vector<VkPushConstantRange> vkPushConstantRanges;
   for (const PushConstant& pc : createInfo.pushConstants) {

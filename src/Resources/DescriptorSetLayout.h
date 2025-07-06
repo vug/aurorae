@@ -38,7 +38,8 @@ private:
   friend class VulkanResource<DescriptorSetLayout, VkDescriptorSetLayout, DescriptorSetLayoutCreateInfo,
                               VkDevice>;
 
-  static VkDescriptorSetLayout createImpl(const DescriptorSetLayoutCreateInfo& createInfo,
+  static VkDescriptorSetLayout createImpl(DescriptorSetLayout* self,
+                                          const DescriptorSetLayoutCreateInfo& createInfo,
                                           const std::tuple<VkDevice>& context);
   void destroyImpl() const;
 };

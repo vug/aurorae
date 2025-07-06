@@ -24,7 +24,7 @@ public:
 private:
   friend class VulkanResource<Allocator, VmaAllocator, AllocatorCreateInfo, VkInstance, VkPhysicalDevice,
                               VkDevice>;
-  static VmaAllocator createImpl(const AllocatorCreateInfo& createInfo,
+  static VmaAllocator createImpl(Allocator* self, const AllocatorCreateInfo& createInfo,
                                  const std::tuple<VkInstance, VkPhysicalDevice, VkDevice>& context);
   void destroyImpl() const;
 };

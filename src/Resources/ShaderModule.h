@@ -27,7 +27,7 @@ private:
   friend class VulkanResource<ShaderModule, VkShaderModule, ShaderModuleCreateInfo, VkDevice>;
 
   // The static creator function called by the base class constructor.
-  static VkShaderModule createImpl(const ShaderModuleCreateInfo& createInfo,
+  static VkShaderModule createImpl(ShaderModule* self, const ShaderModuleCreateInfo& createInfo,
                                    const std::tuple<VkDevice>& context);
   // The destroyer function called by the base class.
   void destroyImpl();

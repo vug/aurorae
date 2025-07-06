@@ -64,7 +64,7 @@ protected:
   VulkanResource(const CreateInfoType& createInfo, Contexts... contexts)
       : createInfo_{createInfo}
       , context_{std::make_tuple(contexts...)}
-      , handle_{Derived::createImpl(createInfo_, context_)} {}
+      , handle_{Derived::createImpl(static_cast<Derived*>(this), createInfo_, context_)} {}
 
   // Let derived classes access their state.
   // The order is important for the initializer list!
