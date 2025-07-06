@@ -34,8 +34,8 @@ public:
   [[nodiscard]] const VkDescriptorSetLayout& getHandle() const { return handle_; }
   [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
 
-  bool isEqual(const DescriptorSetLayout& other) const { return handle_ == other.handle_; }
-  bool isCompatible(const DescriptorSetLayout& other) const;
+  [[nodiscard]] bool isEqual(const DescriptorSetLayout& other) const { return handle_ == other.handle_; }
+  [[nodiscard]] bool isCompatible(const DescriptorSetLayout& other) const;
 
 private:
   VkDevice device_{VK_NULL_HANDLE};

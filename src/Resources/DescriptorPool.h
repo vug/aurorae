@@ -25,8 +25,8 @@ public:
   DescriptorPool(DescriptorPool&& other) noexcept;
   DescriptorPool& operator=(DescriptorPool&& other) noexcept;
 
-  [[nodiscard]] const DescriptorPoolCreateInfo& getCreateInfo() const { return createInfo_; }
-  [[nodiscard]] const VkDescriptorPool& getHandle() const { return handle_; }
+  [[nodiscard]] inline const DescriptorPoolCreateInfo& getCreateInfo() const { return createInfo_; }
+  [[nodiscard]] inline const VkDescriptorPool& getHandle() const { return handle_; }
   [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
 
 private:

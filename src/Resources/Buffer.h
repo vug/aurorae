@@ -32,7 +32,7 @@ public:
   [[nodiscard]] const VkBuffer& getHandle() const { return handle; }
   [[nodiscard]] bool isValid() const { return handle != VK_NULL_HANDLE; }
 
-  void* map() const;
+  [[nodiscard]] void* map() const;
   void unmap() const;
 
 private:
