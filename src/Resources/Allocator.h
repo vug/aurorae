@@ -2,40 +2,31 @@
 
 #include "../Utils.h"
 #include "../VulkanWrappers.h"
+#include "VulkanResource.h"
 
 namespace aur {
 
-class VulkanContext;
-
 struct AllocatorCreateInfo {
-  u32 vulkanApiVersion{};
+  u32 vulkanApiVersion{}; // Vulkan API version
 };
 
-class Allocator {
+class Allocator : public VulkanResource<Allocator, VmaAllocator, AllocatorCreateInfo, VkInstance,
+                                        VkPhysicalDevice, VkDevice> {
 public:
   Allocator() = default;
   Allocator(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device,
             const AllocatorCreateInfo& createInfo);
   ~Allocator();
 
-  // move-only
-  Allocator(const Allocator&) = delete;
-  Allocator& operator=(const Allocator&) = delete;
-  Allocator(Allocator&& other) noexcept;
-  Allocator& operator=(Allocator&& other) noexcept;
-
-  [[nodiscard]] const AllocatorCreateInfo& getCreateInfo() const { return createInfo_; }
-  [[nodiscard]] const VmaAllocator& getHandle() const { return handle_; }
-  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
+  Allocator(Allocator&& other) noexcept = default;
+  Allocator& operator=(Allocator&& other) noexcept = default;
 
 private:
-  friend class VulkanContext;
-
-  void destroy();
-  void invalidate();
-
-  AllocatorCreateInfo createInfo_;
-  VmaAllocator handle_{VK_NULL_HANDLE};
+  friend class VulkanResource<Allocator, VmaAllocator, AllocatorCreateInfo, VkInstance, VkPhysicalDevice,
+                              VkDevice>;
+  static VmaAllocator createImpl(const AllocatorCreateInfo& createInfo,
+                                 const std::tuple<VkInstance, VkPhysicalDevice, VkDevice>& context);
+  void destroyImpl() const;
 };
 
 } // namespace aur

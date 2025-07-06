@@ -1,4 +1,5 @@
 #include "Allocator.h"
+
 #include "../Logger.h"
 #include "../Utils.h"
 #include "../VulkanContext.h"
@@ -8,58 +9,43 @@
 #include <VulkanMemoryAllocator/vk_mem_alloc.h>
 
 namespace aur {
+
 Allocator::Allocator(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device,
-                     const AllocatorCreateInfo& allocatorCreateInfo)
-    : createInfo_(allocatorCreateInfo)
-    , handle_([this, &instance, &physicalDevice, &device]() {
-      VmaVulkanFunctions vmaVulkanFunctions = {
-          .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
-          .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
-      };
-
-      const VmaAllocatorCreateInfo vkCreateInfo = {
-          .physicalDevice = physicalDevice,
-          .device = device,
-          .pVulkanFunctions = &vmaVulkanFunctions,
-          .instance = instance,
-          .vulkanApiVersion = createInfo_.vulkanApiVersion,
-      };
-
-      VmaAllocator hnd{};
-      VK(vmaCreateAllocator(&vkCreateInfo, &hnd));
-      return hnd;
-    }()) {
-
-  log().trace("VMA allocator created.");
+                     const AllocatorCreateInfo& createInfo)
+    : VulkanResource(createInfo, instance, physicalDevice, device) {
+  log().trace("VMA allocator created successfully.");
 }
 
 Allocator::~Allocator() {
   destroy();
 }
 
-Allocator::Allocator(Allocator&& other) noexcept
-    : createInfo_{std::exchange(other.createInfo_, {})}
-    , handle_{std::exchange(other.handle_, {})} {}
+VmaAllocator Allocator::createImpl(const AllocatorCreateInfo& createInfo,
+                                   const std::tuple<VkInstance, VkPhysicalDevice, VkDevice>& context) {
+  const auto& [instance, physicalDevice, device] = context; // Unpack the context tuple
 
-Allocator& Allocator::operator=(Allocator&& other) noexcept {
-  if (this == &other)
-    return *this;
+  // Set up Vulkan function pointers required for VMA
+  const VmaVulkanFunctions vmaVulkanFunctions = {
+      .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+      .vkGetDeviceProcAddr = vkGetDeviceProcAddr,
+  };
 
-  destroy();
-  createInfo_ = std::exchange(other.createInfo_, {});
-  handle_ = std::exchange(other.handle_, {});
-  return *this;
+  // Configuration for VMA allocator
+  const VmaAllocatorCreateInfo vkCreateInfo = {
+      .physicalDevice = physicalDevice,
+      .device = device,
+      .pVulkanFunctions = &vmaVulkanFunctions,
+      .instance = instance,
+      .vulkanApiVersion = createInfo.vulkanApiVersion,
+  };
+
+  VmaAllocator hnd{VK_NULL_HANDLE};
+  VK(vmaCreateAllocator(&vkCreateInfo, &hnd));
+  return hnd;
 }
-void Allocator::destroy() {
-  if (!isValid())
-    return;
 
+void Allocator::destroyImpl() const {
   vmaDestroyAllocator(handle_);
-  invalidate();
-}
-
-void Allocator::invalidate() {
-  handle_ = VK_NULL_HANDLE;
 }
 
 } // namespace aur
