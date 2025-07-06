@@ -634,19 +634,30 @@ Handle<render::Shader> Renderer::uploadOrGet(Handle<asset::Shader> shaderHnd) {
     return it->second;
 
   shaders_.emplace_back(*this, shaderHnd);
-  Handle<render::Shader> renderHandle = Handle<render::Shader>(static_cast<u32>(shaders_.size() - 1));
+  const auto renderHandle = Handle<render::Shader>(static_cast<u32>(shaders_.size() - 1));
   shaderAssetToRenderHandleMap_.emplace(shaderHnd, renderHandle);
   return renderHandle;
 }
 
-Handle<render::Material> Renderer::upload(Handle<asset::Material> materialHnd) {
+Handle<render::Material> Renderer::uploadOrGet(Handle<asset::Material> materialHnd) {
+  if (const auto it = materialAssetToRenderHandleMap_.find(materialHnd);
+      it != materialAssetToRenderHandleMap_.end())
+    return it->second;
+
   materials_.emplace_back(*this, materialHnd);
-  return Handle<render::Material>(static_cast<u32>(materials_.size() - 1));
+  const auto renderHandle = Handle<render::Material>(static_cast<u32>(materials_.size() - 1));
+  materialAssetToRenderHandleMap_.emplace(materialHnd, renderHandle);
+  return renderHandle;
 }
 
-Handle<render::Mesh> Renderer::upload(Handle<asset::Mesh> meshHnd) {
+Handle<render::Mesh> Renderer::uploadOrGet(Handle<asset::Mesh> meshHnd) {
+  if (const auto it = meshAssetToRenderHandleMap_.find(meshHnd); it != meshAssetToRenderHandleMap_.end())
+    return it->second;
+
   meshes_.emplace_back(*this, meshHnd);
-  return Handle<render::Mesh>(static_cast<u32>(meshes_.size() - 1));
+  const auto renderHandle = Handle<render::Mesh>(static_cast<u32>(meshes_.size() - 1));
+  meshAssetToRenderHandleMap_.emplace(meshHnd, renderHandle);
+  return renderHandle;
 }
 
 void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {

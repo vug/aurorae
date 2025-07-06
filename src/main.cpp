@@ -1,5 +1,4 @@
 /*
-TODO(vug): continue upload -> uploadOrGet method
 TODO(vug): a std::function based listener system for asset changes
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
