@@ -25,7 +25,6 @@ public:
   // The class is move-only.
   VulkanResource(const VulkanResource&) = delete;
   VulkanResource& operator=(const VulkanResource&) = delete;
-
   VulkanResource(VulkanResource&& other) noexcept
       : createInfo_{std::exchange(other.createInfo_, {})}
       , context_{std::exchange(other.context_, {})}
@@ -61,6 +60,7 @@ public:
 
 protected:
   // Constructor for derived classes to initialize all base members.
+  // NOLINTNEXTLINE(google-explicit-constructor)
   VulkanResource(const CreateInfoType& createInfo, Contexts... contexts)
       : createInfo_{createInfo}
       , context_{std::make_tuple(contexts...)}

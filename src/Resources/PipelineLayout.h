@@ -4,6 +4,7 @@
 
 #include "../Utils.h"
 #include "../VulkanWrappers.h"
+#include "VulkanResource.h"
 
 namespace aur {
 
@@ -29,28 +30,22 @@ struct PipelineLayoutCreateInfo {
   std::vector<PushConstant> pushConstants;
 };
 
-class PipelineLayout {
+class PipelineLayout
+    : public VulkanResource<PipelineLayout, VkPipelineLayout, PipelineLayoutCreateInfo, VkDevice> {
 public:
   PipelineLayout() = default;
   PipelineLayout(VkDevice device, const PipelineLayoutCreateInfo& createInfo);
   ~PipelineLayout();
 
-  PipelineLayout(const PipelineLayout&) = delete;
-  PipelineLayout& operator=(const PipelineLayout&) = delete;
-  PipelineLayout(PipelineLayout&& other) noexcept;
-  PipelineLayout& operator=(PipelineLayout&& other) noexcept;
-
-  [[nodiscard]] const PipelineLayoutCreateInfo& getCreateInfo() const { return createInfo_; }
-  [[nodiscard]] const VkPipelineLayout& getHandle() const { return handle_; }
-  [[nodiscard]] inline bool isValid() const { return handle_ != VK_NULL_HANDLE; }
+  PipelineLayout(PipelineLayout&& other) noexcept = default;
+  PipelineLayout& operator=(PipelineLayout&& other) noexcept = default;
 
 private:
-  void invalidate();
-  void destroy();
-
-  VkDevice device_{VK_NULL_HANDLE};
-  PipelineLayoutCreateInfo createInfo_;
-  VkPipelineLayout handle_{VK_NULL_HANDLE};
+  friend class VulkanResource<PipelineLayout, VkPipelineLayout, PipelineLayoutCreateInfo, VkDevice>;
+  static VkPipelineLayout createImpl(const PipelineLayoutCreateInfo& createInfo,
+                                     const std::tuple<VkDevice>& context);
+  // The destroyer function called by the base class.
+  void destroyImpl() const;
 };
 
 } // namespace aur

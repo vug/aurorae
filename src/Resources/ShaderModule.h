@@ -16,6 +16,9 @@ public:
   ShaderModule(VkDevice device, const ShaderModuleCreateInfo& createInfo);
   ~ShaderModule();
 
+  // Deleted copy functions are not technically needed, but silence clang-tidy and clarify intent:
+  ShaderModule(const ShaderModule&) = delete;
+  ShaderModule& operator=(const ShaderModule&) = delete;
   ShaderModule(ShaderModule&& other) noexcept = default;
   ShaderModule& operator=(ShaderModule&& other) noexcept = default;
 
