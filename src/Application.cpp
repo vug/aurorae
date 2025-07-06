@@ -51,8 +51,17 @@ void Application::run() {
   if (!unlitShaderDefOpt.has_value())
     log().fatal("Failed to load unlit shader!");
   const Handle<asset::Shader> unlitAShader = assetManager_.loadShaderFromDefinition(*unlitShaderDefOpt);
-  const Handle<render::Shader> unlitRShader = renderer_.upload(unlitAShader);
-  const PipelineCreateInfo pipelineCreateInfo{.shader = unlitRShader};
+  asset::MaterialDefinition unlitMaterialDef{
+      .shaderHandle = unlitAShader,
+  };
+  const Handle<asset::Material> unlitAMaterial = assetManager_.loadMaterialFromDefinition(unlitMaterialDef);
+  const Handle<render::Material> unlitRMaterial = renderer_.upload(unlitAMaterial);
+
+  // Don't do pipeline creation here but at draw call
+  PipelineCreateInfo pipelineCreateInfo{
+      .shader = unlitRMaterial.get().getShaderHandle(),
+      .cullMode = CullMode::Back,
+  };
   const Pipeline* unlitPipeline = renderer_.createOrGetPipeline(pipelineCreateInfo);
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";

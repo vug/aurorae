@@ -628,14 +628,19 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageMemory_ = VK_NULL_HANDLE;
 }
 
-Handle<render::Mesh> Renderer::upload(Handle<asset::Mesh> meshHnd) {
-  meshes_.emplace_back(*this, meshHnd);
-  return Handle<render::Mesh>(static_cast<u32>(meshes_.size() - 1));
-}
-
 Handle<render::Shader> Renderer::upload(Handle<asset::Shader> shaderHnd) {
   shaders_.emplace_back(*this, shaderHnd);
   return Handle<render::Shader>(static_cast<u32>(shaders_.size() - 1));
+}
+
+Handle<render::Material> Renderer::upload(Handle<asset::Material> materialHnd) {
+  materials_.emplace_back(*this, materialHnd);
+  return Handle<render::Material>(static_cast<u32>(materials_.size() - 1));
+}
+
+Handle<render::Mesh> Renderer::upload(Handle<asset::Mesh> meshHnd) {
+  meshes_.emplace_back(*this, meshHnd);
+  return Handle<render::Mesh>(static_cast<u32>(meshes_.size() - 1));
 }
 
 void Renderer::setDebugNameWrapper(const VkDebugUtilsObjectNameInfoEXT& nameInfo) const {

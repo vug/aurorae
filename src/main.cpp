@@ -1,6 +1,6 @@
 /*
-TODO(vug): render::Material
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
+TODO(vug): figure out how to not upload an asset::Shader into a render::Shader for every material creation
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
 TODO(vug): asset::Texture, render::Texture

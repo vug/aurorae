@@ -27,6 +27,8 @@ public:
   Material(Material&& other) noexcept = default;
   Material& operator=(Material&& other) noexcept = default;
 
+  [[nodiscard]] inline Handle<Shader> getShaderHandle() const { return def_.shaderHandle; }
+
 private:
   Material() = default;
 

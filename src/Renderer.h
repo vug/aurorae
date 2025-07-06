@@ -15,6 +15,7 @@
 #include "Resources/ShaderModule.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
+#include "render/Material.h"
 #include "render/Mesh.h"
 #include "render/Shader.h"
 
@@ -124,9 +125,13 @@ public:
   void setDebugName(const TObject& obj, const std::string_view name) const;
 
   [[nodiscard]] Handle<render::Shader> upload(Handle<asset::Shader> shaderHnd);
+  [[nodiscard]] Handle<render::Material> upload(Handle<asset::Material> materialHnd);
   [[nodiscard]] Handle<render::Mesh> upload(Handle<asset::Mesh> meshHnd);
   [[nodiscard]] inline const render::Shader* get(Handle<render::Shader> handle) const {
     return &shaders_.at(handle);
+  }
+  [[nodiscard]] inline const render::Material* get(Handle<render::Material> handle) const {
+    return &materials_.at(handle);
   }
   [[nodiscard]] inline const render::Mesh* get(Handle<render::Mesh> handle) const {
     return &meshes_.at(handle);
@@ -185,6 +190,7 @@ private:
 
   std::unordered_map<PipelineCreateInfo, Pipeline> pipelineCacheMap_;
   std::vector<render::Shader> shaders_;
+  std::vector<render::Material> materials_;
   std::vector<render::Mesh> meshes_;
 };
 

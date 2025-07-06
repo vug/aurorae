@@ -5,14 +5,16 @@
 
 namespace aur {
 class Renderer;
-}
+class Pipeline;
+} // namespace aur
 
 namespace aur::render {
+class Shader;
 
 class Material {
 public:
   Material() = default;
-  Material(const Renderer& renderer, Handle<asset::Material> assetHandle);
+  Material(Renderer& renderer, Handle<asset::Material> asset);
   ~Material() = default;
 
   Material(const Material& other) = delete;
@@ -20,9 +22,13 @@ public:
   Material& operator=(const Material& other) = delete;
   Material& operator=(Material&& other) noexcept = default;
 
+  [[nodiscard]] inline Handle<render::Shader> getShaderHandle() const { return shaderHnd_; }
+
 private:
-  const Renderer* renderer_{};
+  Renderer* renderer_{};
   Handle<asset::Material> assetHandle_;
+  Handle<render::Shader> shaderHnd_;
+  const Pipeline* pipeline_{};
 };
 
 } // namespace aur::render

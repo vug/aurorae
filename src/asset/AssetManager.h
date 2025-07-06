@@ -19,6 +19,7 @@ class Mesh;
 class AssetManager {
 public:
   Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
+  Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
   Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
   Handle<asset::Mesh> registerExistingMesh(asset::Mesh& mesh);
 
