@@ -16,7 +16,7 @@ public:
   explicit FileHandle(const std::string& filename, const char* mode);
 
   // Implicit conversion to FILE* for use with C APIs
-  operator FILE*() const { return file_.get(); }
+  operator FILE*() const { return file_.get(); } // NOLINT(google-explicit-constructor)
 
 private:
   struct Deleter {
@@ -38,35 +38,6 @@ FileHandle::FileHandle(const std::string& filename, const char* mode) {
 
 //----------------------------------------------------------------
 
-BinaryBlob::BinaryBlob(size_t size)
-    : size_(size) {
-  data_ = new std::byte[size];
-}
-
-BinaryBlob::~BinaryBlob() {
-  delete[] data_;
-}
-
-BinaryBlob::BinaryBlob(BinaryBlob&& other) noexcept
-    : data_(other.data_)
-    , size_(other.size_) {
-  other.data_ = nullptr;
-  other.size_ = 0;
-}
-
-BinaryBlob& BinaryBlob::operator=(BinaryBlob&& other) noexcept {
-  if (this != &other) {
-    delete[] data_;
-    data_ = other.data_;
-    size_ = other.size_;
-    other.data_ = nullptr;
-    other.size_ = 0;
-  }
-  return *this;
-}
-
-//----------------------------------------------------------------
-
 std::vector<std::byte> readBinaryFile(const std::filesystem::path& filePath) {
   const FileHandle file(filePath.string(), "rb");
 
@@ -82,12 +53,10 @@ std::vector<std::byte> readBinaryFile(const std::filesystem::path& filePath) {
   if (std::fseek(file, 0, SEEK_SET) != 0)
     log().fatal("Failed to seek to beginning of the file: {}", filePath.string());
 
-  const size_t fileSizeBytes = static_cast<size_t>(fileSizeLong);
+  const auto fileSizeBytes = static_cast<size_t>(fileSizeLong);
   std::vector<std::byte> buffer(fileSizeBytes);
 
-  const size_t bytesRead = std::fread(buffer.data(), 1, fileSizeBytes, file);
-
-  if (bytesRead != fileSizeBytes)
+  if (const size_t bytesRead = std::fread(buffer.data(), 1, fileSizeBytes, file); bytesRead != fileSizeBytes)
     log().fatal("Failed to read the entire file (read {} of {} bytes): {}", bytesRead, fileSizeBytes,
                 filePath.string());
 

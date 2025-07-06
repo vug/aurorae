@@ -5,8 +5,6 @@
 #include "../VulkanWrappers.h"
 
 namespace aur {
-class BinaryBlob;
-
 struct ShaderModuleCreateInfo {
   const std::vector<std::byte>* codeBlob{};
 };
