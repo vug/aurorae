@@ -1,26 +1,23 @@
 #pragma once
 
-#include <optional>
-
 #include "../Utils.h"
 #include "../VulkanWrappers.h"
+#include "VulkanResource.h"
+#include <optional>
 
 namespace aur {
 
 struct BufferCreateInfo {
   u64 sizeBytes{};
   std::vector<BufferUsage> usages;
-  MemoryUsage memoryUsage{}; // default 0 is VMA_MEMORY_USAGE_UNKNOWN
+  MemoryUsage memoryUsage{};
   std::optional<u32> itemCnt;
 };
 
-class Buffer {
+class Buffer : public VulkanResource<Buffer, VkBuffer, BufferCreateInfo, VmaAllocator> {
 public:
-  // Create an empty / invalid buffer
   Buffer() = default;
-  // Create and allocate the buffer
   Buffer(VmaAllocator allocator, const BufferCreateInfo& createInfo);
-  // Clean up resources and invalidate
   ~Buffer();
 
   Buffer(const Buffer&) = delete;
@@ -28,23 +25,18 @@ public:
   Buffer(Buffer&& other) noexcept;
   Buffer& operator=(Buffer&& other) noexcept;
 
-  [[nodiscard]] const BufferCreateInfo& getCreateInfo() const { return createInfo; }
-  [[nodiscard]] const VkBuffer& getHandle() const { return handle; }
-  [[nodiscard]] bool isValid() const { return handle != VK_NULL_HANDLE; }
-
   [[nodiscard]] void* map() const;
   void unmap() const;
 
 private:
-  // nullify the handle (and other states)
-  void invalidate();
-  // destroy the resource
-  void destroy();
+  friend class VulkanResource<Buffer, VkBuffer, BufferCreateInfo, VmaAllocator>;
 
-  VmaAllocator allocator_{VK_NULL_HANDLE};
+  // Static creation method for the handle
+  static VkBuffer createImpl(const BufferCreateInfo& createInfo, const std::tuple<VmaAllocator>& context);
+
+  void destroyImpl();
+
   VmaAllocation allocation_{VK_NULL_HANDLE};
-  BufferCreateInfo createInfo{};
-  VkBuffer handle{VK_NULL_HANDLE};
 };
 
 } // namespace aur
