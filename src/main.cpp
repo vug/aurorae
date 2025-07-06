@@ -1,6 +1,5 @@
 /*
 TODO(vug): PipelineCache RAII wrapper derived from VulkanResource (migrated existing ones!)
-TODO(vug): Fix Thread-local storage hack from Buffer
 TODO(vug): render::Material
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.

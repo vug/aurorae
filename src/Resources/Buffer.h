@@ -37,7 +37,7 @@ private:
 
   void destroyImpl();
 
-  VmaAllocation allocation_{VK_NULL_HANDLE};
+  VmaAllocation allocation_;
 };
 
 } // namespace aur

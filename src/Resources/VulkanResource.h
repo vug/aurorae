@@ -63,8 +63,19 @@ protected:
   // NOLINTNEXTLINE(google-explicit-constructor)
   VulkanResource(const CreateInfoType& createInfo, Contexts... contexts)
       : createInfo_{createInfo}
-      , context_{std::make_tuple(contexts...)}
-      , handle_{Derived::createImpl(static_cast<Derived*>(this), createInfo_, context_)} {}
+      , context_{std::make_tuple(contexts...)} {
+    // Initialization order of base and derived class members:
+    // 1. Base class members initialized with the values in class declaration
+    // 2. Base class members initialization via member initializer list
+    // 3. Derived class member initialization via class declaration
+    // 4. Derived class member initialization via member initializer list
+    // 5. Base class constructor body
+    // 6. Derived class constructor body
+
+    // By calling createImpl here (5), we ensure that derived-class members
+    // (like Buffer::allocation_) have already been initialized and are ready to be written to by (6).
+    handle_ = Derived::createImpl(static_cast<Derived*>(this), createInfo_, context_);
+  }
 
   // Let derived classes access their state.
   // The order is important for the initializer list!

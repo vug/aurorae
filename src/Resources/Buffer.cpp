@@ -6,15 +6,10 @@
 
 namespace aur {
 
-// Thread-local storage for temporary per-thread `VmaAllocation`
-static thread_local VmaAllocation tl_allocation = VK_NULL_HANDLE;
-
 Buffer::Buffer(VmaAllocator allocator, const BufferCreateInfo& createInfo)
     : VulkanResource(createInfo, allocator) {
   // The VulkanResource base class automatically calls `createImpl` during initialization,
-  // which assigns the thread-local `tl_allocation`.
-  allocation_ = tl_allocation;
-  tl_allocation = VK_NULL_HANDLE; // Clear thread-local allocation after use
+  // which assigns the allocation_.
   assert(allocation_ != VK_NULL_HANDLE && "Failed to assign VmaAllocation!");
 }
 
@@ -47,15 +42,11 @@ VkBuffer Buffer::createImpl(Buffer* self, const BufferCreateInfo& createInfo,
       .usage = static_cast<VmaMemoryUsage>(createInfo.memoryUsage),
   };
 
-  VkBuffer bufferHandle = VK_NULL_HANDLE;
+  VkBuffer hnd = VK_NULL_HANDLE;
+  VK(vmaCreateBuffer(std::get<VmaAllocator>(context), &bufferInfo, &allocInfo, &hnd, &self->allocation_,
+                     nullptr));
 
-  // Use the thread-local variable to store allocation information.
-  if (vmaCreateBuffer(std::get<VmaAllocator>(context), &bufferInfo, &allocInfo, &bufferHandle, &tl_allocation,
-                      nullptr) != VK_SUCCESS) {
-    log().fatal("Failed to create buffer!");
-  }
-
-  return bufferHandle;
+  return hnd;
 }
 
 void Buffer::destroyImpl() {
@@ -67,9 +58,7 @@ void Buffer::destroyImpl() {
 
 void* Buffer::map() const {
   void* mappedMemory = nullptr;
-  if (vmaMapMemory(std::get<VmaAllocator>(context_), allocation_, &mappedMemory) != VK_SUCCESS) {
-    log().fatal("Failed to map buffer memory!");
-  }
+  VK(vmaMapMemory(std::get<VmaAllocator>(context_), allocation_, &mappedMemory));
   return mappedMemory;
 }
 
