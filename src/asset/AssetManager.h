@@ -34,6 +34,8 @@ public:
     return &meshes_.at(handle);
   };
 
+  void addShaderUpdateListener(asset::ShaderUpdateCallback callback);
+
 private:
   // The manager OWNS the actual asset data in vectors.
   // std::vector<asset::Texture> textures_
@@ -49,6 +51,10 @@ private:
   // Caching to prevent loading the same file twice
   std::unordered_map<std::filesystem::path, std::vector<Handle<asset::Mesh>>> loadedModels_;
   // std::unordered_map<std::filesystem::path, Handle<asset::Texture>> loadedTextures_;
+
+  std::vector<asset::ShaderUpdateCallback> shaderUpdateListeners_;
+  // std::vector<asset::ShaderDeleteCallback> shaderDeleteListeners_;
+  void notifyShaderUpdated(Handle<asset::Shader> hnd) const;
 };
 
 } // namespace aur

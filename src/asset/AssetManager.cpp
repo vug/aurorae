@@ -31,4 +31,12 @@ Handle<asset::Mesh> AssetManager::registerExistingMesh(asset::Mesh& mesh) {
   meshes_.push_back(std::move(mesh));
   return Handle<asset::Mesh>{static_cast<u32>(meshes_.size() - 1)};
 }
+
+void AssetManager::addShaderUpdateListener(asset::ShaderUpdateCallback callback) {
+  shaderUpdateListeners_.push_back(std::move(callback));
+}
+void AssetManager::notifyShaderUpdated(Handle<asset::Shader> hnd) const {
+  for (const auto& callback : shaderUpdateListeners_)
+    callback(hnd);
+}
 } // namespace aur

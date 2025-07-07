@@ -1,6 +1,9 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
+
+#include "../Handle.h"
 
 namespace aur::asset {
 
@@ -33,5 +36,7 @@ private:
   ShaderDefinition def_;
   std::string debugName;
 };
+
+using ShaderUpdateCallback = std::function<void(Handle<asset::Shader>)>;
 
 } // namespace aur::asset

@@ -127,6 +127,7 @@ public:
   [[nodiscard]] Handle<render::Shader> uploadOrGet(Handle<asset::Shader> shaderHnd);
   [[nodiscard]] Handle<render::Material> uploadOrGet(Handle<asset::Material> materialHnd);
   [[nodiscard]] Handle<render::Mesh> uploadOrGet(Handle<asset::Mesh> meshHnd);
+
   [[nodiscard]] inline const render::Shader* get(Handle<render::Shader> handle) const {
     return &shaders_.at(handle);
   }
@@ -136,6 +137,8 @@ public:
   [[nodiscard]] inline const render::Mesh* get(Handle<render::Mesh> handle) const {
     return &meshes_.at(handle);
   }
+
+  void onShaderAssetUpdated(Handle<asset::Shader> assetHnd);
 
   PerFrameData perFrameData;
 

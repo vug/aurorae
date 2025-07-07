@@ -194,6 +194,16 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
   return deviceBuffer;
 }
 
+void Renderer::onShaderAssetUpdated(Handle<asset::Shader> assetHnd) {
+  const auto it = shaderAssetToRenderHandleMap_.find(assetHnd);
+  const std::string_view renderHandleMsg =
+      (it == shaderAssetToRenderHandleMap_.end())
+          ? std::format("Corresponding render shader is {}", it->second.id)
+          : "It was not uploaded to a render shader yet.";
+  log().info("Renderer received the message that shader asset {} was updated. {}", assetHnd.id,
+             renderHandleMsg);
+}
+
 void Renderer::createPerFrameDataResources() {
   const std::vector<DescriptorSetLayoutBinding> bindings = {{
       .index = 0,

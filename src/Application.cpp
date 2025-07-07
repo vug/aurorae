@@ -35,6 +35,10 @@ Application::Application(u32 initialWidth, u32 initialHeight, const char* appNam
   log().info("App Name: {}, Initial Dimensions: {}x{}", appName_, initialWidth, initialHeight);
 
   AppContext::initialize(assetProcessor_, assetManager_, renderer_);
+
+  assetManager_.addShaderUpdateListener(
+      [&renderer = renderer_](Handle<asset::Shader> hnd) { renderer.onShaderAssetUpdated(hnd); });
+
   log().trace("Application constructed successfully.");
 }
 
