@@ -47,7 +47,7 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 # --- Find Dependencies ---
 # Find Vulkan (usually provided by the SDK)
-#find_package(Vulkan REQUIRED)
+find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
 #message(STATUS "Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
 #message(STATUS "Found Vulkan: ${Vulkan_LIBRARIES}")
 #get_target_property(VULKAN_LIBRARY Vulkan::Vulkan LOCATION)
@@ -125,6 +125,7 @@ target_link_libraries(Aurorae PRIVATE
         GPUOpen::VulkanMemoryAllocator
         glm::glm
         assimp::assimp
+        Vulkan::shaderc_combined
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
