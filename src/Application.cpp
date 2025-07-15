@@ -49,20 +49,22 @@ Application::~Application() {
 
 void Application::run() {
   // "Asset Library"
+  const std::optional<asset::ShaderDefinition> myDef =
+      assetProcessor_.processShader(std::filesystem::path{kAssetsFolder} / "shaders" / "unlit.vert");
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
-      assetProcessor_.processShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
-                                    std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
+      assetProcessor_.loadShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
+                                 std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
   if (!unlitShaderDefOpt.has_value())
     log().fatal("Failed to load unlit shader!");
   const Handle<asset::Shader> unlitAShader = assetManager_.loadShaderFromDefinition(*unlitShaderDefOpt);
-  asset::MaterialDefinition unlitMaterialDef{
+  const asset::MaterialDefinition unlitMaterialDef{
       .shaderHandle = unlitAShader,
   };
   const Handle<asset::Material> unlitAMaterial = assetManager_.loadMaterialFromDefinition(unlitMaterialDef);
   const Handle<render::Material> unlitRMaterial = renderer_.uploadOrGet(unlitAMaterial);
 
   // Don't do pipeline creation here but at draw call
-  PipelineCreateInfo pipelineCreateInfo{
+  const PipelineCreateInfo pipelineCreateInfo{
       .shader = unlitRMaterial.get().getShaderHandle(),
       .cullMode = CullMode::Back,
   };

@@ -13,19 +13,59 @@
 #include "../Utils.h"
 #include "AssimpUtils.h"
 
+#include <shaderc/shaderc.hpp>
+
 namespace aur {
 
-std::optional<asset::ShaderDefinition> AssetProcessor::processShader(const std::filesystem::path& vertPath,
-                                                                     const std::filesystem::path& fragPath) {
+std::optional<asset::ShaderDefinition>
+AssetProcessor::processShader(const std::filesystem::path& shaderPath) {
+  std::vector<std::byte> bytes = readBinaryFile(shaderPath);
+  if (bytes.empty())
+    return std::nullopt;
+  const std::string_view source(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 
-  if (!std::filesystem::exists(vertPath) || !std::filesystem::exists(fragPath))
+  shaderc_shader_kind kind = shaderc_glsl_infer_from_source;
+  const std::string ext = shaderPath.extension().string();
+  if (ext == ".vert")
+    kind = shaderc_vertex_shader;
+  else if (ext == ".frag")
+    kind = shaderc_fragment_shader;
+  else if (ext == ".comp")
+    kind = shaderc_compute_shader;
+
+  const shaderc::Compiler compiler;
+  shaderc::CompileOptions options;
+  options.SetGenerateDebugInfo();
+  options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+  auto result =
+      compiler.CompileGlslToSpv(source.data(), source.size(), kind, shaderPath.string().c_str(), options);
+  if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+    log().warn("Error when compiling shader: {}", result.GetErrorMessage());
+    return std::nullopt;
+  }
+
+  asset::ShaderDefinition shaderDef{
+      .vertPath = shaderPath,
+      .vertBlob = std::move(bytes),
+  };
+  // shaderDef.spirv = std::move(spirv);
+
+  return shaderDef;
+}
+
+std::optional<asset::ShaderDefinition>
+AssetProcessor::loadShader(const std::filesystem::path& vertSpirvPath,
+                           const std::filesystem::path& fragSpirvPath) {
+
+  if (!std::filesystem::exists(vertSpirvPath) || !std::filesystem::exists(fragSpirvPath))
     return {};
 
   const asset::ShaderDefinition def{
-      .vertPath = vertPath,
-      .fragPath = fragPath,
-      .vertBlob = readBinaryFile(vertPath),
-      .fragBlob = readBinaryFile(fragPath),
+      .vertPath = vertSpirvPath,
+      .fragPath = fragSpirvPath,
+      .vertBlob = readBinaryFile(vertSpirvPath),
+      .fragBlob = readBinaryFile(fragSpirvPath),
   };
 
   if (!validateSpirV(def.vertBlob) || !validateSpirV(def.fragBlob))
