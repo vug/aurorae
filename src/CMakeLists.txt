@@ -48,6 +48,30 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 # --- Find Dependencies ---
 # Find Vulkan (usually provided by the SDK)
 find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
+
+# The cmake config files for SPIRV-Cross library that comes with VulkanSDK are broken
+# Here we'll define a static library for each lib file.
+# Note that they all use the same header directory
+set(VULKAN_SDK_ROOT "$ENV{VULKAN_SDK}")
+set(SPIRV_CROSS_INCLUDE_DIR "${VULKAN_SDK_ROOT}/Include/spirv_cross")
+set(SPIRV_CROSS_LIB_DIR "${VULKAN_SDK_ROOT}/Lib/lib")
+set(SPIRV_CROSS_LIBS
+        spirv-cross-cored
+        spirv-cross-glsld
+        spirv-cross-hlsld
+        spirv-cross-msld
+        spirv-cross-reflectd
+        spirv-cross-cppd
+        spirv-cross-cd
+)
+foreach (lib IN LISTS SPIRV_CROSS_LIBS)
+    add_library(${lib} STATIC IMPORTED)
+    set_target_properties(${lib} PROPERTIES
+            IMPORTED_LOCATION "${SPIRV_CROSS_LIB_DIR}/${lib}.lib"
+            INTERFACE_INCLUDE_DIRECTORIES "${SPIRV_CROSS_INCLUDE_DIR}"
+    )
+endforeach ()
+
 #message(STATUS "Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
 #message(STATUS "Found Vulkan: ${Vulkan_LIBRARIES}")
 #get_target_property(VULKAN_LIBRARY Vulkan::Vulkan LOCATION)
@@ -126,6 +150,7 @@ target_link_libraries(Aurorae PRIVATE
         glm::glm
         assimp::assimp
         Vulkan::shaderc_combined
+        ${SPIRV_CROSS_LIBS}
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
