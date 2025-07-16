@@ -1,5 +1,10 @@
 /*
-TODO(vug): a std::function based listener system for asset changes
+TODO(vug): Handle debug/release versions of SPIRV-Cross prebuilt libs.
+TODO(vug): Evolve ShaderDefinition to only have a single shader stage.
+TODO(vug): asset processor, when compiling GLSL, or loading blob, give a name/id to the shader definition
+           (file:// vs mem://)
+TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
+           shader asset ids.
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
@@ -7,6 +12,7 @@ TODO(vug): asset::Texture, render::Texture
 TODO(vug): bring a Khronos sample asset with textures
 TODO(vug): bring a texture (stb or oiio)
 TODO(vug): store debug names with objects
+TODO(vug): a std::function based listener system for asset changes
 TODO(vug): Create some default Materials (with different debug names) -> store them in AssetManager
 TODO(vug): continue going over clang-tidy settings from performance-.
            https://clang.llvm.org/extra/clang-tidy/checks/list.html

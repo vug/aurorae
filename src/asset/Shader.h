@@ -12,6 +12,7 @@ struct ShaderDefinition {
   std::filesystem::path fragPath;
   std::vector<std::byte> vertBlob;
   std::vector<std::byte> fragBlob;
+  std::vector<u32> spirv;
 };
 
 class Shader {

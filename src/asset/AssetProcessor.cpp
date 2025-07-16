@@ -14,6 +14,7 @@
 #include "AssimpUtils.h"
 
 #include <shaderc/shaderc.hpp>
+#include <spirv_cross/spirv_reflect.hpp>
 
 namespace aur {
 
@@ -38,18 +39,28 @@ AssetProcessor::processShader(const std::filesystem::path& shaderPath) {
   options.SetGenerateDebugInfo();
   options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-  auto result =
+  const shaderc::SpvCompilationResult result =
       compiler.CompileGlslToSpv(source.data(), source.size(), kind, shaderPath.string().c_str(), options);
   if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
     log().warn("Error when compiling shader: {}", result.GetErrorMessage());
     return std::nullopt;
   }
 
+  std::vector<u32> spirv(result.cbegin(), result.cend());
+
   asset::ShaderDefinition shaderDef{
       .vertPath = shaderPath,
-      .vertBlob = std::move(bytes),
+      .vertBlob = bytes,
+      .spirv = std::move(spirv),
   };
-  // shaderDef.spirv = std::move(spirv);
+
+  const spirv_cross::Compiler comp(shaderDef.spirv);
+  auto resources = comp.get_shader_resources();
+  log().debug("Vertex Inputs:");
+  for (const auto& input : resources.stage_inputs) {
+    uint32_t loc = comp.get_decoration(input.id, spv::DecorationLocation);
+    log().debug("    Location: {}, Name: {}", loc, input.name);
+  }
 
   return shaderDef;
 }
