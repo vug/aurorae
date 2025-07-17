@@ -1,6 +1,5 @@
 /*
-TODO(vug): Handle debug/release versions of SPIRV-Cross prebuilt libs.
-TODO(vug): Evolve ShaderDefinition to only have a single shader stage.
+(vug): Evolve ShaderDefinition to only have a single shader stage.
 TODO(vug): asset processor, when compiling GLSL, or loading blob, give a name/id to the shader definition
            (file:// vs mem://)
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to

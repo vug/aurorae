@@ -55,7 +55,16 @@ find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
 set(VULKAN_SDK_ROOT "$ENV{VULKAN_SDK}")
 set(SPIRV_CROSS_INCLUDE_DIR "${VULKAN_SDK_ROOT}/Include/spirv_cross")
 set(SPIRV_CROSS_LIB_DIR "${VULKAN_SDK_ROOT}/Lib/lib")
-set(SPIRV_CROSS_LIBS
+set(SPIRV_CROSS_LIBS_RELEASE
+        spirv-cross-core
+        spirv-cross-glsl
+        spirv-cross-hlsl
+        spirv-cross-msl
+        spirv-cross-reflect
+        spirv-cross-cpp
+        spirv-cross-c
+)
+set(SPIRV_CROSS_LIBS_DEBUG
         spirv-cross-cored
         spirv-cross-glsld
         spirv-cross-hlsld
@@ -64,6 +73,15 @@ set(SPIRV_CROSS_LIBS
         spirv-cross-cppd
         spirv-cross-cd
 )
+
+# Select the libs based on build type
+if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+    set(SPIRV_CROSS_LIBS ${SPIRV_CROSS_LIBS_RELEASE})
+elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(SPIRV_CROSS_LIBS ${SPIRV_CROSS_LIBS_DEBUG})
+else ()
+    message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif ()
 foreach (lib IN LISTS SPIRV_CROSS_LIBS)
     add_library(${lib} STATIC IMPORTED)
     set_target_properties(${lib} PROPERTIES
@@ -152,6 +170,9 @@ target_link_libraries(Aurorae PRIVATE
         Vulkan::shaderc_combined
         ${SPIRV_CROSS_LIBS}
 )
+# shaderc_combined does not come with PDB files, causing warnings at linking in debug mode
+target_link_options(Aurorae PRIVATE "/ignore:4099")
+
 
 if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     target_compile_definitions(Aurorae PRIVATE REL_WITH_DEBUG_INFO_BUILD)
@@ -161,7 +182,7 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(Aurorae PRIVATE DEBUG_BUILD)
 else ()
     message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}. "
-            "Add macro for this build type .")
+            "Add macro for this build type  .")
 endif ()
 
 if (SUBFOLDER STREQUAL "DebugAsan")
