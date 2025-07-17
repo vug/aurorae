@@ -5,6 +5,9 @@ TODO(vug): asset processor, when compiling GLSL, or loading blob, give a name/id
            (file:// vs mem://)
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
            shader asset ids.
+TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
+           scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
+           `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)

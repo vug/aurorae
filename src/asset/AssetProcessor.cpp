@@ -129,8 +129,7 @@ bool AssetProcessor::validateSpirV(const std::vector<std::byte>& blob) {
   const u32 version = words[1];
   const u32 generator = words[2];
   const u32 bound = words[3];
-  const u32 schema = words[4];
-  if (schema != 0) {
+  if (const u32 schema = words[4]; schema != 0) {
     log().warn("SPIR-V schema has to be 0, but is {}.", schema);
     return false;
   }
