@@ -236,4 +236,156 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
   return defs;
 }
 
+// A structure to hold the relevant information about a single variable
+// in the interface between shader stages (e.g., a `vec3` at `location = 0`).
+struct ShaderInterfaceVariable {
+  uint32_t location; // layout(location = N)
+  spirv_cross::SPIRType::BaseType type;
+  uint32_t vecsize;
+  uint32_t columns;
+  std::string name;
+
+  // We primarily sort by location to ensure a consistent order for comparison.
+  bool operator<(const ShaderInterfaceVariable& other) const { return location < other.location; }
+
+  // For validation, we require location, type, and dimensions to be identical.
+  // The name is not used for comparison as it can be optimized away or differ,
+  // but it's useful for logging and debugging.
+  bool operator==(const ShaderInterfaceVariable& other) const {
+    return location == other.location && type == other.type && vecsize == other.vecsize &&
+           columns == other.columns;
+  }
+};
+
+/**
+ * @brief Converts a SPIRType::BaseType enum to its string representation.
+ *
+ * @param type The base type enum from a SPIRV-Cross type query.
+ * @return A string describing the type (e.g., "Float", "Int").
+ */
+std::string basetype_to_string(spirv_cross::SPIRType::BaseType type) {
+  using BaseType = spirv_cross::SPIRType::BaseType;
+  switch (type) {
+  case BaseType::Unknown:
+    return "Unknown";
+  case BaseType::Void:
+    return "Void";
+  case BaseType::Boolean:
+    return "Boolean";
+  case BaseType::Char:
+    return "Char";
+  case BaseType::Int:
+    return "Int";
+  case BaseType::UInt:
+    return "UInt";
+  case BaseType::Int64:
+    return "Int64";
+  case BaseType::UInt64:
+    return "UInt64";
+  case BaseType::Half:
+    return "Half";
+  case BaseType::Float:
+    return "Float";
+  case BaseType::Double:
+    return "Double";
+  case BaseType::Struct:
+    return "Struct";
+  case BaseType::Image:
+    return "Image";
+  case BaseType::SampledImage:
+    return "SampledImage";
+  case BaseType::Sampler:
+    return "Sampler";
+  case BaseType::AccelerationStructure:
+    return "AccelerationStructure";
+  default:
+    return "Other";
+  }
+}
+
+// A helper function to print the details of an interface variable.
+static void printVariable(const ShaderInterfaceVariable& var) {
+  log().info("  - Location: {}, Type: {}, , VecSize: {}, Columns: {}, Name: {}", var.location,
+             basetype_to_string(var.type), var.vecsize, var.columns, var.name);
+}
+
+/**
+ * @brief Extracts a list of interface variables from a shader's resources.
+ *
+ * @param compiler The SPIRV-Cross compiler instance for the shader.
+ * @param resources The list of resources to inspect (e.g., stage_inputs or stage_outputs).
+ * @return A vector of extracted interface variables.
+ */
+static std::vector<ShaderInterfaceVariable>
+extractInterfaceVariables(const spirv_cross::Compiler& compiler,
+                          const spirv_cross::SmallVector<spirv_cross::Resource>& resources) {
+
+  std::vector<ShaderInterfaceVariable> variables;
+
+  for (const auto& resource : resources) {
+    // We must ignore built-in variables like gl_Position, gl_FragCoord, etc.,
+    // as they are part of the system interface, not the user-defined one.
+    if (compiler.has_decoration(resource.id, spv::DecorationBuiltIn)) {
+      continue;
+    }
+
+    const auto& type = compiler.get_type(resource.type_id);
+
+    variables.push_back({.location = compiler.get_decoration(resource.id, spv::DecorationLocation),
+                         .type = type.basetype,
+                         .vecsize = type.vecsize,
+                         .columns = type.columns,
+                         .name = resource.name});
+  }
+
+  // Sort the variables by location. This provides a canonical order, making
+  // the comparison between vertex outputs and fragment inputs straightforward.
+  std::sort(variables.begin(), variables.end());
+
+  return variables;
+}
+
+// --- Main Demonstration ---
+// In your actual code, you would pass your compiled SPIR-V blobs here.
+bool validate_shader_linkage(const std::vector<uint32_t>& vertex_spirv,
+                             const std::vector<uint32_t>& fragment_spirv) {
+
+  // 1. Create compiler instances for both shader stages.
+  spirv_cross::Compiler vert_compiler(vertex_spirv);
+  spirv_cross::Compiler frag_compiler(fragment_spirv);
+
+  // 2. Extract the shader resources (lists of inputs, outputs, uniforms, etc.).
+  spirv_cross::ShaderResources vert_resources = vert_compiler.get_shader_resources();
+  spirv_cross::ShaderResources frag_resources = frag_compiler.get_shader_resources();
+
+  // 3. Extract the interface variables we care about:
+  //    - For the Vertex Shader, we get its STAGE OUTPUTS.
+  //    - For the Fragment Shader, we get its STAGE INPUTS.
+  std::vector<ShaderInterfaceVariable> vert_outputs =
+      extractInterfaceVariables(vert_compiler, vert_resources.stage_outputs);
+
+  std::vector<ShaderInterfaceVariable> frag_inputs =
+      extractInterfaceVariables(frag_compiler, frag_resources.stage_inputs);
+
+  // 4. Print the results for inspection.
+  log().info("Vertex Shader Outputs");
+  for (const auto& var : vert_outputs)
+    printVariable(var);
+
+  log().info("Fragment Shader Inputs");
+  for (const auto& var : frag_inputs)
+    printVariable(var);
+
+  // 5. The validation step:
+  // Because we sorted the variables by location, we can simply compare the vectors.
+  // If they are identical, the interface contract is met.
+  if (vert_outputs == frag_inputs) {
+    log().info("[SUCCESS] Vertex and Fragment shader interfaces match.");
+    return true;
+  } else {
+    log().info("[FAILURE] Mismatch between Vertex outputs and Fragment inputs!");
+    return false;
+  }
+}
+
 } // namespace aur
