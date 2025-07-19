@@ -78,6 +78,15 @@ bool writeBinaryFile(const std::filesystem::path& filePath, const void* data, si
     return false;
   }
 
+  // create non-existent folders in the path
+  const auto parentPath = filePath.parent_path();
+  if (!parentPath.empty()) {
+    if (std::error_code ec; !std::filesystem::create_directories(parentPath, ec) && ec) {
+      log().error("Failed to create directories for path: {}, error: {}", parentPath.string(), ec.message());
+      return false;
+    }
+  }
+
   const FileHandle file(filePath.string(), "wb");
 
   const size_t bytesWritten = std::fwrite(data, 1, sizeBytes, file);
