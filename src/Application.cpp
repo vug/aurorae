@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include <glaze/glaze/glaze.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <volk/volk.h>
@@ -12,6 +13,14 @@
 #include "asset/Mesh.h"
 
 namespace aur {
+
+struct my_struct {
+  int i = 287;
+  double d = 3.14;
+  std::string hello = "Hello World";
+  std::array<uint64_t, 3> arr = {1, 2, 3};
+  std::map<std::string, int> map{{"one", 1}, {"two", 2}};
+};
 
 Application::Initializer::Initializer() {
   // We are initializing spdlog and glfw here to reduce the complexity of the Logger and Window classes
@@ -48,9 +57,10 @@ Application::~Application() {
 }
 
 void Application::run() {
-  // "Asset Library"
   const std::optional<asset::ShaderStageDefinition> myDef =
       assetProcessor_.processShaderStage(std::filesystem::path{kAssetsFolder} / "shaders" / "unlit.vert");
+  log().debug("Glaze serialization test: {}", glz::write_json(my_struct{}).value_or("error"));
+  // "Asset Library"
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
       assetProcessor_.loadShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
                                  std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
