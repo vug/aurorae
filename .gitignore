@@ -1,4 +1,5 @@
 build/
+src/assets/processed
 src/assets/shaders/debug
 src/assets/shaders/release
 src/assets/shaders/relwithdebinfo
