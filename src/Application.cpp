@@ -59,7 +59,13 @@ Application::~Application() {
 void Application::run() {
   const std::optional<asset::ShaderStageDefinition> myDef =
       assetProcessor_.processShaderStage(std::filesystem::path{kAssetsFolder} / "shaders" / "unlit.vert");
-  log().debug("Glaze serialization test: {}", glz::write_json(my_struct{}).value_or("error"));
+  const std::string serializedMyDef = glz::write_beve(myDef).value_or("error");
+  log().debug("Glaze serialization test: {}", serializedMyDef);
+  writeBinaryFile("./myShaderDef.beve", serializedMyDef);
+
+  std::vector<std::byte> loadedSerializedMyDef = readBinaryFileBytes("./myShaderDef.beve");
+  asset::ShaderStageDefinition loadedMyDef{};
+  auto res = glz::read_beve(loadedMyDef, loadedSerializedMyDef);
   // "Asset Library"
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
       assetProcessor_.loadShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
