@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 namespace aur {
 
 // Signed integers
@@ -17,7 +19,7 @@ using f32 = float;
 using f64 = double;
 
 // C:/Users/veliu/repos/aurorae/src/assets
-inline constexpr const char* kAssetsFolder{ASSETS_FOLDER};
+inline const std::filesystem::path kAssetsFolder{ASSETS_FOLDER};
 
 enum class BuildType : u8 {
   Debug,
