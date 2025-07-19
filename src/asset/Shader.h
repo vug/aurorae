@@ -15,13 +15,8 @@ struct ShaderStageDefinition {
 };
 
 struct ShaderDefinition {
-  // std::string vertStageDef;
-  // std::string fragStageDef;
-  std::filesystem::path vertPath;
-  std::filesystem::path fragPath;
-  std::vector<std::byte> vertBlob;
-  std::vector<std::byte> fragBlob;
-  std::vector<u32> spirv;
+  ShaderStageDefinition vertStageDef;
+  ShaderStageDefinition fragStageDef;
 };
 
 class Shader {
@@ -36,8 +31,8 @@ public:
   Shader& operator=(Shader&& other) noexcept = default;
 
   [[nodiscard]] const ShaderDefinition& getDefinition() const { return def_; }
-  [[nodiscard]] const std::vector<std::byte>& getVertexBlob() const { return def_.vertBlob; }
-  [[nodiscard]] const std::vector<std::byte>& getFragmentBlob() const { return def_.fragBlob; }
+  [[nodiscard]] const std::vector<u32>& getVertexBlob() const { return def_.vertStageDef.spirv; }
+  [[nodiscard]] const std::vector<u32>& getFragmentBlob() const { return def_.fragStageDef.spirv; }
   [[nodiscard]] const std::string& getDebugName() const { return debugName; }
 
 private:

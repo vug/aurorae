@@ -7,7 +7,7 @@
 
 namespace aur {
 struct ShaderModuleCreateInfo {
-  const std::vector<std::byte>* codeBlob{};
+  const std::vector<u32>* codeBlob{};
 };
 
 class ShaderModule : public VulkanResource<ShaderModule, VkShaderModule, ShaderModuleCreateInfo, VkDevice> {

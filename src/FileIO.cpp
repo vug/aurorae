@@ -37,8 +37,11 @@ FileHandle::FileHandle(const std::string& filename, const char* mode) {
 }
 
 //----------------------------------------------------------------
+template <typename TItem>
+std::vector<TItem> readBinaryFile(const std::filesystem::path& filePath) {
+  static_assert(std::is_trivial_v<TItem> && std::is_standard_layout_v<TItem>,
+                "Only trivial types supported for binary file reading");
 
-std::vector<std::byte> readBinaryFile(const std::filesystem::path& filePath) {
   const FileHandle file(filePath.string(), "rb");
 
   // Seek to the end of the file to determine its size
@@ -49,12 +52,15 @@ std::vector<std::byte> readBinaryFile(const std::filesystem::path& filePath) {
   if (fileSizeLong < 0)
     log().fatal("Failed to determine size of file (ftell failed): {}", filePath.string());
 
+  if (fileSizeLong % sizeof(TItem) != 0)
+    log().fatal("File '{}' size is not a multiple of type size.", filePath.string());
+
   // Seek back to the beginning of the file
   if (std::fseek(file, 0, SEEK_SET) != 0)
     log().fatal("Failed to seek to beginning of the file: {}", filePath.string());
 
   const auto fileSizeBytes = static_cast<size_t>(fileSizeLong);
-  std::vector<std::byte> buffer(fileSizeBytes);
+  std::vector<TItem> buffer(fileSizeBytes / sizeof(TItem));
 
   if (const size_t bytesRead = std::fread(buffer.data(), 1, fileSizeBytes, file); bytesRead != fileSizeBytes)
     log().fatal("Failed to read the entire file (read {} of {} bytes): {}", bytesRead, fileSizeBytes,
@@ -62,5 +68,8 @@ std::vector<std::byte> readBinaryFile(const std::filesystem::path& filePath) {
 
   return buffer;
 }
+
+template std::vector<std::byte> readBinaryFile<std::byte>(const std::filesystem::path& filePath);
+template std::vector<u32> readBinaryFile<u32>(const std::filesystem::path& filePath);
 
 } // namespace aur

@@ -20,7 +20,7 @@ namespace aur {
 
 std::optional<asset::ShaderStageDefinition>
 AssetProcessor::processShaderStage(const std::filesystem::path& srcPath) {
-  const std::vector<std::byte> bytes = readBinaryFile(srcPath);
+  const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
   if (bytes.empty())
     return std::nullopt;
   const std::string_view source(reinterpret_cast<const char*>(bytes.data()), bytes.size());
@@ -70,14 +70,14 @@ AssetProcessor::loadShader(const std::filesystem::path& vertSpirvPath,
   if (!std::filesystem::exists(vertSpirvPath) || !std::filesystem::exists(fragSpirvPath))
     return {};
 
-  const asset::ShaderDefinition def{
-      .vertPath = vertSpirvPath,
-      .fragPath = fragSpirvPath,
-      .vertBlob = readBinaryFile(vertSpirvPath),
-      .fragBlob = readBinaryFile(fragSpirvPath),
-  };
+  const asset::ShaderDefinition def{.vertStageDef = {.stage = ShaderStage::Vertex,
+                                                     .sourcePath = "",
+                                                     .spirv = readBinaryFileU32(vertSpirvPath)},
+                                    .fragStageDef = {.stage = ShaderStage::Fragment,
+                                                     .sourcePath = "",
+                                                     .spirv = readBinaryFileU32(fragSpirvPath)}};
 
-  if (!validateSpirV(def.vertBlob) || !validateSpirV(def.fragBlob))
+  if (!validateSpirV(def.vertStageDef.spirv) || !validateSpirV(def.fragStageDef.spirv))
     return {};
 
   return def;
@@ -113,13 +113,12 @@ std::string getSpirvGeneratorString(uint32_t generator) {
   return vendorName + " (Version " + std::to_string(toolVersion) + ")";
 }
 
-bool AssetProcessor::validateSpirV(const std::vector<std::byte>& blob) {
+bool AssetProcessor::validateSpirV(const std::vector<u32>& blob) {
   // A SPIR-V should have at least the first 5 words (magic, version, generator, bound, schema)
-  if (blob.size() < sizeof(u32) * 5)
+  if (blob.size() < 5)
     return false;
 
-  // Interpret the blob as u32 words
-  const auto words = reinterpret_cast<const u32*>(blob.data());
+  const u32* words = blob.data();
 
   if (words[0] != kSpirVMagic)
     return false;
@@ -133,10 +132,6 @@ bool AssetProcessor::validateSpirV(const std::vector<std::byte>& blob) {
   }
   log().debug("SPIR-V version: {}, generator: {}, bound: {}", getSpirvVersionString(version),
               getSpirvGeneratorString(generator), bound);
-
-  // Ensure the size of the blob is valid (must contain complete 32-bit words)
-  if (blob.size() % sizeof(u32) != 0)
-    return false;
 
   return true;
 }

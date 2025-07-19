@@ -16,7 +16,7 @@ public:
 
   std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
 
-  static bool validateSpirV(const std::vector<std::byte>& blob);
+  static bool validateSpirV(const std::vector<u32>& blob);
 };
 
 } // namespace aur
