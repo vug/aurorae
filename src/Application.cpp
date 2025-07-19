@@ -57,6 +57,8 @@ Application::~Application() {
 }
 
 void Application::run() {
+  const std::optional<asset::ShaderStageDefinition> unlitVertStage =
+      AssetProcessor::getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
   const std::optional<asset::ShaderStageDefinition> myDef =
       assetProcessor_.processShaderStage(std::filesystem::path{kAssetsFolder} / "shaders" / "unlit.vert");
   const std::string serializedMyDef = glz::write_beve(myDef).value_or("error");

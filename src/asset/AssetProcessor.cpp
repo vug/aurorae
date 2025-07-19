@@ -13,10 +13,55 @@
 #include "../Utils.h"
 #include "AssimpUtils.h"
 
+#include <glaze/glaze/glaze.hpp>
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_reflect.hpp>
 
 namespace aur {
+
+template <typename TDef>
+static std::optional<TDef> AssetProcessor::getDefinition(const std::filesystem::path& srcRelPath) {
+  const auto srcAbsPath{kAssetsFolder / srcRelPath};
+  if (!std::filesystem::exists(srcAbsPath)) {
+    log().warn("Asset '{}' does not exist.", srcAbsPath.string());
+    return std::nullopt;
+  }
+  const std::filesystem::path kProcessedAssetsRoot{"processed"};
+  const auto dstRelPath = [&srcRelPath]() {
+    auto newPath = "processed" / srcRelPath;
+    newPath.replace_extension(".beve");
+    return newPath;
+  }();
+  const auto dstAbsPath{kAssetsFolder / dstRelPath};
+
+  if (std::filesystem::exists(dstAbsPath)) {
+    const std::vector<std::byte> defBuffer = readBinaryFileBytes(dstAbsPath);
+    TDef def{};
+
+    if (const glz::error_ctx err = glz::read_beve(def, defBuffer)) {
+      log().warn("Failed to read asset definition from file: {}. error code: {}, msg: {}. Try reprocessing.",
+                 dstAbsPath.string(), std::to_underlying(err.ec), err.custom_error_message);
+      return std::nullopt;
+    }
+    return def;
+  }
+
+  if constexpr (std::is_same_v<TDef, asset::ShaderStageDefinition>) {
+    const std::optional<asset::ShaderStageDefinition> def = AssetProcessor::processShaderStage(srcAbsPath);
+    if (!def) {
+      log().warn("Failed to process shader stage: {}", srcAbsPath.string());
+      return std::nullopt;
+    }
+    const std::string serializedDef = glz::write_beve(def).value_or("error");
+    writeBinaryFile(dstAbsPath, serializedDef);
+    return def;
+  }
+  log().fatal("Unimplemented asset getter");
+  std::unreachable();
+}
+
+template std::optional<asset::ShaderStageDefinition>
+AssetProcessor::getDefinition<asset::ShaderStageDefinition>(const std::filesystem::path&);
 
 std::optional<asset::ShaderStageDefinition>
 AssetProcessor::processShaderStage(const std::filesystem::path& srcPath) {
