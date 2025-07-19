@@ -4,10 +4,19 @@
 #include <functional>
 
 #include "../Handle.h"
+#include "../VulkanWrappers.h"
 
 namespace aur::asset {
 
+struct ShaderStageDefinition {
+  ShaderStage stage;
+  std::filesystem::path sourcePath;
+  std::vector<u32> spirv;
+};
+
 struct ShaderDefinition {
+  // std::string vertStageDef;
+  // std::string fragStageDef;
   std::filesystem::path vertPath;
   std::filesystem::path fragPath;
   std::vector<std::byte> vertBlob;

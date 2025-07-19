@@ -18,21 +18,20 @@
 
 namespace aur {
 
-std::optional<asset::ShaderDefinition>
-AssetProcessor::processShader(const std::filesystem::path& shaderPath) {
-  std::vector<std::byte> bytes = readBinaryFile(shaderPath);
+std::optional<asset::ShaderStageDefinition>
+AssetProcessor::processShaderStage(const std::filesystem::path& srcPath) {
+  const std::vector<std::byte> bytes = readBinaryFile(srcPath);
   if (bytes.empty())
     return std::nullopt;
   const std::string_view source(reinterpret_cast<const char*>(bytes.data()), bytes.size());
-
-  shaderc_shader_kind kind = shaderc_glsl_infer_from_source;
-  const std::string ext = shaderPath.extension().string();
-  if (ext == ".vert")
-    kind = shaderc_vertex_shader;
-  else if (ext == ".frag")
-    kind = shaderc_fragment_shader;
-  else if (ext == ".comp")
-    kind = shaderc_compute_shader;
+  const auto [kind,
+              stage] = [ext = srcPath.extension().string()]() -> std::pair<shaderc_shader_kind, ShaderStage> {
+    if (ext == ".vert")
+      return {shaderc_vertex_shader, ShaderStage::Vertex};
+    if (ext == ".frag")
+      return {shaderc_fragment_shader, ShaderStage::Fragment};
+    return {shaderc_glsl_infer_from_source, ShaderStage::Vertex};
+  }();
 
   const shaderc::Compiler compiler;
   shaderc::CompileOptions options;
@@ -40,21 +39,20 @@ AssetProcessor::processShader(const std::filesystem::path& shaderPath) {
   options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
   const shaderc::SpvCompilationResult result =
-      compiler.CompileGlslToSpv(source.data(), source.size(), kind, shaderPath.string().c_str(), options);
+      compiler.CompileGlslToSpv(source.data(), source.size(), kind, srcPath.string().c_str(), options);
   if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
     log().warn("Error when compiling shader: {}", result.GetErrorMessage());
     return std::nullopt;
   }
 
   std::vector<u32> spirv(result.cbegin(), result.cend());
-
-  asset::ShaderDefinition shaderDef{
-      .vertPath = shaderPath,
-      .vertBlob = bytes,
+  asset::ShaderStageDefinition def{
+      .stage = stage,
+      .sourcePath = srcPath,
       .spirv = std::move(spirv),
   };
 
-  const spirv_cross::Compiler comp(shaderDef.spirv);
+  const spirv_cross::Compiler comp(def.spirv);
   auto resources = comp.get_shader_resources();
   log().debug("Vertex Inputs:");
   for (const auto& input : resources.stage_inputs) {
@@ -62,7 +60,7 @@ AssetProcessor::processShader(const std::filesystem::path& shaderPath) {
     log().debug("    Location: {}, Name: {}", loc, input.name);
   }
 
-  return shaderDef;
+  return def;
 }
 
 std::optional<asset::ShaderDefinition>

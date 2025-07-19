@@ -49,8 +49,8 @@ Application::~Application() {
 
 void Application::run() {
   // "Asset Library"
-  const std::optional<asset::ShaderDefinition> myDef =
-      assetProcessor_.processShader(std::filesystem::path{kAssetsFolder} / "shaders" / "unlit.vert");
+  const std::optional<asset::ShaderStageDefinition> myDef =
+      assetProcessor_.processShaderStage(std::filesystem::path{kAssetsFolder} / "shaders" / "unlit.vert");
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
       assetProcessor_.loadShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
                                  std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
