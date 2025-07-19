@@ -19,3 +19,6 @@
 [submodule "dependencies/assimp"]
 	path = dependencies/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "dependencies/glaze"]
+	path = dependencies/glaze
+	url = https://github.com/stephenberry/glaze.git
