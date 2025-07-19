@@ -60,9 +60,6 @@ void Application::run() {
   const std::optional<asset::ShaderStageDefinition> unlitVertStage =
       AssetProcessor::getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
 
-  std::vector<std::byte> loadedSerializedMyDef = readBinaryFileBytes("./myShaderDef.beve");
-  asset::ShaderStageDefinition loadedMyDef{};
-  auto res = glz::read_beve(loadedMyDef, loadedSerializedMyDef);
   // "Asset Library"
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
       assetProcessor_.loadShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
