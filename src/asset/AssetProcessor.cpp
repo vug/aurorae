@@ -20,7 +20,7 @@
 namespace aur {
 
 template <typename TDef>
-static std::optional<TDef> AssetProcessor::getDefinition(const std::filesystem::path& srcRelPath) {
+std::optional<TDef> AssetProcessor::getDefinition(const std::filesystem::path& srcRelPath) {
   const auto srcAbsPath{kAssetsFolder / srcRelPath};
   if (!std::filesystem::exists(srcAbsPath)) {
     log().warn("Asset '{}' does not exist.", srcAbsPath.string());
@@ -34,6 +34,7 @@ static std::optional<TDef> AssetProcessor::getDefinition(const std::filesystem::
   }();
   const auto dstAbsPath{kAssetsFolder / dstRelPath};
 
+  // if the processed asset exists, just load that one
   if (std::filesystem::exists(dstAbsPath)) {
     const std::vector<std::byte> defBuffer = readBinaryFileBytes(dstAbsPath);
     TDef def{};
@@ -53,11 +54,12 @@ static std::optional<TDef> AssetProcessor::getDefinition(const std::filesystem::
       return std::nullopt;
     }
     const std::string serializedDef = glz::write_beve(def).value_or("error");
-    writeBinaryFile(dstAbsPath, serializedDef);
+    if (!writeBinaryFile(dstAbsPath, serializedDef))
+      log().warn("Failed to write asset definition to file: {}", dstAbsPath.string());
     return def;
+  } else {
+    static_assert(false, "Unimplemented definition type");
   }
-  log().fatal("Unimplemented asset getter");
-  std::unreachable();
 }
 
 template std::optional<asset::ShaderStageDefinition>
