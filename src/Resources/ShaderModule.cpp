@@ -18,11 +18,11 @@ ShaderModule::~ShaderModule() {
 VkShaderModule ShaderModule::createImpl([[maybe_unused]] ShaderModule* self,
                                         const ShaderModuleCreateInfo& createInfo,
                                         const std::tuple<VkDevice>& context) {
-  constexpr size_t blobItemSize = sizeof(std::remove_pointer_t<decltype(createInfo.codeBlob)>::value_type);
+  constexpr size_t blobItemSize = sizeof(std::remove_pointer_t<decltype(createInfo.spirv)>::value_type);
   const VkShaderModuleCreateInfo vkCreateInfo{
       .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = createInfo.codeBlob->size() * blobItemSize,
-      .pCode = createInfo.codeBlob->data(),
+      .codeSize = createInfo.spirv->size() * blobItemSize,
+      .pCode = createInfo.spirv->data(),
   };
   VkShaderModule hnd = VK_NULL_HANDLE;
   if (vkCreateShaderModule(std::get<0>(context), &vkCreateInfo, nullptr, &hnd) != VK_SUCCESS)
