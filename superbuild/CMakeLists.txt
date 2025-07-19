@@ -42,6 +42,9 @@ function(add_external_dependency NAME SOURCE_DIR LIST_OF_DEFINITIONS)
         -DCMAKE_GENERATOR_PLATFORM=x64
     )
     
+    # Note that, if a project is added via ExternalProject_add then PROJECT_IS_TOP_LEVEL becomes true, because it builds each external project
+    # in a separate CMake build process independent of the main project. Same named variables won't cause conflict.
+    # Whereas, add_subdirectory() makes the added a project part of the parent project, and it won't be a top-level project.
     set(BINARY_DIR "${CMAKE_BINARY_DIR}/dep_${NAME}_${CONFIG}")
     ExternalProject_Add(${NAME}_${CONFIG}
       SOURCE_DIR "${CMAKE_SOURCE_DIR}/../dependencies/${SOURCE_DIR}" # when dependency is in the repo (maybe via submodules)
@@ -137,6 +140,20 @@ set(ASSIMP_DEFS
   "ASSIMP_BUILD_SAMPLES=OFF"
 )
 add_external_dependency(Assimp "assimp" "${ASSIMP_DEFS}")
+
+# Requires MSVC version >= 17.13 due to https://github.com/stephenberry/glaze/issues/1448
+# git submodule add https://github.com/stephenberry/glaze.git
+set (GLAZE_DEFS
+  # default
+  "glaze_BUILD_EXAMPLES=OFF"
+  # ExternalProject_Add makes a project top-level and Glaze "turns on" "dev-mode.cmake" if it's top-level
+  # which builds (runs?) tests and fuzzers. Studied its CMake files and saw these variables are checked
+  # in dev mode, and set them to OFF to disable tests and fuzzers.
+  "glaze_ENABLE_FUZZING=OFF"
+  # a CMake variable
+  "BUILD_TESTING=OFF"
+)
+add_external_dependency(Glaze "glaze" "${GLAZE_DEFS}")
 
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
 # TODO(vug): imgui, stb, xatlas, embree
