@@ -72,4 +72,22 @@ std::vector<TItem> readBinaryFile(const std::filesystem::path& filePath) {
 template std::vector<std::byte> readBinaryFile<std::byte>(const std::filesystem::path& filePath);
 template std::vector<u32> readBinaryFile<u32>(const std::filesystem::path& filePath);
 
+bool writeBinaryFile(const std::filesystem::path& filePath, const void* data, size_t sizeBytes) {
+  if (!data || sizeBytes == 0) {
+    log().warn("Cannot write empty data to file: {}", filePath.string());
+    return false;
+  }
+
+  const FileHandle file(filePath.string(), "wb");
+
+  const size_t bytesWritten = std::fwrite(data, 1, sizeBytes, file);
+  if (bytesWritten != sizeBytes) {
+    log().error("Failed to write the entire file (wrote {} of {} bytes): {}", bytesWritten, sizeBytes,
+                filePath.string());
+    return false;
+  }
+
+  return true;
+}
+
 } // namespace aur

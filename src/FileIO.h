@@ -21,4 +21,12 @@ inline std::vector<u32> readBinaryFileU32(const std::filesystem::path& path) {
   return readBinaryFile<u32>(path);
 }
 
+// Utility function to write a binary file
+bool writeBinaryFile(const std::filesystem::path& filePath, const void* data, size_t sizeBytes);
+
+// Convenience wrapper that writes a std::string to a binary file
+inline bool writeBinaryFile(const std::filesystem::path& filePath, const std::string& data) {
+  return writeBinaryFile(filePath, data.data(), data.size());
+}
+
 } // namespace aur
