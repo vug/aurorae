@@ -171,6 +171,7 @@ foreach(CONFIG ${SUPERBUILD_CONFIGS})
         VMA_${CONFIG}
         GLM_${CONFIG}
         Assimp_${CONFIG}
+        Glaze_${CONFIG}
         # Vulkan_${CONFIG}}
     )
 endforeach()
