@@ -1,7 +1,4 @@
 /*
-TODO(vug): make uuid de/serializable by -> ask author of glaze: "this is my schema, I use this UUID library.
-           and it puts extra quotes when UUID is used as key in unordered_map. Is there anything I can do, say
-           put something else to toJSON function, to prevent extra quotes? thanks!"
 TODO(vug): at app start, go over all assets and process new / edited ones, and update registry.
 TODO(vug): asset processor, when compiling GLSL, give a name/id to the shader definition
            (file:// vs mem://)

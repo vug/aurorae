@@ -1,6 +1,5 @@
 #include "Application.h"
 
-#include <glaze/glaze/glaze.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <modern-uuid/uuid.h>
@@ -13,45 +12,7 @@
 #include "asset/AssetManager.h"
 #include "asset/Mesh.h"
 
-template <>
-struct glz::meta<aur::DefinitionType> {
-  using enum aur::DefinitionType;
-  static constexpr auto value = glz::enumerate(ShaderStage, Shader, Material, Mesh);
-};
-
-namespace glz {
-template <>
-struct from<JSON, muuid::uuid> {
-  template <auto Opts>
-  static void op(muuid::uuid& uuid, auto&&... args) {
-    // Initialize a string_view with the appropriately lengthed buffer
-    // Alternatively, use a std::string for any size (but this will allocate)
-    std::string_view str = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-    parse<JSON>::op<Opts>(str, args...);
-    uuid = muuid::uuid::from_chars(str).value();
-  }
-};
-
-template <>
-struct to<JSON, muuid::uuid> {
-  template <auto Opts>
-  static void op(const muuid::uuid& uuid, auto&&... args) noexcept {
-    std::string str = uuid.to_string();
-    serialize<JSON>::op<Opts>(str, args...);
-    // glz::write<glz::raw_json>(Opts(args...), str);
-  }
-};
-} // namespace glz
-
 namespace aur {
-
-struct my_struct {
-  int i = 287;
-  double d = 3.14;
-  std::string hello = "Hello World";
-  std::array<uint64_t, 3> arr = {1, 2, 3};
-  std::map<std::string, int> map{{"one", 1}, {"two", 2}};
-};
 
 Application::Initializer::Initializer() {
   // We are initializing spdlog and glfw here to reduce the complexity of the Logger and Window classes
@@ -89,39 +50,35 @@ Application::~Application() {
 
 void Application::run() {
   AssetRegistry registry;
-
-  muuid::uuid id1 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/unlit.vert");
-  std::string alias1{"shaders/unlit"};
-  AssetEntry entry1{
+  const muuid::uuid id1 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/unlit.vert");
+  const std::string alias1{"shaders/unlit"};
+  const AssetEntry entry1{
       .type = DefinitionType::ShaderStage,
       .srcPath = "shaders/unlit.vert",
       .dstPath = "processed/77a8b13e.vert.shaderStage.beve",
       .subAssetName = std::nullopt,
       .dependencies = std::nullopt,
   };
-  registry.aliases.insert({alias1, id1.to_string()});
-  registry.entries.insert({id1.to_string(), entry1});
-  // registry.aliases.insert({alias1, id1});
-  // registry.entries.insert({id1, entry1});
-
-  muuid::uuid id2 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/lit.vert");
-  std::string alias2{"shaders/lit"};
-  AssetEntry entry2{
+  registry.aliases.insert({alias1, id1});
+  registry.entries.insert({id1, entry1});
+  const muuid::uuid id2 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/lit.vert");
+  const std::string alias2{"shaders/lit"};
+  const AssetEntry entry2{
       .type = DefinitionType::ShaderStage,
       .srcPath = "shaders/lit.vert",
       .dstPath = "processed/f4f2a7a8.vert.shaderStage.beve",
       .subAssetName = std::nullopt,
       .dependencies = std::nullopt,
   };
-  registry.aliases.insert({alias2, id2.to_string()});
-  registry.entries.insert({id2.to_string(), entry2});
-  // registry.aliases.insert({alias2, id2});
-  // registry.entries.insert({id2, entry2});
-  // const std::string serializedReg = glz::write<glz::opts{.format=glz::JSON,
-  // .raw=true}>(registry).value_or("error");
+  registry.aliases.insert({alias2, id2});
+  registry.entries.insert({id2, entry2});
   const std::string serializedReg = glz::write_json(registry).value_or("error");
   if (!writeBinaryFile(kAssetsFolder / "processed/registry.json", glz::prettify_json(serializedReg)))
     log().warn("Failed to write registry to file.");
+
+  AssetRegistry registry2;
+  std::vector<std::byte> buffer = readBinaryFileBytes(kAssetsFolder / "processed/registry.json");
+  const glz::error_ctx err = glz::read_json(registry2, buffer);
 
   const std::optional<asset::ShaderStageDefinition> unlitVertStage =
       AssetProcessor::getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
