@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 project(AuroraeSuperbuild NONE) # NONE indicates no languages for this project itself
 
+# Note that, when working on multiple computers on the same repo, if a new submodule is introduced in one machine
+# the other machine has to run `git submodule update --init --recursive` to fetch the new submodule.
+
 include(ExternalProject) # Required for ExternalProject_Add
 
 set(SUPERBUILD_CONFIGS "Debug" "DebugAsan" "Release" "RelWithDebInfo")
