@@ -155,6 +155,12 @@ set (GLAZE_DEFS
 )
 add_external_dependency(Glaze "glaze" "${GLAZE_DEFS}")
 
+set(MODERN_UUID_DEFS 
+  "MUUID_NO_TESTS=ON"
+  "CMAKE_INSTALL_INCLUDEDIR=include"
+)
+add_external_dependency(ModernUuid "modern-uuid" "${MODERN_UUID_DEFS}")
+
 # TODO(vug): bring OpenImageIO but reduce the features/dependencies so that I can compile (just need texture stuff) 
 # TODO(vug): imgui, stb, xatlas, embree
 
@@ -172,6 +178,7 @@ foreach(CONFIG ${SUPERBUILD_CONFIGS})
         GLM_${CONFIG}
         Assimp_${CONFIG}
         Glaze_${CONFIG}
+        ModernUuid_${CONFIG}
         # Vulkan_${CONFIG}}
     )
 endforeach()
