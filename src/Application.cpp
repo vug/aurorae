@@ -14,6 +14,12 @@
 
 #include <modern-uuid/uuid.h>
 
+template <>
+struct glz::meta<aur::DefinitionType> {
+  using enum aur::DefinitionType;
+  static constexpr auto value = glz::enumerate(ShaderStage, Shader, Material, Mesh);
+};
+
 namespace aur {
 
 struct my_struct {
@@ -59,10 +65,36 @@ Application::~Application() {
 }
 
 void Application::run() {
+  AssetRegistry registry;
+
+  muuid::uuid id1 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/unlit.vert");
+  std::string alias1{"shaders/unlit"};
+  AssetEntry entry1{
+      .type = DefinitionType::ShaderStage,
+      .srcPath = "shaders/unlit.vert",
+      .dstPath = "processed/77a8b13e.vert.shaderStage.beve",
+      .subAssetName = std::nullopt,
+      .dependencies = std::nullopt,
+  };
+  registry.aliases.insert({alias1, id1.to_string()});
+  registry.entries.insert({id1.to_string(), entry1});
+  muuid::uuid id2 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/lit.vert");
+  std::string alias2{"shaders/lit"};
+  AssetEntry entry2{
+      .type = DefinitionType::ShaderStage,
+      .srcPath = "shaders/lit.vert",
+      .dstPath = "processed/f4f2a7a8.vert.shaderStage.beve",
+      .subAssetName = std::nullopt,
+      .dependencies = std::nullopt,
+  };
+  registry.aliases.insert({alias2, id2.to_string()});
+  registry.entries.insert({id2.to_string(), entry2});
+  const std::string serializedReg = glz::write_json(registry).value_or("error");
+  if (!writeBinaryFile(kAssetsFolder / "processed/registry.json", glz::prettify_json(serializedReg)))
+    log().warn("Failed to write registry to file.");
+
   const std::optional<asset::ShaderStageDefinition> unlitVertStage =
       AssetProcessor::getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
-  muuid::uuid u_v5 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "www.widgets.com");
-  log().info("generated uuid: {}", u_v5);
 
   // "Asset Library"
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =

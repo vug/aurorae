@@ -1,7 +1,9 @@
 /*
-TODO(vug): AssetManager can load them from disk with given id
-TODO(vug): asset processor, when compiling GLSL, or loading blob, give a name/id to the shader definition
+TODO(vug): make uuid de/serializable by
+TODO(vug): at app start, go over all assets and process new / edited ones, and update registry.
+TODO(vug): asset processor, when compiling GLSL, give a name/id to the shader definition
            (file:// vs mem://)
+TODO(vug): AssetManager can load definitions from disk via registry
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
            shader asset ids.
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,

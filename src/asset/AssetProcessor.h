@@ -7,6 +7,28 @@
 
 namespace aur {
 
+enum class DefinitionType : u32 {
+  ShaderStage = 0,
+  Shader = 1,
+  Material = 2,
+  Mesh = 3,
+};
+
+using AssetUuid = std::string;
+
+struct AssetEntry {
+  DefinitionType type;
+  std::filesystem::path srcPath;
+  std::filesystem::path dstPath;
+  std::optional<std::string> subAssetName;
+  std::optional<std::vector<AssetUuid>> dependencies;
+};
+
+struct AssetRegistry {
+  std::unordered_map<AssetUuid, AssetEntry> entries;
+  std::unordered_map<std::string, AssetUuid> aliases;
+};
+
 class AssetProcessor {
 public:
   template <typename TDef>
