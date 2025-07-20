@@ -110,6 +110,7 @@ find_package(glm REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(assimp REQUIRED)
 find_package(glaze REQUIRED)
+find_package(modern-uuid REQUIRED)
 
 # TODO(vug): add a function that takes package name and target name.
 # target name can be found in the *Config.cmake file.
@@ -171,6 +172,7 @@ target_link_libraries(Aurorae PRIVATE
         Vulkan::shaderc_combined
         ${SPIRV_CROSS_LIBS}
         glaze::glaze
+        modern-uuid::modern-uuid
 )
 # shaderc_combined does not come with PDB files, causing warnings at linking in debug mode
 target_link_options(Aurorae PRIVATE "/ignore:4099")
