@@ -1,7 +1,5 @@
 /*
-TODO(vug): Store ShaderStageDefinition struct to disk once processed. -> AssetManager can load them from disk
-           with given id
-TODO(vug): Evolve ShaderDefinition to only have a single shader stage.
+TODO(vug): AssetManager can load them from disk with given id
 TODO(vug): asset processor, when compiling GLSL, or loading blob, give a name/id to the shader definition
            (file:// vs mem://)
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to

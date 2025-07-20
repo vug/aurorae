@@ -27,11 +27,7 @@ std::optional<TDef> AssetProcessor::getDefinition(const std::filesystem::path& s
     return std::nullopt;
   }
   const std::filesystem::path kProcessedAssetsRoot{"processed"};
-  const auto dstRelPath = [&srcRelPath]() {
-    auto newPath = "processed" / srcRelPath;
-    newPath.replace_extension(".beve");
-    return newPath;
-  }();
+  const auto dstRelPath = ("processed" / srcRelPath).concat(".beve");
   const auto dstAbsPath{kAssetsFolder / dstRelPath};
 
   // if the processed asset exists, just load that one
@@ -48,7 +44,7 @@ std::optional<TDef> AssetProcessor::getDefinition(const std::filesystem::path& s
   }
 
   if constexpr (std::is_same_v<TDef, asset::ShaderStageDefinition>) {
-    const std::optional<asset::ShaderStageDefinition> def = AssetProcessor::processShaderStage(srcAbsPath);
+    const std::optional<asset::ShaderStageDefinition> def = processShaderStage(srcAbsPath);
     if (!def) {
       log().warn("Failed to process shader stage: {}", srcAbsPath.string());
       return std::nullopt;

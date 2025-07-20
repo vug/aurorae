@@ -10,7 +10,7 @@ namespace aur {
 class AssetProcessor {
 public:
   template <typename TDef>
-  static std::optional<TDef> getDefinition(const std::filesystem::path& srcPath);
+  static std::optional<TDef> getDefinition(const std::filesystem::path& srcRelPath);
 
   static std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath);
 
