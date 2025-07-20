@@ -12,6 +12,8 @@
 #include "asset/AssetManager.h"
 #include "asset/Mesh.h"
 
+#include <modern-uuid/uuid.h>
+
 namespace aur {
 
 struct my_struct {
@@ -59,6 +61,8 @@ Application::~Application() {
 void Application::run() {
   const std::optional<asset::ShaderStageDefinition> unlitVertStage =
       AssetProcessor::getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
+  muuid::uuid u_v5 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "www.widgets.com");
+  log().info("generated uuid: {}", u_v5);
 
   // "Asset Library"
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
