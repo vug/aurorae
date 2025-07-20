@@ -3,6 +3,7 @@
 #include <glaze/glaze/glaze.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <modern-uuid/uuid.h>
 #include <volk/volk.h>
 
 #include "AppContext.h"
@@ -12,13 +13,35 @@
 #include "asset/AssetManager.h"
 #include "asset/Mesh.h"
 
-#include <modern-uuid/uuid.h>
-
 template <>
 struct glz::meta<aur::DefinitionType> {
   using enum aur::DefinitionType;
   static constexpr auto value = glz::enumerate(ShaderStage, Shader, Material, Mesh);
 };
+
+namespace glz {
+template <>
+struct from<JSON, muuid::uuid> {
+  template <auto Opts>
+  static void op(muuid::uuid& uuid, auto&&... args) {
+    // Initialize a string_view with the appropriately lengthed buffer
+    // Alternatively, use a std::string for any size (but this will allocate)
+    std::string_view str = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    parse<JSON>::op<Opts>(str, args...);
+    uuid = muuid::uuid::from_chars(str).value();
+  }
+};
+
+template <>
+struct to<JSON, muuid::uuid> {
+  template <auto Opts>
+  static void op(const muuid::uuid& uuid, auto&&... args) noexcept {
+    std::string str = uuid.to_string();
+    serialize<JSON>::op<Opts>(str, args...);
+    // glz::write<glz::raw_json>(Opts(args...), str);
+  }
+};
+} // namespace glz
 
 namespace aur {
 
@@ -78,6 +101,9 @@ void Application::run() {
   };
   registry.aliases.insert({alias1, id1.to_string()});
   registry.entries.insert({id1.to_string(), entry1});
+  // registry.aliases.insert({alias1, id1});
+  // registry.entries.insert({id1, entry1});
+
   muuid::uuid id2 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/lit.vert");
   std::string alias2{"shaders/lit"};
   AssetEntry entry2{
@@ -89,6 +115,10 @@ void Application::run() {
   };
   registry.aliases.insert({alias2, id2.to_string()});
   registry.entries.insert({id2.to_string(), entry2});
+  // registry.aliases.insert({alias2, id2});
+  // registry.entries.insert({id2, entry2});
+  // const std::string serializedReg = glz::write<glz::opts{.format=glz::JSON,
+  // .raw=true}>(registry).value_or("error");
   const std::string serializedReg = glz::write_json(registry).value_or("error");
   if (!writeBinaryFile(kAssetsFolder / "processed/registry.json", glz::prettify_json(serializedReg)))
     log().warn("Failed to write registry to file.");

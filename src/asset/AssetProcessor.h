@@ -5,6 +5,8 @@
 #include "Mesh.h"
 #include "Shader.h"
 
+#include <modern-uuid/uuid.h>
+
 namespace aur {
 
 enum class DefinitionType : u32 {
@@ -14,6 +16,7 @@ enum class DefinitionType : u32 {
   Mesh = 3,
 };
 
+// using AssetUuid = muuid::uuid;
 using AssetUuid = std::string;
 
 struct AssetEntry {
@@ -33,6 +36,9 @@ class AssetProcessor {
 public:
   template <typename TDef>
   static std::optional<TDef> getDefinition(const std::filesystem::path& srcRelPath);
+
+  static void processOnlyNeedingAssets();
+  static void processAllAssets();
 
   static std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath);
 
