@@ -22,3 +22,6 @@
 [submodule "dependencies/glaze"]
 	path = dependencies/glaze
 	url = https://github.com/stephenberry/glaze.git
+[submodule "dependencies/modern-uuid"]
+	path = dependencies/modern-uuid
+	url = https://github.com/gershnik/modern-uuid.git
