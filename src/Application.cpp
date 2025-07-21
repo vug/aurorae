@@ -49,39 +49,11 @@ Application::~Application() {
 }
 
 void Application::run() {
-  AssetRegistry registry;
-  const muuid::uuid id1 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/unlit.vert");
-  const std::string alias1{"shaders/unlit"};
-  const AssetEntry entry1{
-      .type = DefinitionType::ShaderStage,
-      .srcPath = "shaders/unlit.vert",
-      .dstPath = "processed/77a8b13e.vert.shaderStage.beve",
-      .subAssetName = std::nullopt,
-      .dependencies = std::nullopt,
-  };
-  registry.aliases.insert({alias1, id1});
-  registry.entries.insert({id1, entry1});
-  const muuid::uuid id2 = muuid::uuid::generate_sha1(muuid::uuid::namespaces::url, "shaders/lit.vert");
-  const std::string alias2{"shaders/lit"};
-  const AssetEntry entry2{
-      .type = DefinitionType::ShaderStage,
-      .srcPath = "shaders/lit.vert",
-      .dstPath = "processed/f4f2a7a8.vert.shaderStage.beve",
-      .subAssetName = std::nullopt,
-      .dependencies = std::nullopt,
-  };
-  registry.aliases.insert({alias2, id2});
-  registry.entries.insert({id2, entry2});
-  const std::string serializedReg = glz::write_json(registry).value_or("error");
-  if (!writeBinaryFile(kAssetsFolder / "processed/registry.json", glz::prettify_json(serializedReg)))
-    log().warn("Failed to write registry to file.");
-
-  AssetRegistry registry2;
-  std::vector<std::byte> buffer = readBinaryFileBytes(kAssetsFolder / "processed/registry.json");
-  const glz::error_ctx err = glz::read_json(registry2, buffer);
+  assetProcessor_.clearRegistry();
+  assetProcessor_.processAllAssets();
 
   const std::optional<asset::ShaderStageDefinition> unlitVertStage =
-      AssetProcessor::getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
+      assetProcessor_.getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert[build:Debug]");
 
   // "Asset Library"
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =

@@ -93,13 +93,29 @@ struct AssetRegistry {
 
 class AssetProcessor {
 public:
+  // empties the registry and deletes all processed asset files
+  static void clearRegistry();
+
+  struct NameSpaces {
+    static constexpr muuid::uuid kShaderStage = muuid::uuid("01982b4e-4295-7490-b404-bed575efa867");
+  };
+  void processAllAssets();
+  // load the cache
+  void loadRegistry();
+  // save the cache
+  void saveRegistry();
+
+  void processOnlyNeedingAssets();
+
   template <typename TDef>
-  static std::optional<TDef> getDefinition(const std::filesystem::path& srcRelPath);
+  std::optional<TDef> getDefinition(const std::string& stableSourceIdentifier);
 
-  static void processOnlyNeedingAssets();
-  static void processAllAssets();
-
-  static std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath);
+  enum class ShaderBuildMode {
+    Debug,
+    Release,
+  };
+  static std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath,
+                                                                        ShaderBuildMode buildMode);
 
   std::optional<asset::ShaderDefinition> static loadShader(const std::filesystem::path& vertSpirvPath,
                                                            const std::filesystem::path& fragSpirvPath);
@@ -107,6 +123,13 @@ public:
   std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
 
   static bool validateSpirV(const std::vector<u32>& blob);
+
+private:
+  static const std::filesystem::path kProcessedAssetsRoot;
+  static const std::filesystem::path kRegistryPath;
+  AssetRegistry registry_;
+
+  static void initEmptyRegistryFile();
 };
 
 } // namespace aur

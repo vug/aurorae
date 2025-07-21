@@ -10,7 +10,6 @@ namespace aur::asset {
 
 struct ShaderStageDefinition {
   ShaderStage stage;
-  std::filesystem::path sourcePath;
   std::vector<u32> spirv;
 };
 
