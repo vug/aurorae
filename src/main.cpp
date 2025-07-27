@@ -1,8 +1,8 @@
 /*
 TODO(vug): at app start, go over all assets and process new / edited ones, and update registry.
 TODO(vug): introduce debug and release sub-asset modes for shader stage
-TODO(vug): asset processor, when compiling GLSL, give a name/id to the shader definition
-           (file:// vs mem://)
+TODO(vug): get stable identifiers of generated assets for a given source asset
+TODO(vug): shader asset processing with registry.
 TODO(vug): AssetManager can load definitions from disk via registry
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
            shader asset ids.

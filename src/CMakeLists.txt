@@ -149,6 +149,7 @@ add_executable(Aurorae
         render/Shader.h render/Shader.cpp
         render/Material.h render/Material.cpp
         render/Mesh.h render/Mesh.cpp
+        asset/Common.h
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)

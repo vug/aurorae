@@ -108,7 +108,7 @@ public:
   void processOnlyNeedingAssets();
 
   template <typename TDef>
-  std::optional<TDef> getDefinition(const std::string& stableSourceIdentifier);
+  std::optional<TDef> getDefinition(const StableId<TDef>& stableSourceIdentifier);
 
   enum class ShaderBuildMode {
     Debug,

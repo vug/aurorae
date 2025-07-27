@@ -12,6 +12,7 @@
 #include "../Logger.h"
 #include "../Utils.h"
 #include "AssimpUtils.h"
+#include "Common.h"
 
 #include <glaze/glaze/glaze.hpp>
 #include <shaderc/shaderc.hpp>
@@ -62,7 +63,7 @@ void AssetProcessor::processAllAssets() {
        std::filesystem::recursive_directory_iterator(kAssetsFolder)) {
     if (!dirEntry.is_regular_file())
       continue;
-    if (dirEntry.path().extension() != ".vert")
+    if (dirEntry.path().extension() != ".vert" && dirEntry.path().extension() != ".frag")
       continue;
     const auto& srcPath = dirEntry.path();
     log().info("processing asset ingestion file: {}", srcPath.generic_string());
@@ -77,12 +78,12 @@ void AssetProcessor::processAllAssets() {
       }
 
       const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
-      const std::string stableSourceIdentifier =
+      const StableId<asset::ShaderStageDefinition> stableSourceIdentifier =
           std::format("{}[build:{}]", srcRelPath.generic_string(),
                       buildMode == ShaderBuildMode::Debug ? "Debug" : "Release");
       const muuid::uuid assetId =
           muuid::uuid::generate_sha1(NameSpaces::kShaderStage, stableSourceIdentifier);
-      AssetEntry entry{
+      const AssetEntry entry{
           .type = DefinitionType::ShaderStage,
           .srcPath = srcPath,
           .dstPath = dstPath,
@@ -99,7 +100,7 @@ void AssetProcessor::processAllAssets() {
 }
 
 template <typename TDef>
-std::optional<TDef> AssetProcessor::getDefinition(const std::string& stableSourceIdentifier) {
+std::optional<TDef> AssetProcessor::getDefinition(const StableId<TDef>& stableSourceIdentifier) {
   const auto it = registry_.aliases.find(stableSourceIdentifier);
   if (it == registry_.aliases.end()) {
     log().warn("Asset '{}' is not in the registry.", stableSourceIdentifier);
@@ -129,7 +130,7 @@ std::optional<TDef> AssetProcessor::getDefinition(const std::string& stableSourc
 }
 
 template std::optional<asset::ShaderStageDefinition>
-AssetProcessor::getDefinition<asset::ShaderStageDefinition>(const std::string& stableSourceIdentifier);
+AssetProcessor::getDefinition<asset::ShaderStageDefinition>(const StableId<asset::ShaderStageDefinition>& stableSourceIdentifier);
 
 std::optional<asset::ShaderStageDefinition>
 AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderBuildMode buildMode) {
