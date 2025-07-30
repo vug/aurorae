@@ -198,6 +198,21 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
 
   return def;
 }
+std::optional<asset::ShaderDefinition> AssetProcessor::processShader(const std::filesystem::path& srcPath) {
+  if (!std::filesystem::exists(srcPath))
+    return std::nullopt;
+
+  const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
+  asset::ShaderDefinition def;
+  if (const glz::error_ctx err = glz::read_json(def, bytes)) {
+    log().warn("Failed to generate ShaderDefinition from file: {}. error code: {}, msg: {}. Try editing the "
+               "file to fit to correct schema.",
+               srcPath.generic_string(), std::to_underlying(err.ec), err.custom_error_message);
+    return std::nullopt;
+  }
+
+  return def;
+}
 
 std::optional<asset::ShaderDefinition>
 AssetProcessor::loadShader(const std::filesystem::path& vertSpirvPath,

@@ -120,6 +120,8 @@ public:
   static std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath,
                                                                         ShaderBuildMode buildMode);
 
+  static std::optional<asset::ShaderDefinition> processShader(const std::filesystem::path& srcPath);
+
   std::optional<asset::ShaderDefinition> static loadShader(const std::filesystem::path& vertSpirvPath,
                                                            const std::filesystem::path& fragSpirvPath);
 
