@@ -130,9 +130,6 @@ public:
 
   static std::optional<asset::ShaderDefinition> processShader(const std::filesystem::path& srcPath);
 
-  std::optional<asset::ShaderDefinition> static loadShader(const std::filesystem::path& vertSpirvPath,
-                                                           const std::filesystem::path& fragSpirvPath);
-
   std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
 
   static bool validateSpirV(const std::vector<u32>& blob);

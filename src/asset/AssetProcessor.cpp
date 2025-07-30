@@ -78,7 +78,8 @@ void AssetProcessor::processAllAssets() {
        std::filesystem::recursive_directory_iterator(kAssetsFolder)) {
     if (!dirEntry.is_regular_file())
       continue;
-    if (!std::unordered_set<std::string>{".vert", ".frag"}.contains(dirEntry.path().extension().string()))
+    if (!std::unordered_set<std::string>{".vert", ".frag", ".shader"}.contains(
+            dirEntry.path().extension().string()))
       continue;
     const DefinitionType defType = extensionToDefinitionType(dirEntry.path().extension());
     const auto& srcPath = dirEntry.path();
@@ -88,8 +89,6 @@ void AssetProcessor::processAllAssets() {
       std::unordered_map<AssetBuildMode, DefinitionVariant> definitions;
       std::string_view extension;
     };
-    if (defType != DefinitionType::ShaderStage)
-      continue;
     const ProcessingResult result = [defType, &srcPath]() {
       switch (defType) {
       case DefinitionType::ShaderStage: {
@@ -147,7 +146,7 @@ void AssetProcessor::processAllAssets() {
     const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
     const muuid::uuid assetId = muuid::uuid::generate_sha1(NameSpaces::kShaderStage, stableSourceIdentifier);
     const AssetEntry entry{
-        .type = DefinitionType::ShaderStage,
+        .type = defType,
         .srcPath = srcPath,
         .dstVariantPaths = dstVariantPaths,
         .dependencies = std::nullopt,
@@ -172,6 +171,9 @@ std::optional<TDef> AssetProcessor::getDefinition(const StableId<TDef>& stableSo
   if constexpr (std::is_same_v<TDef, asset::ShaderStageDefinition>) {
     if (entry.type != DefinitionType::ShaderStage)
       log().fatal("Asset '{}' is not a shader stage definition.", stableSourceIdentifier);
+  } else if constexpr (std::is_same_v<TDef, asset::ShaderDefinition>) {
+    if (entry.type != DefinitionType::Shader)
+      log().fatal("Asset '{}' is not a shader definition.", stableSourceIdentifier);
   } else
     static_assert(false, "Unimplemented definition type");
 
@@ -209,6 +211,9 @@ std::optional<TDef> AssetProcessor::getDefinition(const StableId<TDef>& stableSo
 template std::optional<asset::ShaderStageDefinition>
 AssetProcessor::getDefinition<asset::ShaderStageDefinition>(
     const StableId<asset::ShaderStageDefinition>& stableSourceIdentifier);
+
+template std::optional<asset::ShaderDefinition> AssetProcessor::getDefinition<asset::ShaderDefinition>(
+    const StableId<asset::ShaderDefinition>& stableSourceIdentifier);
 
 std::optional<asset::ShaderStageDefinition>
 AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderBuildMode buildMode) {
@@ -255,6 +260,11 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
       .spirv = std::move(spirv),
   };
 
+  if (!validateSpirV(def.spirv)) {
+    log().warn("Invalid SPIR-V generated from: {}", srcPath.generic_string());
+    return std::nullopt;
+  }
+
   const spirv_cross::Compiler comp(def.spirv);
   auto resources = comp.get_shader_resources();
   log().debug("Vertex Inputs:");
@@ -277,23 +287,6 @@ std::optional<asset::ShaderDefinition> AssetProcessor::processShader(const std::
                srcPath.generic_string(), std::to_underlying(err.ec), err.custom_error_message);
     return std::nullopt;
   }
-
-  return def;
-}
-
-std::optional<asset::ShaderDefinition>
-AssetProcessor::loadShader(const std::filesystem::path& vertSpirvPath,
-                           const std::filesystem::path& fragSpirvPath) {
-
-  if (!std::filesystem::exists(vertSpirvPath) || !std::filesystem::exists(fragSpirvPath))
-    return {};
-
-  const asset::ShaderDefinition def{
-      .vertStageDef = {.stage = ShaderStage::Vertex, .spirv = readBinaryFileU32(vertSpirvPath)},
-      .fragStageDef = {.stage = ShaderStage::Fragment, .spirv = readBinaryFileU32(fragSpirvPath)}};
-
-  if (!validateSpirV(def.vertStageDef.spirv) || !validateSpirV(def.fragStageDef.spirv))
-    return {};
 
   return def;
 }

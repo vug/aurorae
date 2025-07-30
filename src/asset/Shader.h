@@ -17,16 +17,14 @@ struct ShaderStageDefinition {
 };
 
 struct ShaderDefinition {
-  // TODO(vug): replace with stableIds
-  ShaderStageDefinition vertStageDef;
-  // StableId<ShaderStageDefinition> vert;
-  ShaderStageDefinition fragStageDef;
-  // StableId<ShaderStageDefinition> frag;
+  StableId<ShaderStageDefinition> vert;
+  StableId<ShaderStageDefinition> frag;
 };
 
 class Shader {
 public:
-  static Shader create(const ShaderDefinition& shaderDef);
+  // TODO(vug): instead of copying SpirV blob, make ShaderStage an asset and refer to them
+  static Shader create(const ShaderDefinition& shaderDef, const SpirV& vertSpirV, const SpirV& fragSpirV);
 
   ~Shader() = default;
 
@@ -36,19 +34,17 @@ public:
   Shader& operator=(Shader&& other) noexcept = default;
 
   [[nodiscard]] const ShaderDefinition& getDefinition() const { return def_; }
-  [[nodiscard]] const std::vector<u32>& getVertexBlob() const { return def_.vertStageDef.spirv; }
-  // [[nodiscard]] const SpirV& getVertexBlob() const { return vertBlob; }
-  [[nodiscard]] const std::vector<u32>& getFragmentBlob() const { return def_.fragStageDef.spirv; }
-  // [[nodiscard]] const SpirV& getFragmentBlob() const { return fragBlob; }
-  [[nodiscard]] const std::string& getDebugName() const { return debugName; }
+  [[nodiscard]] const SpirV& getVertexBlob() const { return vertBlob_; }
+  [[nodiscard]] const SpirV& getFragmentBlob() const { return fragBlob_; }
+  [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
 private:
   Shader() = default;
 
-  ShaderDefinition def_; // TODO(vug): remove
-  SpirV vertBlob;
-  SpirV fragBlob;
-  std::string debugName;
+  ShaderDefinition def_;
+  SpirV vertBlob_;
+  SpirV fragBlob_;
+  std::string debugName_;
 };
 
 using ShaderUpdateCallback = std::function<void(Handle<asset::Shader>)>;

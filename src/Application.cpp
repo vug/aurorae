@@ -53,12 +53,12 @@ void Application::run() {
   assetProcessor_.processAllAssets();
 
   const std::optional<asset::ShaderStageDefinition> unlitVertStage =
-      assetProcessor_.getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert[build:Debug]");
+      assetProcessor_.getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
 
   // "Asset Library"
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
-      assetProcessor_.loadShader(std::filesystem::path{kShadersFolder} / "unlit.vert.spv",
-                                 std::filesystem::path{kShadersFolder} / "unlit.frag.spv");
+      assetProcessor_.getDefinition<asset::ShaderDefinition>("shaders/unlit.shader");
+
   if (!unlitShaderDefOpt.has_value())
     log().fatal("Failed to load unlit shader!");
   const Handle<asset::Shader> unlitAShader = assetManager_.loadShaderFromDefinition(*unlitShaderDefOpt);

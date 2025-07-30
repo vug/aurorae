@@ -1,7 +1,11 @@
 /*
-TODO(vug): shader asset processing with registry.
+TODO(vug): introduce asset::ShaderStage asset and make asset::Shader to refer two of those
+TODO(vug): rename asset::Shader to GraphicsProgram.
+TODO(vug): ShaderDefinition has dependencies to stages it refers to.
+TODO(vug): maybe ProcessingResult does not need an extension
+TODO(vug): Make AssetRegistry a separate class which owns getDefinition so that AssetManager can load
+           definitions from disk via registry without referring to AssetProcessor
 TODO(vug): get stable identifiers of generated assets for a given source asset
-TODO(vug): AssetManager can load definitions from disk via registry
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
            shader asset ids.
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
