@@ -1,22 +1,19 @@
 /*
-TODO(vug): at app start, go over all assets and process new / edited ones, and update registry.
-TODO(vug): introduce debug and release sub-asset modes for shader stage
-TODO(vug): get stable identifiers of generated assets for a given source asset
 TODO(vug): shader asset processing with registry.
+TODO(vug): get stable identifiers of generated assets for a given source asset
 TODO(vug): AssetManager can load definitions from disk via registry
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
            shader asset ids.
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
            `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
-TODO(vug): better to build both debug and release versions of the same shader and asset manager chooses one
-           based on the project mode
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
 TODO(vug): asset::Texture, render::Texture
 TODO(vug): bring a Khronos sample asset with textures
 TODO(vug): bring a texture (stb or oiio)
+TODO(vug): go over more ideas from more_on_registry_and_build_mode_variants.md
 TODO(vug): store debug names with objects
 TODO(vug): a std::function based listener system for asset changes
 TODO(vug): Create some default Materials (with different debug names) -> store them in AssetManager

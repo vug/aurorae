@@ -76,13 +76,21 @@ struct glz::meta<aur::DefinitionType> {
 
 namespace aur {
 
+enum class AssetBuildMode {
+  // To be used by assets for which the build mode does not matter, such as Mesh, Texture.
+  Any = 0,
+  // To be used by assets for which the build mode matters, such as ShaderStage.
+  Debug = 1,
+  Release = 2,
+};
+
 using AssetUuid = glaze_uuid;
 
 struct AssetEntry {
   DefinitionType type;
   std::filesystem::path srcPath;
-  std::filesystem::path dstPath;
-  std::optional<std::string> subAssetName;
+  std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantPaths;
+  // std::chrono::system_clock::time_point lastProcessed;
   std::optional<std::vector<AssetUuid>> dependencies;
 };
 

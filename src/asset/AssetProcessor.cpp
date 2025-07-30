@@ -69,42 +69,91 @@ DefinitionType AssetProcessor::extensionToDefinitionType(std::filesystem::path e
     log().fatal("Unknown definition type for extension: {}", ext.string());
 }
 
+using DefinitionVariant =
+    std::variant<asset::ShaderStageDefinition, asset::ShaderDefinition>; // , asset::MeshDefinition
+using Definitions = std::unordered_map<AssetBuildMode, DefinitionVariant>;
+
 void AssetProcessor::processAllAssets() {
   for (const std::filesystem::directory_entry& dirEntry :
        std::filesystem::recursive_directory_iterator(kAssetsFolder)) {
     if (!dirEntry.is_regular_file())
       continue;
-    if (dirEntry.path().extension() != ".vert" && dirEntry.path().extension() != ".frag")
+    if (!std::unordered_set<std::string>{".vert", ".frag"}.contains(dirEntry.path().extension().string()))
       continue;
+    const DefinitionType defType = extensionToDefinitionType(dirEntry.path().extension());
     const auto& srcPath = dirEntry.path();
     log().info("processing asset ingestion file: {}", srcPath.generic_string());
-    const ShaderBuildMode buildMode = ShaderBuildMode::Debug;
-    std::optional<asset::ShaderStageDefinition> shaderStageDef = processShaderStage(srcPath, buildMode);
-    if (shaderStageDef) {
-      const std::string serializedDef = glz::write_beve(shaderStageDef.value()).value_or("error");
-      const auto dstPath = kProcessedAssetsRoot / srcPath.filename().concat(".shaderStageDef.beve");
-      if (!writeBinaryFile(dstPath, serializedDef)) {
-        log().warn("Failed to write asset definition to file: {}", srcPath.string());
+    const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
+    struct ProcessingResult {
+      std::unordered_map<AssetBuildMode, DefinitionVariant> definitions;
+      std::string_view extension;
+    };
+    if (defType != DefinitionType::ShaderStage)
+      continue;
+    const ProcessingResult result = [defType, &srcPath]() {
+      switch (defType) {
+      case DefinitionType::ShaderStage: {
+        return ProcessingResult{.definitions =
+                                    [&srcPath]() {
+                                      Definitions definitions;
+                                      if (auto defOpt = processShaderStage(srcPath, ShaderBuildMode::Debug))
+                                        definitions[AssetBuildMode::Debug] = std::move(*defOpt);
+                                      if (auto defOpt = processShaderStage(srcPath, ShaderBuildMode::Release))
+                                        definitions[AssetBuildMode::Release] = std::move(*defOpt);
+                                      return definitions;
+                                    }(),
+                                .extension = "shaderStageDef"};
+      } break;
+      case DefinitionType::Shader: {
+        return ProcessingResult{.definitions = [&srcPath]() -> Definitions {
+                                  if (auto defOpt = processShader(srcPath))
+                                    return {{AssetBuildMode::Any, std::move(*defOpt)}};
+                                  return {};
+                                }(),
+                                .extension = "shaderDef"};
+      } break;
+      case DefinitionType::Material: {
+        log().fatal("Not implemented yet.");
+      } break;
+      case DefinitionType::Mesh: {
+        log().fatal("Not implemented yet.");
+      } break;
+      }
+      std::unreachable();
+    }();
+
+    std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantPaths;
+    for (auto& [mode, definition] : result.definitions) {
+      std::expected<std::string, glz::error_ctx> serResult =
+          std::visit([](auto& def) { return glz::write_beve(def); }, definition);
+      if (!serResult.has_value()) {
+        log().warn("Failed to serialize definition: {}", serResult.error().custom_error_message);
         continue;
       }
-
-      const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
-      const StableId<asset::ShaderStageDefinition> stableSourceIdentifier =
-          std::format("{}[build:{}]", srcRelPath.generic_string(),
-                      buildMode == ShaderBuildMode::Debug ? "Debug" : "Release");
-      const muuid::uuid assetId =
-          muuid::uuid::generate_sha1(NameSpaces::kShaderStage, stableSourceIdentifier);
-      const AssetEntry entry{
-          .type = DefinitionType::ShaderStage,
-          .srcPath = srcPath,
-          .dstPath = dstPath,
-          .subAssetName = "Debug", // later can also be Release
-          .dependencies = std::nullopt,
-      };
-      registry_.entries.insert({assetId, entry});
-      registry_.aliases.insert({stableSourceIdentifier, assetId});
-      log().info(">>> processed it to {}", dstPath.string());
+      const std::string serializedDef = serResult.value();
+      const std::string_view modeStr = mode == AssetBuildMode::Debug     ? "debug."
+                                       : mode == AssetBuildMode::Release ? "release."
+                                                                         : "";
+      const auto dstPath = kProcessedAssetsRoot /
+                           srcPath.filename().concat(std::format(".{}.{}beve", result.extension, modeStr));
+      if (!writeBinaryFile(dstPath, serializedDef)) {
+        log().warn("Failed to write asset definition to file: {}", srcPath.generic_string());
+        continue;
+      }
+      dstVariantPaths[mode] = dstPath;
+      log().info(">>> processed it to {}", dstPath.generic_string());
     }
+
+    const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
+    const muuid::uuid assetId = muuid::uuid::generate_sha1(NameSpaces::kShaderStage, stableSourceIdentifier);
+    const AssetEntry entry{
+        .type = DefinitionType::ShaderStage,
+        .srcPath = srcPath,
+        .dstVariantPaths = dstVariantPaths,
+        .dependencies = std::nullopt,
+    };
+    registry_.entries.insert({assetId, entry});
+    registry_.aliases.insert({stableSourceIdentifier, assetId});
   }
 
   saveRegistry();
@@ -126,22 +175,40 @@ std::optional<TDef> AssetProcessor::getDefinition(const StableId<TDef>& stableSo
   } else
     static_assert(false, "Unimplemented definition type");
 
-  if (!std::filesystem::exists(entry.dstPath))
+  const AssetBuildMode mode = [kBuildType = kBuildType]() {
+    switch (kBuildType) {
+    case BuildType::Debug:
+      return AssetBuildMode::Debug;
+    case BuildType::Release:
+    case BuildType::RelWithDebInfo:
+      return AssetBuildMode::Release;
+    }
+    std::unreachable();
+  }();
+
+  const std::filesystem::path dstPath = [&entry, &mode]() {
+    if (entry.dstVariantPaths.contains(mode))
+      return entry.dstVariantPaths.at(mode);
+    return entry.dstVariantPaths.at(AssetBuildMode::Any);
+  }();
+
+  if (!std::filesystem::exists(dstPath))
     log().fatal("Asset in registry '{}' does not have a processed file at {}!", stableSourceIdentifier,
-                entry.dstPath.generic_string());
-  const std::vector<std::byte> defBuffer = readBinaryFileBytes(entry.dstPath);
+                dstPath.generic_string());
+  const std::vector<std::byte> defBuffer = readBinaryFileBytes(dstPath);
 
   TDef def;
   if (const glz::error_ctx err = glz::read_beve(def, defBuffer)) {
     log().warn("Failed to read asset definition from file: {}. error code: {}, msg: {}. Try reprocessing.",
-               entry.dstPath.generic_string(), std::to_underlying(err.ec), err.custom_error_message);
+               dstPath.generic_string(), std::to_underlying(err.ec), err.custom_error_message);
     return std::nullopt;
   }
   return def;
 }
 
 template std::optional<asset::ShaderStageDefinition>
-AssetProcessor::getDefinition<asset::ShaderStageDefinition>(const StableId<asset::ShaderStageDefinition>& stableSourceIdentifier);
+AssetProcessor::getDefinition<asset::ShaderStageDefinition>(
+    const StableId<asset::ShaderStageDefinition>& stableSourceIdentifier);
 
 std::optional<asset::ShaderStageDefinition>
 AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderBuildMode buildMode) {
