@@ -99,6 +99,9 @@ public:
   struct NameSpaces {
     static constexpr muuid::uuid kShaderStage = muuid::uuid("01982b4e-4295-7490-b404-bed575efa867");
   };
+
+  DefinitionType extensionToDefinitionType(std::filesystem::path ext);
+
   void processAllAssets();
   // load the cache
   void loadRegistry();

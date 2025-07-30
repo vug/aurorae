@@ -58,6 +58,17 @@ void AssetProcessor::saveRegistry() {
     log().fatal("Failed to initialize the registry file: {}.", kRegistryPath.string());
 }
 
+DefinitionType AssetProcessor::extensionToDefinitionType(std::filesystem::path ext) {
+  if (ext == ".vert" || ext == ".frag")
+    return DefinitionType::ShaderStage;
+  else if (ext == ".shader")
+    return DefinitionType::Shader;
+  else if (ext == ".gltf" || ext == ".fbx" || ext == ".usda")
+    return DefinitionType::Mesh;
+  else
+    log().fatal("Unknown definition type for extension: {}", ext.string());
+}
+
 void AssetProcessor::processAllAssets() {
   for (const std::filesystem::directory_entry& dirEntry :
        std::filesystem::recursive_directory_iterator(kAssetsFolder)) {

@@ -9,6 +9,8 @@ TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and sim
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
            `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
+TODO(vug): better to build both debug and release versions of the same shader and asset manager chooses one
+           based on the project mode
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
