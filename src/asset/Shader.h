@@ -4,17 +4,11 @@
 #include <functional>
 
 #include "../Handle.h"
-#include "../VulkanWrappers.h"
+#include "ShaderStage.h"
+
 #include "Common.h"
 
 namespace aur::asset {
-
-using SpirV = std::vector<u32>;
-
-struct ShaderStageDefinition {
-  ShaderStage stage;
-  std::vector<u32> spirv;
-};
 
 struct ShaderDefinition {
   StableId<ShaderStageDefinition> vert;
