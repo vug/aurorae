@@ -36,7 +36,7 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
     , pipelineLayout_{[this]() {
       // WorldFromObject / Model matrix
       const PushConstant pushConstant{
-          .stages = {ShaderStage::Vertex},
+          .stages = {ShaderStageType::Vertex},
           .size = sizeof(glm::mat4),
       };
       const PipelineLayoutCreateInfo layoutCreateInfo{

@@ -222,12 +222,12 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
     return std::nullopt;
   const std::string_view source(reinterpret_cast<const char*>(bytes.data()), bytes.size());
   const auto [kind,
-              stage] = [ext = srcPath.extension().string()]() -> std::pair<shaderc_shader_kind, ShaderStage> {
+              stage] = [ext = srcPath.extension().string()]() -> std::pair<shaderc_shader_kind, ShaderStageType> {
     if (ext == ".vert")
-      return {shaderc_vertex_shader, ShaderStage::Vertex};
+      return {shaderc_vertex_shader, ShaderStageType::Vertex};
     if (ext == ".frag")
-      return {shaderc_fragment_shader, ShaderStage::Fragment};
-    return {shaderc_glsl_infer_from_source, ShaderStage::Vertex};
+      return {shaderc_fragment_shader, ShaderStageType::Fragment};
+    return {shaderc_glsl_infer_from_source, ShaderStageType::Vertex};
   }();
 
   const shaderc::Compiler compiler;

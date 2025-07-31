@@ -126,7 +126,7 @@ void Application::run() {
     glm::mat4 worldFromObject1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 1.5));
     const PushConstantsInfo pcInfo1{
         .pipelineLayout = unlitPipeline->getPipelineLayout(),
-        .stages = {ShaderStage::Vertex},
+        .stages = {ShaderStageType::Vertex},
         .sizeBytes = sizeof(worldFromObject1),
         .data = glm::value_ptr(worldFromObject1),
     };
@@ -136,7 +136,7 @@ void Application::run() {
     glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
     const PushConstantsInfo pcInfo2{
         .pipelineLayout = unlitPipeline->getPipelineLayout(),
-        .stages = {ShaderStage::Vertex},
+        .stages = {ShaderStageType::Vertex},
         .sizeBytes = sizeof(worldFromObject2),
         .data = glm::value_ptr(worldFromObject2),
     };

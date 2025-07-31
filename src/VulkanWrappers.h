@@ -58,7 +58,7 @@ enum class DescriptorType : u32 {
 };
 
 // sync with VkShaderStageFlagBits
-enum class ShaderStage : u32 {
+enum class ShaderStageType : u32 {
   Vertex = 0x00000001,
   // VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT = 0x00000002,
   // VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT = 0x00000004,

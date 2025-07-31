@@ -8,8 +8,8 @@
 namespace aur {
 static_assert(static_cast<u32>(DescriptorType::UniformBuffer) == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-static_assert(static_cast<u32>(ShaderStage::Vertex) == VK_SHADER_STAGE_VERTEX_BIT);
-static_assert(static_cast<u32>(ShaderStage::Fragment) == VK_SHADER_STAGE_FRAGMENT_BIT);
+static_assert(static_cast<u32>(ShaderStageType::Vertex) == VK_SHADER_STAGE_VERTEX_BIT);
+static_assert(static_cast<u32>(ShaderStageType::Fragment) == VK_SHADER_STAGE_FRAGMENT_BIT);
 
 static_assert(static_cast<u32>(VertexInputRate::Vertex) == VK_VERTEX_INPUT_RATE_VERTEX);
 static_assert(static_cast<u32>(VertexInputRate::Instance) == VK_VERTEX_INPUT_RATE_INSTANCE);
@@ -44,7 +44,7 @@ u32 toVkFlags(const std::vector<TEnum>& enums) {
   return flags;
 }
 
-template u32 toVkFlags(const std::vector<ShaderStage>& enums);
+template u32 toVkFlags(const std::vector<ShaderStageType>& enums);
 template u32 toVkFlags(const std::vector<BufferUsage>& enums);
 
 } // namespace aur

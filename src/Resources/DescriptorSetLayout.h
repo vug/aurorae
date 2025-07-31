@@ -10,7 +10,7 @@ struct DescriptorSetLayoutBinding {
   u32 index;
   DescriptorType type;
   u32 descriptorCount{1};
-  std::vector<ShaderStage> stages;
+  std::vector<ShaderStageType> stages;
 
   bool operator==(const DescriptorSetLayoutBinding& other_binding) const = default;
 };

@@ -208,7 +208,7 @@ void Renderer::createPerFrameDataResources() {
   const std::vector<DescriptorSetLayoutBinding> bindings = {{
       .index = 0,
       .type = DescriptorType::UniformBuffer,
-      .stages = {ShaderStage::Vertex},
+      .stages = {ShaderStageType::Vertex},
   }};
   const DescriptorSetLayoutCreateInfo createInfo{.bindings = bindings};
   perFrameDescriptorSetLayout_ =
@@ -508,7 +508,7 @@ void Renderer::bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* p
       .pipelineLayout = &pipeline.getPipelineLayout(),
       .descriptorSet = &perFrameDescriptorSet_,
       .setNo = 0,
-      .stages = {ShaderStage::Vertex},
+      .stages = {ShaderStageType::Vertex},
   };
   bindDescriptorSet(perFrameBindDescriptorInfo);
 

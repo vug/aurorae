@@ -35,7 +35,7 @@ struct BindDescriptorSetInfo {
   const PipelineLayout* pipelineLayout{};
   const DescriptorSet* descriptorSet{};
   u32 setNo{};
-  std::vector<ShaderStage> stages;
+  std::vector<ShaderStageType> stages;
 };
 
 struct PerFrameData {
