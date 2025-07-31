@@ -11,6 +11,7 @@
 #include "../FileIO.h"
 #include "../Logger.h"
 #include "../Utils.h"
+#include "AssetRegistry.h"
 #include "AssimpUtils.h"
 #include "Common.h"
 
@@ -19,44 +20,9 @@
 #include <spirv_cross/spirv_reflect.hpp>
 
 namespace aur {
-const std::filesystem::path AssetProcessor::kProcessedAssetsRoot{kAssetsFolder / "../processedAssets"};
-const std::filesystem::path AssetProcessor::kRegistryPath{kProcessedAssetsRoot / "registry.json"};
 
-void AssetProcessor::initEmptyRegistryFile() {
-  if (!std::filesystem::exists(kRegistryPath)) {
-    std::filesystem::create_directories(kRegistryPath.parent_path());
-    const std::string serializedReg =
-        glz::write_json(AssetRegistry{}).value_or("{\"error\": \"Couldn't serialize the registry object.\"}");
-    if (!writeBinaryFile(kRegistryPath, glz::prettify_json(serializedReg)))
-      log().fatal("Failed to initialize the registry file: {}.", kRegistryPath.string());
-  }
-}
-
-void AssetProcessor::clearRegistry() {
-  const std::uintmax_t removedCnt = std::filesystem::remove_all(kProcessedAssetsRoot);
-  log().info("Number of files and directories removed: {}.", removedCnt);
-
-  initEmptyRegistryFile();
-}
-
-void AssetProcessor::loadRegistry() {
-  if (!std::filesystem::exists(kRegistryPath)) {
-    initEmptyRegistryFile();
-  }
-  std::vector<std::byte> buffer = readBinaryFileBytes(kRegistryPath);
-
-  if (const glz::error_ctx err = glz::read_json(registry_, buffer)) {
-    log().fatal("Failed to registry file: {}. error code: {}, msg: {}..", kRegistryPath.string(),
-                std::to_underlying(err.ec), err.custom_error_message);
-  }
-}
-
-void AssetProcessor::saveRegistry() {
-  const std::string serializedReg =
-      glz::write_json(registry_).value_or("{\"error\": \"Couldn't serialize the registry object.\"}");
-  if (!writeBinaryFile(kRegistryPath, glz::prettify_json(serializedReg)))
-    log().fatal("Failed to initialize the registry file: {}.", kRegistryPath.string());
-}
+AssetProcessor::AssetProcessor(AssetRegistry& registry)
+    : registry_{&registry} {}
 
 DefinitionType AssetProcessor::extensionToDefinitionType(std::filesystem::path ext) {
   if (ext == ".vert" || ext == ".frag")
@@ -133,7 +99,7 @@ void AssetProcessor::processAllAssets() {
       const std::string_view modeStr = mode == AssetBuildMode::Debug     ? "debug."
                                        : mode == AssetBuildMode::Release ? "release."
                                                                          : "";
-      const auto dstPath = kProcessedAssetsRoot /
+      const auto dstPath = AssetRegistry::kProcessedAssetsRoot /
                            srcPath.filename().concat(std::format(".{}.{}beve", result.extension, modeStr));
       if (!writeBinaryFile(dstPath, serializedDef)) {
         log().warn("Failed to write asset definition to file: {}", srcPath.generic_string());
@@ -144,76 +110,20 @@ void AssetProcessor::processAllAssets() {
     }
 
     const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
-    const muuid::uuid assetId = muuid::uuid::generate_sha1(NameSpaces::kShaderStage, stableSourceIdentifier);
+    const muuid::uuid assetId =
+        muuid::uuid::generate_sha1(AssetRegistry::NameSpaces::kShaderStage, stableSourceIdentifier);
     const AssetEntry entry{
         .type = defType,
         .srcPath = srcPath,
         .dstVariantPaths = dstVariantPaths,
         .dependencies = std::nullopt,
     };
-    registry_.entries.insert({assetId, entry});
-    registry_.aliases.insert({stableSourceIdentifier, assetId});
+    registry_->addEntry(assetId, entry);
+    registry_->addAlias(stableSourceIdentifier, assetId);
   }
 
-  saveRegistry();
+  registry_->save();
 }
-
-template <typename TDef>
-std::optional<TDef> AssetProcessor::getDefinition(const StableId<TDef>& stableSourceIdentifier) {
-  const auto it = registry_.aliases.find(stableSourceIdentifier);
-  if (it == registry_.aliases.end()) {
-    log().warn("Asset '{}' is not in the registry.", stableSourceIdentifier);
-    return std::nullopt;
-  }
-  const muuid::uuid& assetId = it->second;
-  const AssetEntry& entry = registry_.entries.at(assetId);
-
-  if constexpr (std::is_same_v<TDef, asset::ShaderStageDefinition>) {
-    if (entry.type != DefinitionType::ShaderStage)
-      log().fatal("Asset '{}' is not a shader stage definition.", stableSourceIdentifier);
-  } else if constexpr (std::is_same_v<TDef, asset::ShaderDefinition>) {
-    if (entry.type != DefinitionType::Shader)
-      log().fatal("Asset '{}' is not a shader definition.", stableSourceIdentifier);
-  } else
-    static_assert(false, "Unimplemented definition type");
-
-  const AssetBuildMode mode = [kBuildType = kBuildType]() {
-    switch (kBuildType) {
-    case BuildType::Debug:
-      return AssetBuildMode::Debug;
-    case BuildType::Release:
-    case BuildType::RelWithDebInfo:
-      return AssetBuildMode::Release;
-    }
-    std::unreachable();
-  }();
-
-  const std::filesystem::path dstPath = [&entry, &mode]() {
-    if (entry.dstVariantPaths.contains(mode))
-      return entry.dstVariantPaths.at(mode);
-    return entry.dstVariantPaths.at(AssetBuildMode::Any);
-  }();
-
-  if (!std::filesystem::exists(dstPath))
-    log().fatal("Asset in registry '{}' does not have a processed file at {}!", stableSourceIdentifier,
-                dstPath.generic_string());
-  const std::vector<std::byte> defBuffer = readBinaryFileBytes(dstPath);
-
-  TDef def;
-  if (const glz::error_ctx err = glz::read_beve(def, defBuffer)) {
-    log().warn("Failed to read asset definition from file: {}. error code: {}, msg: {}. Try reprocessing.",
-               dstPath.generic_string(), std::to_underlying(err.ec), err.custom_error_message);
-    return std::nullopt;
-  }
-  return def;
-}
-
-template std::optional<asset::ShaderStageDefinition>
-AssetProcessor::getDefinition<asset::ShaderStageDefinition>(
-    const StableId<asset::ShaderStageDefinition>& stableSourceIdentifier);
-
-template std::optional<asset::ShaderDefinition> AssetProcessor::getDefinition<asset::ShaderDefinition>(
-    const StableId<asset::ShaderDefinition>& stableSourceIdentifier);
 
 std::optional<asset::ShaderStageDefinition>
 AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderBuildMode buildMode) {
@@ -221,8 +131,8 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
   if (bytes.empty())
     return std::nullopt;
   const std::string_view source(reinterpret_cast<const char*>(bytes.data()), bytes.size());
-  const auto [kind,
-              stage] = [ext = srcPath.extension().string()]() -> std::pair<shaderc_shader_kind, ShaderStageType> {
+  const auto [kind, stage] =
+      [ext = srcPath.extension().string()]() -> std::pair<shaderc_shader_kind, ShaderStageType> {
     if (ext == ".vert")
       return {shaderc_vertex_shader, ShaderStageType::Vertex};
     if (ext == ".frag")

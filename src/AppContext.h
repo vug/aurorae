@@ -2,10 +2,12 @@
 #include <type_traits>
 
 #include "Logger.h"
+#include "asset/AssetRegistry.h"
 
 namespace aur {
 
 class Application;
+class AssetRegistry;
 class AssetProcessor;
 class AssetManager;
 class Renderer;
@@ -25,11 +27,13 @@ private:
   friend class Application;
 
   // initialize is meant to be called by Application
-  static void initialize(AssetProcessor& assetProcessor, AssetManager& assetManager, Renderer& renderer);
+  static void initialize(AssetRegistry& assetRegistry, AssetProcessor& assetProcessor,
+                         AssetManager& assetManager, Renderer& renderer);
 
   template <typename TService>
   static TService& getImpl();
 
+  static AssetRegistry* assetRegistry_;
   static AssetProcessor* assetProcessor_;
   static AssetManager* assetManager_;
   static Renderer* renderer_;
@@ -40,7 +44,9 @@ template <typename TService>
 TService& AppContext::getImpl() {
   if (!initialized_)
     log().fatal("get was called before AppContext was initialized.");
-  if constexpr (std::is_same_v<TService, AssetProcessor>) {
+  if constexpr (std::is_same_v<TService, AssetRegistry>) {
+    return *assetRegistry_;
+  } else if constexpr (std::is_same_v<TService, AssetProcessor>) {
     return *assetProcessor_;
   } else if constexpr (std::is_same_v<TService, AssetManager>) {
     return *assetManager_;

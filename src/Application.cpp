@@ -28,14 +28,15 @@ Application::Initializer::~Initializer() {
 Application::Application(u32 initialWidth, u32 initialHeight, const char* appName)
     : appName_(appName)
     , initializer_{} // Initializes spdlog and glfw
-    , assetProcessor_{}
+    , assetRegistry_{}
+    , assetProcessor_{assetRegistry_}
     , assetManager_{}
     , window_(initialWidth, initialHeight, appName_)
     , renderer_(window_.getGLFWwindow(), appName_, initialWidth, initialHeight) {
   log().info("Application starting... Build Type: {}", static_cast<uint8_t>(kBuildType));
   log().info("App Name: {}, Initial Dimensions: {}x{}", appName_, initialWidth, initialHeight);
 
-  AppContext::initialize(assetProcessor_, assetManager_, renderer_);
+  AppContext::initialize(assetRegistry_, assetProcessor_, assetManager_, renderer_);
 
   assetManager_.addShaderUpdateListener(
       [&renderer = renderer_](Handle<asset::Shader> hnd) { renderer.onShaderAssetUpdated(hnd); });
@@ -49,15 +50,15 @@ Application::~Application() {
 }
 
 void Application::run() {
-  assetProcessor_.clearRegistry();
+  assetRegistry_.clear();
   assetProcessor_.processAllAssets();
 
   const std::optional<asset::ShaderStageDefinition> unlitVertStage =
-      assetProcessor_.getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
+      assetRegistry_.getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
 
   // "Asset Library"
   const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
-      assetProcessor_.getDefinition<asset::ShaderDefinition>("shaders/unlit.shader");
+      assetRegistry_.getDefinition<asset::ShaderDefinition>("shaders/unlit.shader");
 
   if (!unlitShaderDefOpt.has_value())
     log().fatal("Failed to load unlit shader!");

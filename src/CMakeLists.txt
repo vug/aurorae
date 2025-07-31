@@ -152,6 +152,8 @@ add_executable(Aurorae
         asset/Common.h
         asset/ShaderStage.cpp
         asset/ShaderStage.h
+        asset/AssetRegistry.cpp
+        asset/AssetRegistry.h
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)

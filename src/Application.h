@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "asset/AssetManager.h"
 #include "asset/AssetProcessor.h"
+#include "asset/AssetRegistry.h"
 
 namespace aur {
 
@@ -35,6 +36,7 @@ private:
   };
   const char* appName_;
   Initializer initializer_;
+  AssetRegistry assetRegistry_;
   AssetProcessor assetProcessor_;
   AssetManager assetManager_;
   // Order of declaration matters for construction (Window then Renderer) and destruction (Renderer

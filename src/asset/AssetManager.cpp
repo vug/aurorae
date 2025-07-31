@@ -17,11 +17,11 @@ AssetManager::loadShaderStageFromDefinition(const asset::ShaderStageDefinition& 
 }
 
 Handle<asset::Shader> AssetManager::loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef) {
-  // TODO(vug): make AssetManager refer to AssetRegistry instead of AssetProcessor
-  auto ap = AppContext::get<AssetProcessor>();
+  // TODO(vug): make AssetManager refer to AssetRegistry instead of AssetRegistry
+  auto ar = AppContext::get<AssetRegistry>();
   // TODO(vug): instead of giving ref to ShaderStageDefinition, make it an asset and give asset handle
-  const asset::ShaderStageDefinition vertDef = ap.getDefinition(shaderDef.vert).value();
-  const asset::ShaderStageDefinition fragDef = ap.getDefinition(shaderDef.frag).value();
+  const asset::ShaderStageDefinition vertDef = ar.getDefinition(shaderDef.vert).value();
+  const asset::ShaderStageDefinition fragDef = ar.getDefinition(shaderDef.frag).value();
   asset::Shader shader = asset::Shader::create(shaderDef, vertDef.spirv, fragDef.spirv);
   shaders_.push_back(std::move(shader));
   return Handle<asset::Shader>{static_cast<u32>(shaders_.size() - 1)};
