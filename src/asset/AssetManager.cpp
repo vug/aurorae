@@ -9,8 +9,14 @@
 
 namespace aur {
 
-Handle<asset::Shader> AssetManager::loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef) {
+Handle<asset::ShaderStage>
+AssetManager::loadShaderStageFromDefinition(const asset::ShaderStageDefinition& shaderStageDef) {
+  asset::ShaderStage shaderStage = asset::ShaderStage::create(shaderStageDef);
+  shaderStages_.push_back(std::move(shaderStage));
+  return Handle<asset::ShaderStage>{static_cast<u32>(shaderStages_.size() - 1)};
+}
 
+Handle<asset::Shader> AssetManager::loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef) {
   // TODO(vug): make AssetManager refer to AssetRegistry instead of AssetProcessor
   auto ap = AppContext::get<AssetProcessor>();
   // TODO(vug): instead of giving ref to ShaderStageDefinition, make it an asset and give asset handle

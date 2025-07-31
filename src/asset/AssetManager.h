@@ -18,12 +18,16 @@ class Mesh;
 
 class AssetManager {
 public:
+  Handle<asset::ShaderStage>
+  loadShaderStageFromDefinition(const asset::ShaderStageDefinition& shaderStageDef);
   Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
   Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
   Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
   Handle<asset::Mesh> registerExistingMesh(asset::Mesh& mesh);
 
-  // asset::Texture* get(Handle<asset::Texture> handle);
+  [[nodiscard]] inline const asset::ShaderStage* get(Handle<asset::ShaderStage> handle) const {
+    return &shaderStages_.at(handle);
+  }
   [[nodiscard]] inline const asset::Shader* get(Handle<asset::Shader> handle) const {
     return &shaders_.at(handle);
   }
@@ -38,19 +42,17 @@ public:
 
 private:
   // The manager OWNS the actual asset data in vectors.
-  // std::vector<asset::Texture> textures_
+  std::vector<asset::ShaderStage> shaderStages_;
   std::vector<asset::Shader> shaders_;
   std::vector<asset::Material> materials_;
   std::vector<asset::Mesh> meshes_;
 
-  // TODO(vug): implement caching
-  // cache shaders
-  std::unordered_map<std::string, Handle<asset::Shader>> loadedShaders_;
-  // Caching to de-duplicate materials and textures
-  std::unordered_map<std::string, Handle<asset::Material>> loadedMaterials_;
+  // TODO(vug): implement caching, below members are not used at the moment
   // Caching to prevent loading the same file twice
-  std::unordered_map<std::filesystem::path, std::vector<Handle<asset::Mesh>>> loadedModels_;
-  // std::unordered_map<std::filesystem::path, Handle<asset::Texture>> loadedTextures_;
+  // std::unordered_map<std::string, Handle<asset::ShaderStage>> loadedShaderStages_;
+  // std::unordered_map<std::string, Handle<asset::Shader>> loadedShaders_;
+  // std::unordered_map<std::string, Handle<asset::Material>> loadedMaterials_;
+  // std::unordered_map<std::filesystem::path, std::vector<Handle<asset::Mesh>>> loadedModels_;
 
   std::vector<asset::ShaderUpdateCallback> shaderUpdateListeners_;
   // std::vector<asset::ShaderDeleteCallback> shaderDeleteListeners_;
