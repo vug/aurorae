@@ -17,8 +17,8 @@ struct ShaderDefinition {
 
 class Shader {
 public:
-  // TODO(vug): instead of copying SpirV blob, make ShaderStage an asset and refer to them
-  static Shader create(const ShaderDefinition& shaderDef, const SpirV& vertSpirV, const SpirV& fragSpirV);
+  static Shader create(const ShaderDefinition& shaderDef, Handle<ShaderStage> vertStage,
+                       Handle<ShaderStage> fragStage);
 
   ~Shader() = default;
 
@@ -28,16 +28,16 @@ public:
   Shader& operator=(Shader&& other) noexcept = default;
 
   [[nodiscard]] const ShaderDefinition& getDefinition() const { return def_; }
-  [[nodiscard]] const SpirV& getVertexBlob() const { return vertBlob_; }
-  [[nodiscard]] const SpirV& getFragmentBlob() const { return fragBlob_; }
+  [[nodiscard]] const SpirV& getVertexBlob() const { return vert_.get().getSpirVBlob(); }
+  [[nodiscard]] const SpirV& getFragmentBlob() const { return frag_.get().getSpirVBlob(); }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
 private:
   Shader() = default;
 
   ShaderDefinition def_;
-  SpirV vertBlob_;
-  SpirV fragBlob_;
+  Handle<ShaderStage> vert_;
+  Handle<ShaderStage> frag_;
   std::string debugName_;
 };
 

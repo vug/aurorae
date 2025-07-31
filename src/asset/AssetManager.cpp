@@ -9,20 +9,43 @@
 
 namespace aur {
 
+AssetManager::AssetManager(AssetRegistry& registry)
+    : registry_{&registry} {}
+
 Handle<asset::ShaderStage>
-AssetManager::loadShaderStageFromDefinition(const asset::ShaderStageDefinition& shaderStageDef) {
-  asset::ShaderStage shaderStage = asset::ShaderStage::create(shaderStageDef);
+AssetManager::loadShaderStage(const StableId<asset::ShaderStageDefinition>& stableId) {
+  auto defIt = loadedShaderStages_.find(stableId);
+  if (defIt != loadedShaderStages_.end())
+    return defIt->second;
+
+  std::optional<asset::ShaderStageDefinition> defOpt = registry_->getDefinition(stableId);
+  if (!defOpt.has_value()) {
+    log().warn("Could not find definition for shader stage with id: {} in asset registry {}", stableId,
+               registry_->getFilePath().generic_string());
+    return {};
+  }
+
+  const auto handle = loadShaderStageFromDefinition(std::move(defOpt.value()));
+  loadedShaderStages_[stableId] = handle;
+
+  return handle;
+}
+
+Handle<asset::ShaderStage>
+AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef) {
+  asset::ShaderStage shaderStage = asset::ShaderStage::create(std::move(shaderStageDef));
   shaderStages_.push_back(std::move(shaderStage));
   return Handle<asset::ShaderStage>{static_cast<u32>(shaderStages_.size() - 1)};
 }
 
 Handle<asset::Shader> AssetManager::loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef) {
-  // TODO(vug): make AssetManager refer to AssetRegistry instead of AssetRegistry
-  auto ar = AppContext::get<AssetRegistry>();
-  // TODO(vug): instead of giving ref to ShaderStageDefinition, make it an asset and give asset handle
-  const asset::ShaderStageDefinition vertDef = ar.getDefinition(shaderDef.vert).value();
-  const asset::ShaderStageDefinition fragDef = ar.getDefinition(shaderDef.frag).value();
-  asset::Shader shader = asset::Shader::create(shaderDef, vertDef.spirv, fragDef.spirv);
+  Handle<asset::ShaderStage> vert = loadShaderStage(shaderDef.vert);
+  if (!vert.isValid())
+    return {};
+  Handle<asset::ShaderStage> frag = loadShaderStage(shaderDef.frag);
+  if (!frag.isValid())
+    return {};
+  asset::Shader shader = asset::Shader::create(shaderDef, vert, frag);
   shaders_.push_back(std::move(shader));
   return Handle<asset::Shader>{static_cast<u32>(shaders_.size() - 1)};
 }

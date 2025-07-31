@@ -1,6 +1,8 @@
 /*
 TODO(vug): Make AssetManager load definitions from disk via registry without referring to AssetProcessor
-TODO(vug): Make asset::Shader to refer two asset::ShaderStage
+           Done for ShaderStage do it for the rest! (Maybe a generic version of loadShaderStage)
+TODO(vug): Should AssetManager::loadedShaderStages_ store handles or actual asset::ShaderStage?
+TODO(vug): Make loadByDefinition AssetManager methods private
 TODO(vug): rename asset::Shader to GraphicsProgram.
 TODO(vug): ShaderDefinition has dependencies to stages it refers to.
 TODO(vug): maybe ProcessingResult does not need an extension

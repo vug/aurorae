@@ -17,3 +17,13 @@ public:
 };
 
 } // namespace aur
+
+namespace std {
+template <typename TAssetDef>
+struct hash<aur::StableId<TAssetDef>> {
+  size_t operator()(const aur::StableId<TAssetDef>& stableId) const noexcept {
+    // Use the hash of the underlying string
+    return std::hash<std::string>{}(static_cast<const std::string&>(stableId));
+  }
+};
+} // namespace std

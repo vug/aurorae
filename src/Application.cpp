@@ -30,7 +30,7 @@ Application::Application(u32 initialWidth, u32 initialHeight, const char* appNam
     , initializer_{} // Initializes spdlog and glfw
     , assetRegistry_{}
     , assetProcessor_{assetRegistry_}
-    , assetManager_{}
+    , assetManager_{assetRegistry_}
     , window_(initialWidth, initialHeight, appName_)
     , renderer_(window_.getGLFWwindow(), appName_, initialWidth, initialHeight) {
   log().info("Application starting... Build Type: {}", static_cast<uint8_t>(kBuildType));

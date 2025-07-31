@@ -1,9 +1,12 @@
 #pragma once
 
+#include "AssetRegistry.h"
+
 #include <unordered_map>
 #include <vector>
 
 #include "../Handle.h"
+#include "Common.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
@@ -18,8 +21,11 @@ class Mesh;
 
 class AssetManager {
 public:
-  Handle<asset::ShaderStage>
-  loadShaderStageFromDefinition(const asset::ShaderStageDefinition& shaderStageDef);
+  AssetManager(AssetRegistry& registry);
+
+  Handle<asset::ShaderStage> loadShaderStage(const StableId<asset::ShaderStageDefinition>& stableId);
+
+  Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
   Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
   Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
   Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
@@ -41,6 +47,7 @@ public:
   void addShaderUpdateListener(asset::ShaderUpdateCallback callback);
 
 private:
+  AssetRegistry* registry_{};
   // The manager OWNS the actual asset data in vectors.
   std::vector<asset::ShaderStage> shaderStages_;
   std::vector<asset::Shader> shaders_;
@@ -49,7 +56,7 @@ private:
 
   // TODO(vug): implement caching, below members are not used at the moment
   // Caching to prevent loading the same file twice
-  // std::unordered_map<std::string, Handle<asset::ShaderStage>> loadedShaderStages_;
+  std::unordered_map<StableId<asset::ShaderStageDefinition>, Handle<asset::ShaderStage>> loadedShaderStages_;
   // std::unordered_map<std::string, Handle<asset::Shader>> loadedShaders_;
   // std::unordered_map<std::string, Handle<asset::Material>> loadedMaterials_;
   // std::unordered_map<std::filesystem::path, std::vector<Handle<asset::Mesh>>> loadedModels_;

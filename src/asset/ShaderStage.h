@@ -15,7 +15,7 @@ struct ShaderStageDefinition {
 
 class ShaderStage {
 public:
-  static ShaderStage create(const ShaderStageDefinition& shaderDef);
+  static ShaderStage create(ShaderStageDefinition&& shaderDef);
 
   ~ShaderStage() = default;
 
@@ -23,6 +23,10 @@ public:
   ShaderStage& operator=(const ShaderStage& other) = delete;
   ShaderStage(ShaderStage&& other) noexcept = default;
   ShaderStage& operator=(ShaderStage&& other) noexcept = default;
+
+  [[nodiscard]] const ShaderStageType& getStage() const { return stage_; }
+  [[nodiscard]] const SpirV& getSpirVBlob() const { return spirVBlob_; }
+  [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
 private:
   ShaderStage() = default;

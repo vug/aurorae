@@ -110,17 +110,19 @@ public:
   // Asset entry management
   void addEntry(const AssetUuid& uuid, const AssetEntry& entry);
   void addAlias(const std::string& alias, const AssetUuid& uuid);
-  bool hasEntry(const AssetUuid& uuid) const;
-  bool hasAlias(const std::string& alias) const;
-  size_t getEntryCount() const;
+  [[nodiscard]] bool hasEntry(const AssetUuid& uuid) const;
+  [[nodiscard]] bool hasAlias(const std::string& alias) const;
+  [[nodiscard]] size_t getEntryCount() const;
 
   // Lookup methods
-  std::optional<AssetUuid> findAssetByAlias(const std::string& alias) const;
-  std::optional<AssetEntry> getEntry(const AssetUuid& uuid) const;
+  [[nodiscard]] std::optional<AssetUuid> findAssetByAlias(const std::string& alias) const;
+  [[nodiscard]] std::optional<AssetEntry> getEntry(const AssetUuid& uuid) const;
 
   // Template method for type-safe asset definition retrieval
   template <typename TDef>
-  std::optional<TDef> getDefinition(const StableId<TDef>& stableSourceIdentifier) const;
+  [[nodiscard]] std::optional<TDef> getDefinition(const StableId<TDef>& stableSourceIdentifier) const;
+
+  [[nodiscard]] inline const std::filesystem::path& getFilePath() const { return filePath_; }
 
 private:
   std::filesystem::path filePath_{kRegistryPath};
