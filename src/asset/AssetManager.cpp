@@ -16,15 +16,7 @@ template <AssetDefinition TDefinition>
 Handle<AssetTypeFor_t<TDefinition>> AssetManager::load(const StableId<TDefinition>& stableId) {
   using TAsset = AssetTypeFor_t<TDefinition>;
 
-  CacheTypeFor_t<TDefinition>* assetCache;
-  if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
-    assetCache = &loadedShaderStages_;
-  } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
-    assetCache = &loadedShaders_;
-  } else {
-    static_assert("Unimplemented asset type");
-  }
-
+  CacheTypeFor_t<TDefinition>* assetCache = getCache<TDefinition>();
   assert(assetCache);
   auto defIt = assetCache->find(stableId);
   if (defIt != assetCache->end())
@@ -54,11 +46,18 @@ Handle<AssetTypeFor_t<TDefinition>> AssetManager::load(const StableId<TDefinitio
   return handle;
 }
 
-template Handle<AssetTypeFor_t<asset::ShaderStageDefinition>>
-AssetManager::load(const StableId<asset::ShaderStageDefinition>& stableId);
-
-template Handle<AssetTypeFor_t<asset::ShaderDefinition>>
-AssetManager::load(const StableId<asset::ShaderDefinition>& stableId);
+template <AssetDefinition TDefinition>
+CacheTypeFor_t<TDefinition>* AssetManager::getCache() {
+  using TAsset = AssetTypeFor_t<TDefinition>;
+  if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
+    return &loadedShaderStages_;
+  } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
+    return &loadedShaders_;
+  } else {
+    static_assert(AssetType<TAsset>, "Asset type doesn't support caching");
+    std::unreachable();
+  }
+}
 
 Handle<asset::ShaderStage>
 AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef) {
@@ -103,4 +102,14 @@ void AssetManager::notifyShaderUpdated(Handle<asset::Shader> hnd) const {
   for (const auto& callback : shaderUpdateListeners_)
     callback(hnd);
 }
+
+#define EXPLICITLY_INSTANTIATE_TEMPLATES(DefinitionType)                                                     \
+  template Handle<AssetTypeFor_t<DefinitionType>> AssetManager::load<DefinitionType>(                        \
+      const StableId<DefinitionType>& stableId);                                                             \
+  template CacheTypeFor_t<DefinitionType>* AssetManager::getCache<DefinitionType>();
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
+// INSTANTIATE_ASSET_LOAD(asset::MeshDefinition)
+#undef EXPLICITLY_INSTANTIATE_TEMPLATES
+
 } // namespace aur

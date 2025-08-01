@@ -4,6 +4,7 @@
 #include <modern-uuid/uuid.h>
 
 #include "../Utils.h"
+#include "AssetTraits.h"
 #include "Common.h"
 
 namespace aur {
@@ -119,8 +120,9 @@ public:
   [[nodiscard]] std::optional<AssetEntry> getEntry(const AssetUuid& uuid) const;
 
   // Template method for type-safe asset definition retrieval
-  template <typename TDef>
-  [[nodiscard]] std::optional<TDef> getDefinition(const StableId<TDef>& stableSourceIdentifier) const;
+  template <AssetDefinition TDefinition>
+  [[nodiscard]] std::optional<TDefinition>
+  getDefinition(const StableId<TDefinition>& stableSourceIdentifier) const;
 
   [[nodiscard]] inline const std::filesystem::path& getFilePath() const { return filePath_; }
 

@@ -112,8 +112,9 @@ AssetBuildMode AssetRegistry::buildTypeToAssetBuildMode(BuildType buildType) con
   std::unreachable();
 }
 
-template <typename TDef>
-std::optional<TDef> AssetRegistry::getDefinition(const StableId<TDef>& stableSourceIdentifier) const {
+template <AssetDefinition TDefinition>
+std::optional<TDefinition>
+AssetRegistry::getDefinition(const StableId<TDefinition>& stableSourceIdentifier) const {
   const auto aliasIt = aliases_.find(stableSourceIdentifier);
   if (aliasIt == aliases_.end()) {
     log().warn("Asset '{}' is not in the registry.", stableSourceIdentifier);
@@ -127,10 +128,10 @@ std::optional<TDef> AssetRegistry::getDefinition(const StableId<TDef>& stableSou
   }
   const AssetEntry& entry = entryIt->second;
 
-  if constexpr (std::is_same_v<TDef, asset::ShaderStageDefinition>) {
+  if constexpr (std::is_same_v<TDefinition, asset::ShaderStageDefinition>) {
     if (entry.type != DefinitionType::ShaderStage)
       log().fatal("Asset '{}' is not a shader stage definition.", stableSourceIdentifier);
-  } else if constexpr (std::is_same_v<TDef, asset::ShaderDefinition>) {
+  } else if constexpr (std::is_same_v<TDefinition, asset::ShaderDefinition>) {
     if (entry.type != DefinitionType::Shader)
       log().fatal("Asset '{}' is not a shader definition.", stableSourceIdentifier);
   } else {
@@ -150,7 +151,7 @@ std::optional<TDef> AssetRegistry::getDefinition(const StableId<TDef>& stableSou
                 dstPath.generic_string());
   const std::vector<std::byte> defBuffer = readBinaryFileBytes(dstPath);
 
-  TDef def;
+  TDefinition def;
   if (const glz::error_ctx err = glz::read_beve(def, defBuffer)) {
     log().warn("Failed to read asset definition from file: {}. error code: {}, msg: {}. Try reprocessing.",
                dstPath.generic_string(), std::to_underlying(err.ec), err.custom_error_message);

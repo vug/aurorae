@@ -1,5 +1,5 @@
 /*
-TODO(vug): Make loadByDefinition AssetManager methods private
+TODO(vug): AssetManager: StorageTypeFor, LoadFromDefinition generic method. (make implementations private).
 TODO(vug): rename asset::Shader to GraphicsProgram.
 TODO(vug): ShaderDefinition has dependencies to stages it refers to.
 TODO(vug): maybe ProcessingResult does not need an extension

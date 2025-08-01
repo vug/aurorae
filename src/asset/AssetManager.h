@@ -56,6 +56,8 @@ private:
   std::vector<asset::Mesh> meshes_;
 
   // Caching to prevent loading the same file twice
+  template <AssetDefinition TDefinition>
+  CacheTypeFor_t<TDefinition>* getCache();
   CacheTypeFor_t<asset::ShaderStageDefinition> loadedShaderStages_;
   CacheTypeFor_t<asset::ShaderDefinition> loadedShaders_;
   // std::unordered_map<std::string, Handle<asset::Material>> loadedMaterials_;
