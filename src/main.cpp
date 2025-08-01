@@ -1,5 +1,4 @@
 /*
-TODO(vug): AssetManager: LoadFromDefinition generic method. (make implementations private).
 TODO(vug): rename asset::Shader to GraphicsProgram.
 TODO(vug): ShaderDefinition has dependencies to stages it refers to.
 TODO(vug): maybe ProcessingResult does not need an extension
@@ -9,6 +8,7 @@ TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and sim
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
            `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
+TODO(vug): Process Meshes in processAllAssets
 TODO(vug): Process assets in parallel
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
@@ -28,13 +28,12 @@ TODO(vug): add STL includes to a precompiled header pch_stl.h
 TODO(vug): introduce RenderDoc
 TODO(vug): Delete BinaryBlob
 TODO(vug): Very simple scene abstraction that has a vector entities w/render mesh handles and transforms.
+TODO(vug): try out C++ modules, but don't obsess if it does not work well
+           https://gemini.google.com/app/31dc373a7f5b3005
 TODO(vug): bring https://github.com/Neargye/magic_enum and use it for auto enum -> string conversions.
-           consider https://github.com/stephenberry/glaze for JSON serde
            and https://github.com/getml/reflect-cpp for general reflection
 TODO(vug): Introduce a default material, and a missing material.
-TODO(vug): AssetManager has a vector[handle.id] = Asset. Add a cache[def.uniqueIdStr] = handle to not reload
-           same asset twice.
-           Similarly Renderer also has a cache for render objects it uploaded from asset handles.
+TODO(vug): Renderer also has a cache for render objects it uploaded from asset handles.
 TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
            methods.
 TODO(vug): Resource abstractions for Semaphore, Fence, CommandPool, DescriptorPool, Image(?)
@@ -56,8 +55,6 @@ TODO(vug): Initially Material can be stored in files. Later, split materials and
            files, and store materials in files, where they refer to a pipeline and has some parameters.
 TODO(vug): headless vulkan for image based testing.
 TODO(vug): macros: MOVE_ONLY, COPY_ONLY, NOT_MOVABLE_NOT_COPIABLE
-TODO(vug): try out C++ modules, but don't obsess if it does not work well
-           https://gemini.google.com/app/31dc373a7f5b3005
 TODO(vug): consider making all members of dependency library types pointers, so that I can
            forward declare them and won't leak their headers
 TODO(vug): looks like at app start, longest duration is spent on graphics pipeline creation.

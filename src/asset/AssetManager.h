@@ -25,11 +25,9 @@ public:
 
   template <AssetDefinition TDefinition>
   HandleTypeFor_t<TDefinition> load(const StableId<TDefinition>& stableId);
+  template <AssetDefinition TDefinition>
+  HandleTypeFor_t<TDefinition> loadFromDefinition(TDefinition&& def);
 
-  Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
-  Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
-  Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
-  Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
   Handle<asset::Mesh> registerExistingMesh(asset::Mesh& mesh);
 
   [[nodiscard]] inline const asset::ShaderStage* get(Handle<asset::ShaderStage> handle) const {
@@ -69,6 +67,11 @@ private:
   std::vector<asset::ShaderUpdateCallback> shaderUpdateListeners_;
   // std::vector<asset::ShaderDeleteCallback> shaderDeleteListeners_;
   void notifyShaderUpdated(Handle<asset::Shader> hnd) const;
+
+  Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
+  Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
+  Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
+  Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
 };
 
 } // namespace aur
