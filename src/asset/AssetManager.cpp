@@ -12,7 +12,7 @@ namespace aur {
 AssetManager::AssetManager(AssetRegistry& registry)
     : registry_{&registry} {}
 
-template <typename TDefinition>
+template <AssetDefinition TDefinition>
 Handle<AssetTypeFor_t<TDefinition>> AssetManager::load(const StableId<TDefinition>& stableId) {
   using TAsset = AssetTypeFor_t<TDefinition>;
 

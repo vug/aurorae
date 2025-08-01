@@ -55,13 +55,12 @@ void Application::run() {
     assetRegistry_.clear();
     assetProcessor_.processAllAssets();
   } else {
-
     assetRegistry_.load();
   }
+  const StableId<asset::ShaderDefinition> kUnlitShaderId{"shaders/unlit.shader"};
 
   // "Asset Library"
-  const Handle<asset::Shader> unlitAShader =
-      assetManager_.load(StableId<asset::ShaderDefinition>{"shaders/unlit.shader"});
+  const Handle<asset::Shader> unlitAShader = assetManager_.load(kUnlitShaderId);
   const asset::MaterialDefinition unlitMaterialDef{
       .shaderHandle = unlitAShader,
   };

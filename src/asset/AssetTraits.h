@@ -63,4 +63,16 @@ struct CacheTypeFor {
 
 template <typename TDefinition>
 using CacheTypeFor_t = typename CacheTypeFor<TDefinition>::type;
+
+// Concepts
+template <typename T>
+concept AssetDefinition = requires {
+  // Ensure the type has a corresponding asset type
+  typename AssetTypeFor<T>::type;
+};
+
+template <typename T>
+concept AssetType = std::is_same_v<T, asset::Shader> || std::is_same_v<T, asset::ShaderStage> ||
+                    std::is_same_v<T, asset::Material> || std::is_same_v<T, asset::Mesh>;
+
 } // namespace aur

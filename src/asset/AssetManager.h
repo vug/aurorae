@@ -23,7 +23,7 @@ class AssetManager {
 public:
   AssetManager(AssetRegistry& registry);
 
-  template <typename TDefinition>
+  template <AssetDefinition TDefinition>
   Handle<AssetTypeFor_t<TDefinition>> load(const StableId<TDefinition>& stableId);
 
   Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
