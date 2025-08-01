@@ -141,14 +141,15 @@ add_executable(Aurorae
         Vertex.h Vertex.cpp
         Handle.h Handle.cpp
         asset/Common.h
-        asset/AssetRegistry.h asset/AssetRegistry.cpp
-        asset/AssimpUtils.h asset/AssimpUtils.cpp
-        asset/AssetProcessor.h asset/AssetProcessor.cpp
-        asset/AssetManager.h asset/AssetManager.cpp
         asset/ShaderStage.h asset/ShaderStage.cpp
         asset/Shader.h asset/Shader.cpp
         asset/Material.h asset/Material.cpp
         asset/Mesh.h asset/Mesh.cpp
+        asset/AssetTraits.h
+        asset/AssetRegistry.h asset/AssetRegistry.cpp
+        asset/AssimpUtils.h asset/AssimpUtils.cpp
+        asset/AssetProcessor.h asset/AssetProcessor.cpp
+        asset/AssetManager.h asset/AssetManager.cpp
         render/Shader.h render/Shader.cpp
         render/Material.h render/Material.cpp
         render/Mesh.h render/Mesh.cpp

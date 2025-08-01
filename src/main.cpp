@@ -1,7 +1,4 @@
 /*
-TODO(vug): Make AssetManager load definitions from disk via registry without referring to AssetProcessor
-           Done for ShaderStage do it for the rest! (Maybe a generic version of loadShaderStage)
-TODO(vug): Should AssetManager::loadedShaderStages_ store handles or actual asset::ShaderStage?
 TODO(vug): Make loadByDefinition AssetManager methods private
 TODO(vug): rename asset::Shader to GraphicsProgram.
 TODO(vug): ShaderDefinition has dependencies to stages it refers to.
@@ -12,6 +9,7 @@ TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and sim
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
            `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
+TODO(vug): Process assets in parallel
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
