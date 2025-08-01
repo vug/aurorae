@@ -50,19 +50,18 @@ Application::~Application() {
 }
 
 void Application::run() {
-  assetRegistry_.clear();
-  assetProcessor_.processAllAssets();
+  const bool shouldClear = false;
+  if (shouldClear) {
+    assetRegistry_.clear();
+    assetProcessor_.processAllAssets();
+  } else {
 
-  const std::optional<asset::ShaderStageDefinition> unlitVertStage =
-      assetRegistry_.getDefinition<asset::ShaderStageDefinition>("shaders/unlit.vert");
+    assetRegistry_.load();
+  }
 
   // "Asset Library"
-  const std::optional<asset::ShaderDefinition> unlitShaderDefOpt =
-      assetRegistry_.getDefinition<asset::ShaderDefinition>("shaders/unlit.shader");
-
-  if (!unlitShaderDefOpt.has_value())
-    log().fatal("Failed to load unlit shader!");
-  const Handle<asset::Shader> unlitAShader = assetManager_.loadShaderFromDefinition(*unlitShaderDefOpt);
+  const Handle<asset::Shader> unlitAShader =
+      assetManager_.load(StableId<asset::ShaderDefinition>{"shaders/unlit.shader"});
   const asset::MaterialDefinition unlitMaterialDef{
       .shaderHandle = unlitAShader,
   };

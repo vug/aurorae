@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "../Handle.h"
+#include "AssetTraits.h"
 #include "Common.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
-
-#include <filesystem>
+#include "ShaderStage.h"
 
 namespace aur {
 
@@ -23,7 +23,8 @@ class AssetManager {
 public:
   AssetManager(AssetRegistry& registry);
 
-  Handle<asset::ShaderStage> loadShaderStage(const StableId<asset::ShaderStageDefinition>& stableId);
+  template <typename TDefinition>
+  Handle<AssetTypeFor_t<TDefinition>> load(const StableId<TDefinition>& stableId);
 
   Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
   Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
@@ -54,10 +55,9 @@ private:
   std::vector<asset::Material> materials_;
   std::vector<asset::Mesh> meshes_;
 
-  // TODO(vug): implement caching, below members are not used at the moment
   // Caching to prevent loading the same file twice
-  std::unordered_map<StableId<asset::ShaderStageDefinition>, Handle<asset::ShaderStage>> loadedShaderStages_;
-  // std::unordered_map<std::string, Handle<asset::Shader>> loadedShaders_;
+  CacheTypeFor_t<asset::ShaderStageDefinition> loadedShaderStages_;
+  CacheTypeFor_t<asset::ShaderDefinition> loadedShaders_;
   // std::unordered_map<std::string, Handle<asset::Material>> loadedMaterials_;
   // std::unordered_map<std::filesystem::path, std::vector<Handle<asset::Mesh>>> loadedModels_;
 

@@ -5,6 +5,7 @@
 #include "AssetRegistry.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "ShaderStage.h"
 
 namespace aur {
 

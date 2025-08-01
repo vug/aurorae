@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "../AppContext.h"
-#include "AssetProcessor.h"
+#include "AssetTraits.h"
 #include "Mesh.h"
 #include "Shader.h"
 
@@ -12,24 +12,53 @@ namespace aur {
 AssetManager::AssetManager(AssetRegistry& registry)
     : registry_{&registry} {}
 
-Handle<asset::ShaderStage>
-AssetManager::loadShaderStage(const StableId<asset::ShaderStageDefinition>& stableId) {
-  auto defIt = loadedShaderStages_.find(stableId);
-  if (defIt != loadedShaderStages_.end())
+template <typename TDefinition>
+Handle<AssetTypeFor_t<TDefinition>> AssetManager::load(const StableId<TDefinition>& stableId) {
+  using TAsset = AssetTypeFor_t<TDefinition>;
+
+  CacheTypeFor_t<TDefinition>* assetCache;
+  if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
+    assetCache = &loadedShaderStages_;
+  } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
+    assetCache = &loadedShaders_;
+  } else {
+    static_assert("Unimplemented asset type");
+  }
+
+  assert(assetCache);
+  auto defIt = assetCache->find(stableId);
+  if (defIt != assetCache->end())
     return defIt->second;
 
-  std::optional<asset::ShaderStageDefinition> defOpt = registry_->getDefinition(stableId);
+  std::optional<TDefinition> defOpt = registry_->getDefinition(stableId);
   if (!defOpt.has_value()) {
     log().warn("Could not find definition for shader stage with id: {} in asset registry {}", stableId,
                registry_->getFilePath().generic_string());
     return {};
   }
 
-  const auto handle = loadShaderStageFromDefinition(std::move(defOpt.value()));
-  loadedShaderStages_[stableId] = handle;
+  const Handle<TAsset> handle = [this, &defOpt, &stableId]() {
+    if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
+      const auto handle = loadShaderStageFromDefinition(std::move(defOpt.value()));
+      loadedShaderStages_[stableId] = handle;
+      return handle;
+    } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
+      const auto handle = loadShaderFromDefinition(std::move(defOpt.value()));
+      loadedShaders_[stableId] = handle;
+      return handle;
+    } else {
+      static_assert("Unimplemented asset type");
+    }
+  }();
 
   return handle;
 }
+
+template Handle<AssetTypeFor_t<asset::ShaderStageDefinition>>
+AssetManager::load(const StableId<asset::ShaderStageDefinition>& stableId);
+
+template Handle<AssetTypeFor_t<asset::ShaderDefinition>>
+AssetManager::load(const StableId<asset::ShaderDefinition>& stableId);
 
 Handle<asset::ShaderStage>
 AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef) {
@@ -39,10 +68,10 @@ AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shade
 }
 
 Handle<asset::Shader> AssetManager::loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef) {
-  Handle<asset::ShaderStage> vert = loadShaderStage(shaderDef.vert);
+  Handle<asset::ShaderStage> vert = load(shaderDef.vert);
   if (!vert.isValid())
     return {};
-  Handle<asset::ShaderStage> frag = loadShaderStage(shaderDef.frag);
+  Handle<asset::ShaderStage> frag = load(shaderDef.frag);
   if (!frag.isValid())
     return {};
   asset::Shader shader = asset::Shader::create(shaderDef, vert, frag);
