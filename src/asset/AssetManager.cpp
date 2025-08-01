@@ -13,13 +13,12 @@ AssetManager::AssetManager(AssetRegistry& registry)
     : registry_{&registry} {}
 
 template <AssetDefinition TDefinition>
-Handle<AssetTypeFor_t<TDefinition>> AssetManager::load(const StableId<TDefinition>& stableId) {
+HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& stableId) {
   using TAsset = AssetTypeFor_t<TDefinition>;
 
-  CacheTypeFor_t<TDefinition>* assetCache = getCache<TDefinition>();
-  assert(assetCache);
-  auto defIt = assetCache->find(stableId);
-  if (defIt != assetCache->end())
+  CacheTypeFor_t<TDefinition>& assetCache = getCache<TDefinition>();
+  auto defIt = assetCache.find(stableId);
+  if (defIt != assetCache.end())
     return defIt->second;
 
   std::optional<TDefinition> defOpt = registry_->getDefinition(stableId);
@@ -29,30 +28,41 @@ Handle<AssetTypeFor_t<TDefinition>> AssetManager::load(const StableId<TDefinitio
     return {};
   }
 
-  const Handle<TAsset> handle = [this, &defOpt, &stableId]() {
+  const HandleTypeFor_t<TDefinition> handle = [this, &defOpt]() {
     if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
-      const auto handle = loadShaderStageFromDefinition(std::move(defOpt.value()));
-      loadedShaderStages_[stableId] = handle;
-      return handle;
+      return loadShaderStageFromDefinition(std::move(defOpt.value()));
     } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
-      const auto handle = loadShaderFromDefinition(std::move(defOpt.value()));
-      loadedShaders_[stableId] = handle;
-      return handle;
+      return loadShaderFromDefinition(std::move(defOpt.value()));
     } else {
       static_assert("Unimplemented asset type");
+      std::unreachable();
     }
   }();
+  assetCache[stableId] = handle;
 
   return handle;
 }
 
 template <AssetDefinition TDefinition>
-CacheTypeFor_t<TDefinition>* AssetManager::getCache() {
+StorageTypeFor_t<TDefinition>& AssetManager::getStorage() {
   using TAsset = AssetTypeFor_t<TDefinition>;
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
-    return &loadedShaderStages_;
+    return shaderStages_;
   } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
-    return &loadedShaders_;
+    return shaders_;
+  } else {
+    static_assert(AssetType<TAsset>, "Asset type doesn't support caching");
+    std::unreachable();
+  }
+}
+
+template <AssetDefinition TDefinition>
+CacheTypeFor_t<TDefinition>& AssetManager::getCache() {
+  using TAsset = AssetTypeFor_t<TDefinition>;
+  if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
+    return loadedShaderStages_;
+  } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
+    return loadedShaders_;
   } else {
     static_assert(AssetType<TAsset>, "Asset type doesn't support caching");
     std::unreachable();
@@ -104,12 +114,13 @@ void AssetManager::notifyShaderUpdated(Handle<asset::Shader> hnd) const {
 }
 
 #define EXPLICITLY_INSTANTIATE_TEMPLATES(DefinitionType)                                                     \
-  template Handle<AssetTypeFor_t<DefinitionType>> AssetManager::load<DefinitionType>(                        \
+  template HandleTypeFor_t<DefinitionType> AssetManager::load<DefinitionType>(                               \
       const StableId<DefinitionType>& stableId);                                                             \
-  template CacheTypeFor_t<DefinitionType>* AssetManager::getCache<DefinitionType>();
+  template CacheTypeFor_t<DefinitionType>& AssetManager::getCache<DefinitionType>();
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderDefinition)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
-// INSTANTIATE_ASSET_LOAD(asset::MeshDefinition)
+// EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MaterialDefinition)
+// EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MeshDefinition)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES
 
 } // namespace aur

@@ -24,7 +24,7 @@ public:
   AssetManager(AssetRegistry& registry);
 
   template <AssetDefinition TDefinition>
-  Handle<AssetTypeFor_t<TDefinition>> load(const StableId<TDefinition>& stableId);
+  HandleTypeFor_t<TDefinition> load(const StableId<TDefinition>& stableId);
 
   Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
   Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
@@ -49,19 +49,22 @@ public:
 
 private:
   AssetRegistry* registry_{};
+
   // The manager OWNS the actual asset data in vectors.
-  std::vector<asset::ShaderStage> shaderStages_;
-  std::vector<asset::Shader> shaders_;
-  std::vector<asset::Material> materials_;
-  std::vector<asset::Mesh> meshes_;
+  template <AssetDefinition TDefinition>
+  StorageTypeFor_t<TDefinition>& getStorage();
+  StorageTypeFor_t<asset::ShaderStageDefinition> shaderStages_;
+  StorageTypeFor_t<asset::ShaderDefinition> shaders_;
+  StorageTypeFor_t<asset::MaterialDefinition> materials_;
+  StorageTypeFor_t<asset::MeshDefinition> meshes_;
 
   // Caching to prevent loading the same file twice
   template <AssetDefinition TDefinition>
-  CacheTypeFor_t<TDefinition>* getCache();
+  CacheTypeFor_t<TDefinition>& getCache();
   CacheTypeFor_t<asset::ShaderStageDefinition> loadedShaderStages_;
   CacheTypeFor_t<asset::ShaderDefinition> loadedShaders_;
-  // std::unordered_map<std::string, Handle<asset::Material>> loadedMaterials_;
-  // std::unordered_map<std::filesystem::path, std::vector<Handle<asset::Mesh>>> loadedModels_;
+  CacheTypeFor_t<asset::MaterialDefinition> loadedMaterials_;
+  CacheTypeFor_t<asset::MeshDefinition> loadedMeshes_;
 
   std::vector<asset::ShaderUpdateCallback> shaderUpdateListeners_;
   // std::vector<asset::ShaderDeleteCallback> shaderDeleteListeners_;
