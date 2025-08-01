@@ -1,8 +1,4 @@
 build/
-src/assets/
-src/assets/shaders/debug
-src/assets/shaders/release
-src/assets/shaders/relwithdebinfo
 src/processedAssets/
 .idea/
 _deps/
