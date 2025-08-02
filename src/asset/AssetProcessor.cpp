@@ -71,11 +71,11 @@ void AssetProcessor::processAllAssets() {
       } break;
       case DefinitionType::GraphicsProgram: {
         return ProcessingResult{.definitions = [&srcPath]() -> Definitions {
-                                  if (auto defOpt = processShader(srcPath))
+                                  if (auto defOpt = processGraphicsProgram(srcPath))
                                     return {{AssetBuildMode::Any, std::move(*defOpt)}};
                                   return {};
                                 }(),
-                                .extension = "shaderDef"};
+                                .extension = "graphicsProgramDef"};
       } break;
       case DefinitionType::Material: {
         log().fatal("Not implemented yet.");
@@ -185,14 +185,16 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
 
   return def;
 }
-std::optional<asset::GraphicsProgramDefinition> AssetProcessor::processShader(const std::filesystem::path& srcPath) {
+std::optional<asset::GraphicsProgramDefinition>
+AssetProcessor::processGraphicsProgram(const std::filesystem::path& srcPath) {
   if (!std::filesystem::exists(srcPath))
     return std::nullopt;
 
   const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
   asset::GraphicsProgramDefinition def;
   if (const glz::error_ctx err = glz::read_json(def, bytes)) {
-    log().warn("Failed to generate ShaderDefinition from file: {}. error code: {}, msg: {}. Try editing the "
+    log().warn("Failed to generate GraphicsProgramDefinition from file: {}. error code: {}, msg: {}. Try "
+               "editing the "
                "file to fit to correct schema.",
                srcPath.generic_string(), std::to_underlying(err.ec), err.custom_error_message);
     return std::nullopt;

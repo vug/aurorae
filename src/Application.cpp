@@ -38,8 +38,8 @@ Application::Application(u32 initialWidth, u32 initialHeight, const char* appNam
 
   AppContext::initialize(assetRegistry_, assetProcessor_, assetManager_, renderer_);
 
-  assetManager_.addShaderUpdateListener(
-      [&renderer = renderer_](Handle<asset::GraphicsProgram> hnd) { renderer.onShaderAssetUpdated(hnd); });
+  assetManager_.addGraphicsProgramUpdateListener(
+      [&renderer = renderer_](Handle<asset::GraphicsProgram> hnd) { renderer.onGraphicsProgramAssetUpdated(hnd); });
 
   log().trace("Application constructed successfully.");
 }
@@ -57,12 +57,12 @@ void Application::run() {
   } else {
     assetRegistry_.load();
   }
-  const StableId<asset::GraphicsProgramDefinition> kUnlitShaderId{"shaders/unlit.shader"};
+  const StableId<asset::GraphicsProgramDefinition> kUnlitGraphicsProgramId{"shaders/unlit.shader"};
 
   // "Asset Library"
-  const Handle<asset::GraphicsProgram> unlitAShader = assetManager_.load(kUnlitShaderId);
+  const Handle<asset::GraphicsProgram> unlitAGraphicsProgram = assetManager_.load(kUnlitGraphicsProgramId);
   asset::MaterialDefinition unlitMaterialDef{
-      .shaderHandle = unlitAShader,
+      .graphicsProgramHandle = unlitAGraphicsProgram,
   };
   const Handle<asset::Material> unlitAMaterial =
       assetManager_.loadFromDefinition(std::move(unlitMaterialDef));

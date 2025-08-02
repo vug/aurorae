@@ -194,7 +194,7 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
   return deviceBuffer;
 }
 
-void Renderer::onShaderAssetUpdated(Handle<asset::GraphicsProgram> assetHnd) {
+void Renderer::onGraphicsProgramAssetUpdated(Handle<asset::GraphicsProgram> assetHnd) {
   const auto it = shaderAssetToRenderHandleMap_.find(assetHnd);
   const std::string_view renderHandleMsg =
       (it == shaderAssetToRenderHandleMap_.end())

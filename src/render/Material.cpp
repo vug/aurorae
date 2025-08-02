@@ -11,7 +11,7 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
     , assetHandle_{asset}
     , shaderHnd_{[this]() {
       const asset::Material& aMaterial = assetHandle_.get();
-      return renderer_->uploadOrGet(aMaterial.getShaderHandle());
+      return renderer_->uploadOrGet(aMaterial.getGraphicsProgramHandle());
     }()} {}
 
 } // namespace aur::render

@@ -138,7 +138,7 @@ public:
     return &meshes_.at(handle);
   }
 
-  void onShaderAssetUpdated(Handle<asset::GraphicsProgram> assetHnd);
+  void onGraphicsProgramAssetUpdated(Handle<asset::GraphicsProgram> assetHnd);
 
   PerFrameData perFrameData;
 

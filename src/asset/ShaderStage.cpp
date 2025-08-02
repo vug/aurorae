@@ -2,9 +2,9 @@
 
 namespace aur::asset {
 ShaderStage ShaderStage::create(ShaderStageDefinition&& def) {
-  ShaderStage shaderStage;
-  shaderStage.stage_ = def.stage;
-  shaderStage.spirVBlob_ = std::move(def.spirv);
-  return shaderStage;
+  ShaderStage stage;
+  stage.stage_ = def.stage;
+  stage.spirVBlob_ = std::move(def.spirv);
+  return stage;
 }
 } // namespace aur::asset

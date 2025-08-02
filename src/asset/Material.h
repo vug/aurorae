@@ -9,7 +9,7 @@ class GraphicsProgram;
 struct Pipeline;
 
 struct MaterialDefinition {
-  Handle<GraphicsProgram> shaderHandle;
+  Handle<GraphicsProgram> graphicsProgramHandle;
 
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
@@ -27,7 +27,9 @@ public:
   Material(Material&& other) noexcept = default;
   Material& operator=(Material&& other) noexcept = default;
 
-  [[nodiscard]] inline Handle<GraphicsProgram> getShaderHandle() const { return def_.shaderHandle; }
+  [[nodiscard]] inline Handle<GraphicsProgram> getGraphicsProgramHandle() const {
+    return def_.graphicsProgramHandle;
+  }
 
 private:
   Material() = default;

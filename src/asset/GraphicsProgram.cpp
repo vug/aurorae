@@ -2,16 +2,16 @@
 
 namespace aur::asset {
 
-GraphicsProgram GraphicsProgram::create(const GraphicsProgramDefinition& def, Handle<ShaderStage> vertStage,
-                                        Handle<ShaderStage> fragStage) {
+GraphicsProgram GraphicsProgram::create(const GraphicsProgramDefinition& programDef,
+                                        Handle<ShaderStage> vertStage, Handle<ShaderStage> fragStage) {
 
-  GraphicsProgram shader;
-  shader.def_ = def;
+  GraphicsProgram program;
+  program.def_ = programDef;
   // TODO(vug): later change with a reference to ShaderModule via asset handle
-  shader.vert_ = vertStage;
-  shader.frag_ = fragStage;
+  program.vert_ = vertStage;
+  program.frag_ = fragStage;
 
-  return shader;
+  return program;
 }
 
 } // namespace aur::asset

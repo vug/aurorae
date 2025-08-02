@@ -34,7 +34,7 @@ public:
     return &shaderStages_.at(handle);
   }
   [[nodiscard]] inline const asset::GraphicsProgram* get(Handle<asset::GraphicsProgram> handle) const {
-    return &shaders_.at(handle);
+    return &graphicsPrograms_.at(handle);
   }
   [[nodiscard]] inline const asset::Material* get(Handle<asset::Material> handle) const {
     return &materials_.at(handle);
@@ -43,7 +43,7 @@ public:
     return &meshes_.at(handle);
   };
 
-  void addShaderUpdateListener(asset::ShaderUpdateCallback callback);
+  void addGraphicsProgramUpdateListener(asset::GraphicsProgramUpdateCallback callback);
 
 private:
   AssetRegistry* registry_{};
@@ -52,7 +52,7 @@ private:
   template <AssetDefinition TDefinition>
   StorageTypeFor_t<TDefinition>& getStorage();
   StorageTypeFor_t<asset::ShaderStageDefinition> shaderStages_;
-  StorageTypeFor_t<asset::GraphicsProgramDefinition> shaders_;
+  StorageTypeFor_t<asset::GraphicsProgramDefinition> graphicsPrograms_;
   StorageTypeFor_t<asset::MaterialDefinition> materials_;
   StorageTypeFor_t<asset::MeshDefinition> meshes_;
 
@@ -60,16 +60,16 @@ private:
   template <AssetDefinition TDefinition>
   CacheTypeFor_t<TDefinition>& getCache();
   CacheTypeFor_t<asset::ShaderStageDefinition> loadedShaderStages_;
-  CacheTypeFor_t<asset::GraphicsProgramDefinition> loadedShaders_;
+  CacheTypeFor_t<asset::GraphicsProgramDefinition> loadedGraphicsPrograms_;
   CacheTypeFor_t<asset::MaterialDefinition> loadedMaterials_;
   CacheTypeFor_t<asset::MeshDefinition> loadedMeshes_;
 
-  std::vector<asset::ShaderUpdateCallback> shaderUpdateListeners_;
+  std::vector<asset::GraphicsProgramUpdateCallback> graphicsProgramUpdateListeners_;
   // std::vector<asset::ShaderDeleteCallback> shaderDeleteListeners_;
-  void notifyShaderUpdated(Handle<asset::GraphicsProgram> hnd) const;
+  void notifyGraphicsProgramUpdated(Handle<asset::GraphicsProgram> hnd) const;
 
   Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
-  Handle<asset::GraphicsProgram> loadShaderFromDefinition(const asset::GraphicsProgramDefinition& shaderDef);
+  Handle<asset::GraphicsProgram> loadGraphicsProgramFromDefinition(const asset::GraphicsProgramDefinition& graphicsProgramDef);
   Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
   Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
 };

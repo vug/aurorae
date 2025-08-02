@@ -133,7 +133,7 @@ AssetRegistry::getDefinition(const StableId<TDefinition>& stableSourceIdentifier
       log().fatal("Asset '{}' is not a shader stage definition.", stableSourceIdentifier);
   } else if constexpr (std::is_same_v<TDefinition, asset::GraphicsProgramDefinition>) {
     if (entry.type != DefinitionType::GraphicsProgram)
-      log().fatal("Asset '{}' is not a shader definition.", stableSourceIdentifier);
+      log().fatal("Asset '{}' is not a graphics program definition.", stableSourceIdentifier);
   } else {
     static_assert(false, "Unimplemented definition type");
   }
@@ -165,7 +165,8 @@ template std::optional<asset::ShaderStageDefinition>
 AssetRegistry::getDefinition<asset::ShaderStageDefinition>(
     const StableId<asset::ShaderStageDefinition>& stableSourceIdentifier) const;
 
-template std::optional<asset::GraphicsProgramDefinition> AssetRegistry::getDefinition<asset::GraphicsProgramDefinition>(
+template std::optional<asset::GraphicsProgramDefinition>
+AssetRegistry::getDefinition<asset::GraphicsProgramDefinition>(
     const StableId<asset::GraphicsProgramDefinition>& stableSourceIdentifier) const;
 
 } // namespace aur

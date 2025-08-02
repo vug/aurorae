@@ -17,7 +17,7 @@ struct GraphicsProgramDefinition {
 
 class GraphicsProgram {
 public:
-  static GraphicsProgram create(const GraphicsProgramDefinition& shaderDef, Handle<ShaderStage> vertStage,
+  static GraphicsProgram create(const GraphicsProgramDefinition& programDef, Handle<ShaderStage> vertStage,
                                 Handle<ShaderStage> fragStage);
 
   ~GraphicsProgram() = default;
@@ -41,6 +41,6 @@ private:
   std::string debugName_;
 };
 
-using ShaderUpdateCallback = std::function<void(Handle<asset::GraphicsProgram>)>;
+using GraphicsProgramUpdateCallback = std::function<void(Handle<asset::GraphicsProgram>)>;
 
 } // namespace aur::asset

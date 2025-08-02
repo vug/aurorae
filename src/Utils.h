@@ -37,13 +37,10 @@ constexpr BuildType kBuildType{BuildType::Debug};
 inline constexpr const char* kShadersFolder{ASSETS_FOLDER "/shaders/debug"};
 #elif defined(RELEASE_BUILD)
 constexpr BuildType kBuildType{BuildType::Release};
-inline constexpr const char* kShadersFolder{ASSETS_FOLDER "/shaders/release"};
 #elif defined(REL_WITH_DEBUG_INFO_BUILD)
 constexpr BuildType kBuildType{BuildType::RelWithDebInfo};
-inline constexpr const char* kShadersFolder{ASSETS_FOLDER "/shaders/relwithdebinfo"};
 #else
 constexpr BuildType kBuildType{BuildType::Release};
-inline constexpr const char* kShadersFolder = {ASSETS_FOLDER "/shaders/release"};
 #endif
 inline constexpr const char* kModelsFolder{ASSETS_FOLDER "/models"};
 

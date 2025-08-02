@@ -21,7 +21,7 @@ HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& sta
 
   std::optional<TDefinition> defOpt = registry_->getDefinition(stableId);
   if (!defOpt.has_value()) {
-    log().warn("Could not find definition for shader stage with id: {} in asset registry {}", stableId,
+    log().warn("Could not find definition for asset with stable id: {} in asset registry {}", stableId,
                registry_->getFilePath().generic_string());
     return {};
   }
@@ -38,7 +38,7 @@ HandleTypeFor_t<TDefinition> AssetManager::loadFromDefinition(TDefinition&& def)
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return loadShaderStageFromDefinition(std::move(def));
   } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
-    return loadShaderFromDefinition(std::move(def));
+    return loadGraphicsProgramFromDefinition(std::move(def));
   } else if constexpr (std::is_same_v<TAsset, asset::Material>) {
     return loadMaterialFromDefinition(std::move(def));
   } else if constexpr (std::is_same_v<TAsset, asset::Mesh>) {
@@ -55,7 +55,7 @@ StorageTypeFor_t<TDefinition>& AssetManager::getStorage() {
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return shaderStages_;
   } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
-    return shaders_;
+    return graphicsPrograms_;
   } else if constexpr (std::is_same_v<TAsset, asset::Material>) {
     return materials_;
   } else if constexpr (std::is_same_v<TAsset, asset::Mesh>) {
@@ -72,7 +72,7 @@ CacheTypeFor_t<TDefinition>& AssetManager::getCache() {
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return loadedShaderStages_;
   } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
-    return loadedShaders_;
+    return loadedGraphicsPrograms_;
   } else if constexpr (std::is_same_v<TAsset, asset::Material>) {
     return loadedMaterials_;
   } else if constexpr (std::is_same_v<TAsset, asset::Mesh>) {
@@ -91,16 +91,16 @@ AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shade
 }
 
 Handle<asset::GraphicsProgram>
-AssetManager::loadShaderFromDefinition(const asset::GraphicsProgramDefinition& shaderDef) {
-  Handle<asset::ShaderStage> vert = load(shaderDef.vert);
+AssetManager::loadGraphicsProgramFromDefinition(const asset::GraphicsProgramDefinition& graphicsProgramDef) {
+  Handle<asset::ShaderStage> vert = load(graphicsProgramDef.vert);
   if (!vert.isValid())
     return {};
-  Handle<asset::ShaderStage> frag = load(shaderDef.frag);
+  Handle<asset::ShaderStage> frag = load(graphicsProgramDef.frag);
   if (!frag.isValid())
     return {};
-  asset::GraphicsProgram shader = asset::GraphicsProgram::create(shaderDef, vert, frag);
-  shaders_.push_back(std::move(shader));
-  return Handle<asset::GraphicsProgram>{static_cast<u32>(shaders_.size() - 1)};
+  asset::GraphicsProgram graphicsProgram = asset::GraphicsProgram::create(graphicsProgramDef, vert, frag);
+  graphicsPrograms_.push_back(std::move(graphicsProgram));
+  return Handle<asset::GraphicsProgram>{static_cast<u32>(graphicsPrograms_.size() - 1)};
 }
 Handle<asset::Material>
 AssetManager::loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef) {
@@ -120,11 +120,11 @@ Handle<asset::Mesh> AssetManager::registerExistingMesh(asset::Mesh& mesh) {
   return Handle<asset::Mesh>{static_cast<u32>(meshes_.size() - 1)};
 }
 
-void AssetManager::addShaderUpdateListener(asset::ShaderUpdateCallback callback) {
-  shaderUpdateListeners_.push_back(std::move(callback));
+void AssetManager::addGraphicsProgramUpdateListener(asset::GraphicsProgramUpdateCallback callback) {
+  graphicsProgramUpdateListeners_.push_back(std::move(callback));
 }
-void AssetManager::notifyShaderUpdated(Handle<asset::GraphicsProgram> hnd) const {
-  for (const auto& callback : shaderUpdateListeners_)
+void AssetManager::notifyGraphicsProgramUpdated(Handle<asset::GraphicsProgram> hnd) const {
+  for (const auto& callback : graphicsProgramUpdateListeners_)
     callback(hnd);
 }
 

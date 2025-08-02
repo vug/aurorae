@@ -25,7 +25,7 @@ public:
   static std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath,
                                                                         ShaderBuildMode buildMode);
 
-  static std::optional<asset::GraphicsProgramDefinition> processShader(const std::filesystem::path& srcPath);
+  static std::optional<asset::GraphicsProgramDefinition> processGraphicsProgram(const std::filesystem::path& srcPath);
 
   std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
 

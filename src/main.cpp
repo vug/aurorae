@@ -1,6 +1,8 @@
 /*
+TODO(vug): render::Shader -> render::GraphicsProgram
 TODO(vug): ShaderDefinition has dependencies to stages it refers to.
 TODO(vug): maybe ProcessingResult does not need an extension
+TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)
 TODO(vug): get stable identifiers of generated assets for a given source asset
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
            shader asset ids.
