@@ -8,14 +8,21 @@
 namespace aur {
 
 // Concepts
-template <typename T>
-concept AssetDefinition =
-    std::is_same_v<T, asset::ShaderStageDefinition> || std::is_same_v<T, asset::GraphicsProgramDefinition> ||
-    std::is_same_v<T, asset::MaterialDefinition> || std::is_same_v<T, asset::MeshDefinition>;
+template <typename TDefinition>
+concept AssetDefinition = std::is_same_v<TDefinition, asset::ShaderStageDefinition> ||
+                          std::is_same_v<TDefinition, asset::GraphicsProgramDefinition> ||
+                          std::is_same_v<TDefinition, asset::MaterialDefinition> ||
+                          std::is_same_v<TDefinition, asset::MeshDefinition>;
 
-template <typename T>
-concept AssetType = std::is_same_v<T, asset::GraphicsProgram> || std::is_same_v<T, asset::ShaderStage> ||
-                    std::is_same_v<T, asset::Material> || std::is_same_v<T, asset::Mesh>;
+template <typename TAsset>
+concept AssetType =
+    std::is_same_v<TAsset, asset::GraphicsProgram> || std::is_same_v<TAsset, asset::ShaderStage> ||
+    std::is_same_v<TAsset, asset::Material> || std::is_same_v<TAsset, asset::Mesh>;
+
+template <AssetType TAsset>
+struct AssetWithCacheType {
+  using CacheType = std::unordered_map<StableId<TAsset>, Handle<TAsset>>;
+};
 
 // Trait to map definition types to asset types
 template <AssetDefinition TDefinition>
@@ -40,15 +47,15 @@ template <>
 struct AssetTypeFor<asset::MeshDefinition> {
   using type = asset::Mesh;
 };
-
 // Helper alias for cleaner syntax
 template <AssetDefinition TDefinition>
 using AssetTypeFor_t = typename AssetTypeFor<TDefinition>::type;
 
 // Reverse mapping (asset type to definition type)
 template <AssetType TAsset>
-struct DefinitionTypeFor {};
-
+struct DefinitionTypeFor {
+  // no default implementation
+};
 template <>
 struct DefinitionTypeFor<asset::ShaderStage> {
   using type = asset::ShaderStageDefinition;
@@ -65,6 +72,31 @@ template <>
 struct DefinitionTypeFor<asset::Mesh> {
   using type = asset::MeshDefinition;
 };
+template <AssetType TAsset>
+using DefinitionTypeFor_t = typename DefinitionTypeFor<TAsset>::type;
+
+template <AssetType TAsset>
+struct AssetLabelFor {
+  // no default implementation
+};
+template <>
+struct AssetLabelFor<asset::ShaderStage> {
+  static constexpr const char* value = "ShaderStage";
+};
+template <>
+struct AssetLabelFor<asset::GraphicsProgram> {
+  static constexpr const char* value = "GraphicsProgram";
+};
+template <>
+struct AssetLabelFor<asset::Material> {
+  static constexpr const char* value = "Material";
+};
+template <>
+struct AssetLabelFor<asset::Mesh> {
+  static constexpr const char* value = "Mesh";
+};
+template <AssetDefinition TDefinition>
+constexpr const char* AssetLabelFor_v = AssetLabelFor<TDefinition>::value;
 
 template <AssetDefinition TDefinition>
 struct CacheTypeFor {
