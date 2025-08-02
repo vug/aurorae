@@ -13,28 +13,32 @@ AssetManager::AssetManager(AssetRegistry& registry)
     : registry_{&registry} {}
 
 template <AssetDefinition TDefinition>
-HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& stableId) {
-  // TODO(vug): Make cache to use uuid too!
+HandleTypeFor_t<TDefinition> AssetManager::load(const AssetUuid& uuid) {
   CacheTypeFor_t<TDefinition>& assetCache = getCache<TDefinition>();
-  auto defIt = assetCache.find(stableId);
+  auto defIt = assetCache.find(uuid);
   if (defIt != assetCache.end())
     return defIt->second;
 
-  std::optional<AssetUuid> uuidOpt = registry_->getUuid(stableId);
-  if (!uuidOpt.has_value()) {
-    log().warn("Could not find definition for asset with stable id: {} in asset registry {}", stableId,
-               registry_->getFilePath().generic_string());
-    return {};
-  }
-  const auto& uuid = uuidOpt.value();
   std::optional<TDefinition> defOpt = registry_->getDefinition<TDefinition>(uuid);
   if (!defOpt.has_value())
     return {};
 
   const HandleTypeFor_t<TDefinition> handle = loadFromDefinition(std::move(defOpt.value()));
-  assetCache[stableId] = handle;
+  assetCache[uuid] = handle;
 
   return handle;
+}
+
+template <AssetDefinition TDefinition>
+HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& stableId) {
+
+  std::optional<AssetUuid> uuidOpt = registry_->getUuid(stableId);
+  if (!uuidOpt) {
+    log().warn("Could not find definition for asset with stable id: {} in asset registry {}", stableId,
+               registry_->getFilePath().generic_string());
+    return {};
+  }
+  return load<TDefinition>(*uuidOpt);
 }
 
 template <AssetDefinition TDefinition>
@@ -135,7 +139,8 @@ void AssetManager::notifyGraphicsProgramUpdated(Handle<asset::GraphicsProgram> h
 
 #define EXPLICITLY_INSTANTIATE_TEMPLATES(DefinitionType)                                                     \
   template HandleTypeFor_t<DefinitionType> AssetManager::load<DefinitionType>(                               \
-      const StableId<DefinitionType>& stableId);
+      const StableId<DefinitionType>& stableId);                                                             \
+  template HandleTypeFor_t<DefinitionType> AssetManager::load<DefinitionType>(const AssetUuid& stableId);
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgramDefinition)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES

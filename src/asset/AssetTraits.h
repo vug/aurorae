@@ -110,7 +110,7 @@ constexpr const char* AssetLabelFor_v = AssetLabelFor<TDefinition>::value;
 
 template <AssetDefinition TDefinition>
 struct CacheTypeFor {
-  using type = std::unordered_map<StableId<TDefinition>, Handle<AssetTypeFor_t<TDefinition>>>;
+  using type = std::unordered_map<AssetUuid, Handle<AssetTypeFor_t<TDefinition>>>;
 };
 template <AssetDefinition TDefinition>
 using CacheTypeFor_t = typename CacheTypeFor<TDefinition>::type;

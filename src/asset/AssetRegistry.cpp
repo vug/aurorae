@@ -114,13 +114,10 @@ AssetBuildMode AssetRegistry::buildTypeToAssetBuildMode(BuildType buildType) con
 
 template <AssetDefinition TDefinition>
 std::optional<TDefinition> AssetRegistry::getDefinition(const AssetUuid& uuid) const {
-  using TAsset = AssetTypeFor_t<TDefinition>;
-  const auto entryIt = entries_.find(uuid);
-  if (entryIt == entries_.end()) {
-    log().warn("Asset entry for '{}' not found in registry.", uuid.to_chars());
-    return std::nullopt;
-  }
-  const AssetEntry& entry = entryIt->second;
+  const std::optional<const AssetEntry> entryOpt = getEntry(uuid);
+  if (!entryOpt)
+    return {};
+  const auto& entry = entryOpt.value();
 
   if constexpr (std::is_same_v<TDefinition, asset::ShaderStageDefinition>) {
     if (entry.type != DefinitionType::ShaderStage)

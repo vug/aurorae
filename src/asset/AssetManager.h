@@ -23,6 +23,8 @@ public:
   AssetManager(AssetRegistry& registry);
 
   template <AssetDefinition TDefinition>
+  HandleTypeFor_t<TDefinition> load(const AssetUuid& uuid);
+  template <AssetDefinition TDefinition>
   HandleTypeFor_t<TDefinition> load(const StableId<TDefinition>& stableId);
   template <AssetDefinition TDefinition>
   HandleTypeFor_t<TDefinition> loadFromDefinition(TDefinition&& def);
