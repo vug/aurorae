@@ -73,7 +73,7 @@ void AssetRegistry::addAlias(const std::string& alias, const AssetUuid& uuid) {
   aliases_[alias] = uuid;
 }
 
-std::optional<AssetUuid> AssetRegistry::findAssetByAlias(const std::string& alias) const {
+std::optional<AssetUuid> AssetRegistry::getUuid(const std::string& alias) const {
   const auto it = aliases_.find(alias);
   if (it == aliases_.end()) {
     return std::nullopt;
@@ -113,27 +113,21 @@ AssetBuildMode AssetRegistry::buildTypeToAssetBuildMode(BuildType buildType) con
 }
 
 template <AssetDefinition TDefinition>
-std::optional<TDefinition>
-AssetRegistry::getDefinition(const StableId<TDefinition>& stableSourceIdentifier) const {
-  const auto aliasIt = aliases_.find(stableSourceIdentifier);
-  if (aliasIt == aliases_.end()) {
-    log().warn("Asset '{}' is not in the registry.", stableSourceIdentifier);
-    return std::nullopt;
-  }
-  const AssetUuid& assetId = aliasIt->second;
-  const auto entryIt = entries_.find(assetId);
+std::optional<TDefinition> AssetRegistry::getDefinition(const AssetUuid& uuid) const {
+  using TAsset = AssetTypeFor_t<TDefinition>;
+  const auto entryIt = entries_.find(uuid);
   if (entryIt == entries_.end()) {
-    log().warn("Asset entry for '{}' not found in registry.", stableSourceIdentifier);
+    log().warn("Asset entry for '{}' not found in registry.", uuid.to_chars());
     return std::nullopt;
   }
   const AssetEntry& entry = entryIt->second;
 
   if constexpr (std::is_same_v<TDefinition, asset::ShaderStageDefinition>) {
     if (entry.type != DefinitionType::ShaderStage)
-      log().fatal("Asset '{}' is not a shader stage definition.", stableSourceIdentifier);
+      log().fatal("Asset '{}' is not a shader stage definition.", uuid.to_chars());
   } else if constexpr (std::is_same_v<TDefinition, asset::GraphicsProgramDefinition>) {
     if (entry.type != DefinitionType::GraphicsProgram)
-      log().fatal("Asset '{}' is not a graphics program definition.", stableSourceIdentifier);
+      log().fatal("Asset '{}' is not a graphics program definition.", uuid.to_chars());
   } else {
     static_assert(false, "Unimplemented definition type");
   }
@@ -147,7 +141,7 @@ AssetRegistry::getDefinition(const StableId<TDefinition>& stableSourceIdentifier
   }();
 
   if (!std::filesystem::exists(dstPath))
-    log().fatal("Asset in registry '{}' does not have a processed file at {}!", stableSourceIdentifier,
+    log().fatal("Asset in registry '{}' does not have a processed file at {}!", uuid.to_chars(),
                 dstPath.generic_string());
   const std::vector<std::byte> defBuffer = readBinaryFileBytes(dstPath);
 
@@ -162,11 +156,9 @@ AssetRegistry::getDefinition(const StableId<TDefinition>& stableSourceIdentifier
 
 // Explicit template instantiations
 template std::optional<asset::ShaderStageDefinition>
-AssetRegistry::getDefinition<asset::ShaderStageDefinition>(
-    const StableId<asset::ShaderStageDefinition>& stableSourceIdentifier) const;
+AssetRegistry::getDefinition<asset::ShaderStageDefinition>(const AssetUuid& uuid) const;
 
 template std::optional<asset::GraphicsProgramDefinition>
-AssetRegistry::getDefinition<asset::GraphicsProgramDefinition>(
-    const StableId<asset::GraphicsProgramDefinition>& stableSourceIdentifier) const;
+AssetRegistry::getDefinition<asset::GraphicsProgramDefinition>(const AssetUuid& uuid) const;
 
 } // namespace aur

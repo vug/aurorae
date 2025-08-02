@@ -30,7 +30,7 @@ public:
   };
 
   AssetRegistry() = default;
-  AssetRegistry(const std::filesystem::path& registryFilePath);
+  explicit AssetRegistry(const std::filesystem::path& registryFilePath);
   // empties the registry and deletes all processed asset files
   void clear();
   void load();
@@ -44,13 +44,11 @@ public:
   [[nodiscard]] size_t getEntryCount() const;
 
   // Lookup methods
-  [[nodiscard]] std::optional<AssetUuid> findAssetByAlias(const std::string& alias) const;
+  [[nodiscard]] std::optional<AssetUuid> getUuid(const std::string& alias) const;
   [[nodiscard]] std::optional<AssetEntry> getEntry(const AssetUuid& uuid) const;
-
   // Template method for type-safe asset definition retrieval
   template <AssetDefinition TDefinition>
-  [[nodiscard]] std::optional<TDefinition>
-  getDefinition(const StableId<TDefinition>& stableSourceIdentifier) const;
+  [[nodiscard]] std::optional<TDefinition> getDefinition(const AssetUuid& uuid) const;
 
   [[nodiscard]] inline const std::filesystem::path& getFilePath() const { return filePath_; }
 
@@ -60,6 +58,6 @@ private:
   std::unordered_map<std::string, AssetUuid> aliases_;
 
   void initEmptyRegistryFile();
-  AssetBuildMode buildTypeToAssetBuildMode(BuildType buildType) const;
+  [[nodiscard]] AssetBuildMode buildTypeToAssetBuildMode(BuildType buildType) const;
 };
 } // namespace aur

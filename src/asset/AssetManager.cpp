@@ -14,17 +14,22 @@ AssetManager::AssetManager(AssetRegistry& registry)
 
 template <AssetDefinition TDefinition>
 HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& stableId) {
+  // TODO(vug): Make cache to use uuid too!
   CacheTypeFor_t<TDefinition>& assetCache = getCache<TDefinition>();
   auto defIt = assetCache.find(stableId);
   if (defIt != assetCache.end())
     return defIt->second;
 
-  std::optional<TDefinition> defOpt = registry_->getDefinition(stableId);
-  if (!defOpt.has_value()) {
+  std::optional<AssetUuid> uuidOpt = registry_->getUuid(stableId);
+  if (!uuidOpt.has_value()) {
     log().warn("Could not find definition for asset with stable id: {} in asset registry {}", stableId,
                registry_->getFilePath().generic_string());
     return {};
   }
+  const auto& uuid = uuidOpt.value();
+  std::optional<TDefinition> defOpt = registry_->getDefinition<TDefinition>(uuid);
+  if (!defOpt.has_value())
+    return {};
 
   const HandleTypeFor_t<TDefinition> handle = loadFromDefinition(std::move(defOpt.value()));
   assetCache[stableId] = handle;
