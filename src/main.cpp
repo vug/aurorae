@@ -1,5 +1,5 @@
 /*
-TODO(vug): ShaderDefinition has dependencies to stages it refers to.
+TODO(vug): GraphicsProgramDefinition has dependencies in the registry to ShaderStages it refers to.
 TODO(vug): maybe ProcessingResult does not need an extension
 TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)
 TODO(vug): get stable identifiers of generated assets for a given source asset

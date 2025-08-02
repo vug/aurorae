@@ -7,7 +7,6 @@
 
 #include "../Handle.h"
 #include "AssetTraits.h"
-#include "Common.h"
 #include "GraphicsProgram.h"
 #include "Material.h"
 #include "Mesh.h"
@@ -69,7 +68,8 @@ private:
   void notifyGraphicsProgramUpdated(Handle<asset::GraphicsProgram> hnd) const;
 
   Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
-  Handle<asset::GraphicsProgram> loadGraphicsProgramFromDefinition(const asset::GraphicsProgramDefinition& graphicsProgramDef);
+  Handle<asset::GraphicsProgram>
+  loadGraphicsProgramFromDefinition(const asset::GraphicsProgramDefinition& graphicsProgramDef);
   Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
   Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
 };

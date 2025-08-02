@@ -1,12 +1,10 @@
 #pragma once
 
-#include <filesystem>
 #include <functional>
 
 #include "../Handle.h"
+#include "AssetIds.h"
 #include "ShaderStage.h"
-
-#include "Common.h"
 
 namespace aur::asset {
 

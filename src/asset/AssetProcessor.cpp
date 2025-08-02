@@ -13,7 +13,6 @@
 #include "../Utils.h"
 #include "AssetRegistry.h"
 #include "AssimpUtils.h"
-#include "Common.h"
 
 #include <glaze/glaze/glaze.hpp>
 #include <shaderc/shaderc.hpp>

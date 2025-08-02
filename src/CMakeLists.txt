@@ -140,7 +140,7 @@ add_executable(Aurorae
         Resources/ShaderModule.h Resources/ShaderModule.cpp
         Vertex.h Vertex.cpp
         Handle.h Handle.cpp
-        asset/Common.h
+        asset/AssetIds.h
         asset/ShaderStage.h asset/ShaderStage.cpp
         asset/GraphicsProgram.h asset/GraphicsProgram.cpp
         asset/Material.h asset/Material.cpp

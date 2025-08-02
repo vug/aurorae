@@ -1,11 +1,21 @@
 #pragma once
 
-#include "GraphicsProgram.h"
-#include "Material.h"
-#include "Mesh.h"
-#include "ShaderStage.h"
+#include "../Handle.h"
 
 namespace aur {
+
+// To prevent circular dependencies we forward declare all asset types here first
+namespace asset {
+struct ShaderStageDefinition;
+struct GraphicsProgramDefinition;
+struct MaterialDefinition;
+struct MeshDefinition;
+
+class ShaderStage;
+class GraphicsProgram;
+class Material;
+class Mesh;
+} // namespace asset
 
 // Concepts
 template <typename TDefinition>
@@ -16,7 +26,7 @@ concept AssetDefinition = std::is_same_v<TDefinition, asset::ShaderStageDefiniti
 
 template <typename TAsset>
 concept AssetType =
-    std::is_same_v<TAsset, asset::GraphicsProgram> || std::is_same_v<TAsset, asset::ShaderStage> ||
+    std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, asset::GraphicsProgram> ||
     std::is_same_v<TAsset, asset::Material> || std::is_same_v<TAsset, asset::Mesh>;
 
 template <AssetType TAsset>
