@@ -1,8 +1,8 @@
 #pragma once
 
+#include "GraphicsProgram.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "Shader.h"
 #include "ShaderStage.h"
 
 namespace aur {
@@ -10,11 +10,11 @@ namespace aur {
 // Concepts
 template <typename T>
 concept AssetDefinition =
-    std::is_same_v<T, asset::ShaderStageDefinition> || std::is_same_v<T, asset::ShaderDefinition> ||
+    std::is_same_v<T, asset::ShaderStageDefinition> || std::is_same_v<T, asset::GraphicsProgramDefinition> ||
     std::is_same_v<T, asset::MaterialDefinition> || std::is_same_v<T, asset::MeshDefinition>;
 
 template <typename T>
-concept AssetType = std::is_same_v<T, asset::Shader> || std::is_same_v<T, asset::ShaderStage> ||
+concept AssetType = std::is_same_v<T, asset::GraphicsProgram> || std::is_same_v<T, asset::ShaderStage> ||
                     std::is_same_v<T, asset::Material> || std::is_same_v<T, asset::Mesh>;
 
 // Trait to map definition types to asset types
@@ -29,8 +29,8 @@ struct AssetTypeFor<asset::ShaderStageDefinition> {
   using type = asset::ShaderStage;
 };
 template <>
-struct AssetTypeFor<asset::ShaderDefinition> {
-  using type = asset::Shader;
+struct AssetTypeFor<asset::GraphicsProgramDefinition> {
+  using type = asset::GraphicsProgram;
 };
 template <>
 struct AssetTypeFor<asset::MaterialDefinition> {
@@ -54,8 +54,8 @@ struct DefinitionTypeFor<asset::ShaderStage> {
   using type = asset::ShaderStageDefinition;
 };
 template <>
-struct DefinitionTypeFor<asset::Shader> {
-  using type = asset::ShaderDefinition;
+struct DefinitionTypeFor<asset::GraphicsProgram> {
+  using type = asset::GraphicsProgramDefinition;
 };
 template <>
 struct DefinitionTypeFor<asset::Material> {

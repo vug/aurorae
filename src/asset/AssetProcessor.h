@@ -3,8 +3,8 @@
 #include <filesystem>
 
 #include "AssetRegistry.h"
+#include "GraphicsProgram.h"
 #include "Mesh.h"
-#include "Shader.h"
 #include "ShaderStage.h"
 
 namespace aur {
@@ -25,7 +25,7 @@ public:
   static std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath,
                                                                         ShaderBuildMode buildMode);
 
-  static std::optional<asset::ShaderDefinition> processShader(const std::filesystem::path& srcPath);
+  static std::optional<asset::GraphicsProgramDefinition> processShader(const std::filesystem::path& srcPath);
 
   std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
 

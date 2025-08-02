@@ -1,5 +1,4 @@
 /*
-TODO(vug): rename asset::Shader to GraphicsProgram.
 TODO(vug): ShaderDefinition has dependencies to stages it refers to.
 TODO(vug): maybe ProcessingResult does not need an extension
 TODO(vug): get stable identifiers of generated assets for a given source asset

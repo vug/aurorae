@@ -2,7 +2,7 @@
 
 #include "../FileIO.h"
 #include "../Logger.h"
-#include "Shader.h"
+#include "GraphicsProgram.h"
 
 #include <glaze/glaze/glaze.hpp>
 
@@ -131,8 +131,8 @@ AssetRegistry::getDefinition(const StableId<TDefinition>& stableSourceIdentifier
   if constexpr (std::is_same_v<TDefinition, asset::ShaderStageDefinition>) {
     if (entry.type != DefinitionType::ShaderStage)
       log().fatal("Asset '{}' is not a shader stage definition.", stableSourceIdentifier);
-  } else if constexpr (std::is_same_v<TDefinition, asset::ShaderDefinition>) {
-    if (entry.type != DefinitionType::Shader)
+  } else if constexpr (std::is_same_v<TDefinition, asset::GraphicsProgramDefinition>) {
+    if (entry.type != DefinitionType::GraphicsProgram)
       log().fatal("Asset '{}' is not a shader definition.", stableSourceIdentifier);
   } else {
     static_assert(false, "Unimplemented definition type");
@@ -165,7 +165,7 @@ template std::optional<asset::ShaderStageDefinition>
 AssetRegistry::getDefinition<asset::ShaderStageDefinition>(
     const StableId<asset::ShaderStageDefinition>& stableSourceIdentifier) const;
 
-template std::optional<asset::ShaderDefinition> AssetRegistry::getDefinition<asset::ShaderDefinition>(
-    const StableId<asset::ShaderDefinition>& stableSourceIdentifier) const;
+template std::optional<asset::GraphicsProgramDefinition> AssetRegistry::getDefinition<asset::GraphicsProgramDefinition>(
+    const StableId<asset::GraphicsProgramDefinition>& stableSourceIdentifier) const;
 
 } // namespace aur

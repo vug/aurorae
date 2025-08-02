@@ -8,9 +8,9 @@
 #include "../Handle.h"
 #include "AssetTraits.h"
 #include "Common.h"
+#include "GraphicsProgram.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "Shader.h"
 #include "ShaderStage.h"
 
 namespace aur {
@@ -33,7 +33,7 @@ public:
   [[nodiscard]] inline const asset::ShaderStage* get(Handle<asset::ShaderStage> handle) const {
     return &shaderStages_.at(handle);
   }
-  [[nodiscard]] inline const asset::Shader* get(Handle<asset::Shader> handle) const {
+  [[nodiscard]] inline const asset::GraphicsProgram* get(Handle<asset::GraphicsProgram> handle) const {
     return &shaders_.at(handle);
   }
   [[nodiscard]] inline const asset::Material* get(Handle<asset::Material> handle) const {
@@ -52,7 +52,7 @@ private:
   template <AssetDefinition TDefinition>
   StorageTypeFor_t<TDefinition>& getStorage();
   StorageTypeFor_t<asset::ShaderStageDefinition> shaderStages_;
-  StorageTypeFor_t<asset::ShaderDefinition> shaders_;
+  StorageTypeFor_t<asset::GraphicsProgramDefinition> shaders_;
   StorageTypeFor_t<asset::MaterialDefinition> materials_;
   StorageTypeFor_t<asset::MeshDefinition> meshes_;
 
@@ -60,16 +60,16 @@ private:
   template <AssetDefinition TDefinition>
   CacheTypeFor_t<TDefinition>& getCache();
   CacheTypeFor_t<asset::ShaderStageDefinition> loadedShaderStages_;
-  CacheTypeFor_t<asset::ShaderDefinition> loadedShaders_;
+  CacheTypeFor_t<asset::GraphicsProgramDefinition> loadedShaders_;
   CacheTypeFor_t<asset::MaterialDefinition> loadedMaterials_;
   CacheTypeFor_t<asset::MeshDefinition> loadedMeshes_;
 
   std::vector<asset::ShaderUpdateCallback> shaderUpdateListeners_;
   // std::vector<asset::ShaderDeleteCallback> shaderDeleteListeners_;
-  void notifyShaderUpdated(Handle<asset::Shader> hnd) const;
+  void notifyShaderUpdated(Handle<asset::GraphicsProgram> hnd) const;
 
   Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
-  Handle<asset::Shader> loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef);
+  Handle<asset::GraphicsProgram> loadShaderFromDefinition(const asset::GraphicsProgramDefinition& shaderDef);
   Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
   Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
 };

@@ -28,7 +28,7 @@ DefinitionType AssetProcessor::extensionToDefinitionType(std::filesystem::path e
   if (ext == ".vert" || ext == ".frag")
     return DefinitionType::ShaderStage;
   else if (ext == ".shader")
-    return DefinitionType::Shader;
+    return DefinitionType::GraphicsProgram;
   else if (ext == ".gltf" || ext == ".fbx" || ext == ".usda")
     return DefinitionType::Mesh;
   else
@@ -36,7 +36,7 @@ DefinitionType AssetProcessor::extensionToDefinitionType(std::filesystem::path e
 }
 
 using DefinitionVariant =
-    std::variant<asset::ShaderStageDefinition, asset::ShaderDefinition>; // , asset::MeshDefinition
+    std::variant<asset::ShaderStageDefinition, asset::GraphicsProgramDefinition>; // , asset::MeshDefinition
 using Definitions = std::unordered_map<AssetBuildMode, DefinitionVariant>;
 
 void AssetProcessor::processAllAssets() {
@@ -69,7 +69,7 @@ void AssetProcessor::processAllAssets() {
                                     }(),
                                 .extension = "shaderStageDef"};
       } break;
-      case DefinitionType::Shader: {
+      case DefinitionType::GraphicsProgram: {
         return ProcessingResult{.definitions = [&srcPath]() -> Definitions {
                                   if (auto defOpt = processShader(srcPath))
                                     return {{AssetBuildMode::Any, std::move(*defOpt)}};
@@ -185,12 +185,12 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
 
   return def;
 }
-std::optional<asset::ShaderDefinition> AssetProcessor::processShader(const std::filesystem::path& srcPath) {
+std::optional<asset::GraphicsProgramDefinition> AssetProcessor::processShader(const std::filesystem::path& srcPath) {
   if (!std::filesystem::exists(srcPath))
     return std::nullopt;
 
   const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
-  asset::ShaderDefinition def;
+  asset::GraphicsProgramDefinition def;
   if (const glz::error_ctx err = glz::read_json(def, bytes)) {
     log().warn("Failed to generate ShaderDefinition from file: {}. error code: {}, msg: {}. Try editing the "
                "file to fit to correct schema.",

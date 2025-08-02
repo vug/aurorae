@@ -28,7 +28,7 @@ struct PipelineLayoutCreateInfo;
 struct PushConstantsInfo;
 namespace asset {
 class Mesh;
-class Shader;
+class GraphicsProgram;
 } // namespace asset
 
 struct BindDescriptorSetInfo {
@@ -124,7 +124,7 @@ public:
   template <typename TObject>
   void setDebugName(const TObject& obj, const std::string_view name) const;
 
-  [[nodiscard]] Handle<render::Shader> uploadOrGet(Handle<asset::Shader> shaderHnd);
+  [[nodiscard]] Handle<render::Shader> uploadOrGet(Handle<asset::GraphicsProgram> shaderHnd);
   [[nodiscard]] Handle<render::Material> uploadOrGet(Handle<asset::Material> materialHnd);
   [[nodiscard]] Handle<render::Mesh> uploadOrGet(Handle<asset::Mesh> meshHnd);
 
@@ -138,7 +138,7 @@ public:
     return &meshes_.at(handle);
   }
 
-  void onShaderAssetUpdated(Handle<asset::Shader> assetHnd);
+  void onShaderAssetUpdated(Handle<asset::GraphicsProgram> assetHnd);
 
   PerFrameData perFrameData;
 
@@ -195,7 +195,7 @@ private:
   std::vector<render::Shader> shaders_;
   std::vector<render::Material> materials_;
   std::vector<render::Mesh> meshes_;
-  std::unordered_map<Handle<asset::Shader>, Handle<render::Shader>> shaderAssetToRenderHandleMap_;
+  std::unordered_map<Handle<asset::GraphicsProgram>, Handle<render::Shader>> shaderAssetToRenderHandleMap_;
   std::unordered_map<Handle<asset::Material>, Handle<render::Material>> materialAssetToRenderHandleMap_;
   std::unordered_map<Handle<asset::Mesh>, Handle<render::Mesh>> meshAssetToRenderHandleMap_;
 };

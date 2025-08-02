@@ -194,7 +194,7 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
   return deviceBuffer;
 }
 
-void Renderer::onShaderAssetUpdated(Handle<asset::Shader> assetHnd) {
+void Renderer::onShaderAssetUpdated(Handle<asset::GraphicsProgram> assetHnd) {
   const auto it = shaderAssetToRenderHandleMap_.find(assetHnd);
   const std::string_view renderHandleMsg =
       (it == shaderAssetToRenderHandleMap_.end())
@@ -638,7 +638,7 @@ void Renderer::cleanupSwapchainDepthResources() {
   depthImageMemory_ = VK_NULL_HANDLE;
 }
 
-Handle<render::Shader> Renderer::uploadOrGet(Handle<asset::Shader> shaderHnd) {
+Handle<render::Shader> Renderer::uploadOrGet(Handle<asset::GraphicsProgram> shaderHnd) {
   if (const auto it = shaderAssetToRenderHandleMap_.find(shaderHnd);
       it != shaderAssetToRenderHandleMap_.end())
     return it->second;

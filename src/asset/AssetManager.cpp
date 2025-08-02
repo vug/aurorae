@@ -4,8 +4,8 @@
 
 #include "../AppContext.h"
 #include "AssetTraits.h"
+#include "GraphicsProgram.h"
 #include "Mesh.h"
-#include "Shader.h"
 
 namespace aur {
 
@@ -37,7 +37,7 @@ HandleTypeFor_t<TDefinition> AssetManager::loadFromDefinition(TDefinition&& def)
   using TAsset = AssetTypeFor_t<TDefinition>;
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return loadShaderStageFromDefinition(std::move(def));
-  } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
+  } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
     return loadShaderFromDefinition(std::move(def));
   } else if constexpr (std::is_same_v<TAsset, asset::Material>) {
     return loadMaterialFromDefinition(std::move(def));
@@ -54,7 +54,7 @@ StorageTypeFor_t<TDefinition>& AssetManager::getStorage() {
   using TAsset = AssetTypeFor_t<TDefinition>;
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return shaderStages_;
-  } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
+  } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
     return shaders_;
   } else if constexpr (std::is_same_v<TAsset, asset::Material>) {
     return materials_;
@@ -71,7 +71,7 @@ CacheTypeFor_t<TDefinition>& AssetManager::getCache() {
   using TAsset = AssetTypeFor_t<TDefinition>;
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return loadedShaderStages_;
-  } else if constexpr (std::is_same_v<TAsset, asset::Shader>) {
+  } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
     return loadedShaders_;
   } else if constexpr (std::is_same_v<TAsset, asset::Material>) {
     return loadedMaterials_;
@@ -90,16 +90,17 @@ AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shade
   return Handle<asset::ShaderStage>{static_cast<u32>(shaderStages_.size() - 1)};
 }
 
-Handle<asset::Shader> AssetManager::loadShaderFromDefinition(const asset::ShaderDefinition& shaderDef) {
+Handle<asset::GraphicsProgram>
+AssetManager::loadShaderFromDefinition(const asset::GraphicsProgramDefinition& shaderDef) {
   Handle<asset::ShaderStage> vert = load(shaderDef.vert);
   if (!vert.isValid())
     return {};
   Handle<asset::ShaderStage> frag = load(shaderDef.frag);
   if (!frag.isValid())
     return {};
-  asset::Shader shader = asset::Shader::create(shaderDef, vert, frag);
+  asset::GraphicsProgram shader = asset::GraphicsProgram::create(shaderDef, vert, frag);
   shaders_.push_back(std::move(shader));
-  return Handle<asset::Shader>{static_cast<u32>(shaders_.size() - 1)};
+  return Handle<asset::GraphicsProgram>{static_cast<u32>(shaders_.size() - 1)};
 }
 Handle<asset::Material>
 AssetManager::loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef) {
@@ -122,7 +123,7 @@ Handle<asset::Mesh> AssetManager::registerExistingMesh(asset::Mesh& mesh) {
 void AssetManager::addShaderUpdateListener(asset::ShaderUpdateCallback callback) {
   shaderUpdateListeners_.push_back(std::move(callback));
 }
-void AssetManager::notifyShaderUpdated(Handle<asset::Shader> hnd) const {
+void AssetManager::notifyShaderUpdated(Handle<asset::GraphicsProgram> hnd) const {
   for (const auto& callback : shaderUpdateListeners_)
     callback(hnd);
 }
@@ -130,7 +131,7 @@ void AssetManager::notifyShaderUpdated(Handle<asset::Shader> hnd) const {
 #define EXPLICITLY_INSTANTIATE_TEMPLATES(DefinitionType)                                                     \
   template HandleTypeFor_t<DefinitionType> AssetManager::load<DefinitionType>(                               \
       const StableId<DefinitionType>& stableId);
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgramDefinition)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES
 
@@ -138,7 +139,7 @@ EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
   template CacheTypeFor_t<DefinitionType>& AssetManager::getCache<DefinitionType>();                         \
   template HandleTypeFor_t<DefinitionType> AssetManager::loadFromDefinition<DefinitionType>(                 \
       DefinitionType && def);
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgramDefinition)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MaterialDefinition)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MeshDefinition)

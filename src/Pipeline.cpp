@@ -5,7 +5,7 @@
 #include "Logger.h"
 #include "Renderer.h"
 #include "Vertex.h"
-#include "asset/Shader.h"
+#include "asset/GraphicsProgram.h"
 
 namespace aur {
 VkVertexInputBindingDescription toVkVertexInputBindingDescription(const VertexInputBindingDescription& desc) {

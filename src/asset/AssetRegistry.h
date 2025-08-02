@@ -11,7 +11,7 @@ namespace aur {
 
 enum class DefinitionType : u32 {
   ShaderStage = 0,
-  Shader = 1,
+  GraphicsProgram = 1,
   Material = 2,
   Mesh = 3,
 };
@@ -71,7 +71,7 @@ struct to<JSON, aur::glaze_uuid> {
 template <>
 struct glz::meta<aur::DefinitionType> {
   using enum aur::DefinitionType;
-  static constexpr auto value = glz::enumerate(ShaderStage, Shader, Material, Mesh);
+  static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
 };
 
 namespace aur {

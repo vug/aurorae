@@ -4,16 +4,16 @@
 
 namespace aur::render {
 
-Shader::Shader(const Renderer& renderer, Handle<asset::Shader> asset)
+Shader::Shader(const Renderer& renderer, Handle<asset::GraphicsProgram> asset)
     : renderer_{&renderer}
     , assetHandle_{asset}
     , vertModule_{[this]() {
-      const asset::Shader& aShader = assetHandle_.get();
+      const asset::GraphicsProgram& aShader = assetHandle_.get();
       const ShaderModuleCreateInfo vertCreateInfo{.spirv = &aShader.getVertexBlob()};
       return renderer_->createShaderModule(vertCreateInfo, aShader.getDebugName() + " Module");
     }()}
     , fragModule_{[this]() {
-      const asset::Shader& aShader = assetHandle_.get();
+      const asset::GraphicsProgram& aShader = assetHandle_.get();
       const ShaderModuleCreateInfo fragCreateInfo{.spirv = &aShader.getFragmentBlob()};
       return renderer_->createShaderModule(fragCreateInfo, aShader.getDebugName() + " Module");
     }()} {}
