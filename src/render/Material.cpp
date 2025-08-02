@@ -2,14 +2,14 @@
 
 #include "../Pipeline.h"
 #include "../Renderer.h"
-#include "Shader.h"
+#include "GraphicsProgram.h"
 
 namespace aur::render {
 
 Material::Material(Renderer& renderer, Handle<asset::Material> asset)
     : renderer_{&renderer}
     , assetHandle_{asset}
-    , shaderHnd_{[this]() {
+    , graphicsProgramHandle_{[this]() {
       const asset::Material& aMaterial = assetHandle_.get();
       return renderer_->uploadOrGet(aMaterial.getGraphicsProgramHandle());
     }()} {}

@@ -9,16 +9,16 @@ class Renderer;
 }
 
 namespace aur::render {
-class Shader {
+class GraphicsProgram {
 public:
-  Shader() = default;
-  Shader(const Renderer& renderer, Handle<asset::GraphicsProgram> asset);
-  ~Shader() = default;
+  GraphicsProgram() = default;
+  GraphicsProgram(const Renderer& renderer, Handle<asset::GraphicsProgram> asset);
+  ~GraphicsProgram() = default;
 
-  Shader(const Shader& other) = delete;
-  Shader(Shader&& other) noexcept = default;
-  Shader& operator=(const Shader& other) = delete;
-  Shader& operator=(Shader&& other) noexcept = default;
+  GraphicsProgram(const GraphicsProgram& other) = delete;
+  GraphicsProgram(GraphicsProgram&& other) noexcept = default;
+  GraphicsProgram& operator=(const GraphicsProgram& other) = delete;
+  GraphicsProgram& operator=(GraphicsProgram&& other) noexcept = default;
 
   [[nodiscard]] const Handle<asset::GraphicsProgram>& getAssetHandle() const { return assetHandle_; }
   [[nodiscard]] const ShaderModule& getVertexShaderModule() const { return vertModule_; }

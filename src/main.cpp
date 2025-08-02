@@ -1,5 +1,4 @@
 /*
-TODO(vug): render::Shader -> render::GraphicsProgram
 TODO(vug): ShaderDefinition has dependencies to stages it refers to.
 TODO(vug): maybe ProcessingResult does not need an extension
 TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)

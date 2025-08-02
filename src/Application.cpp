@@ -70,7 +70,7 @@ void Application::run() {
 
   // Don't do pipeline creation here but at draw call
   const PipelineCreateInfo pipelineCreateInfo{
-      .shader = unlitRMaterial.get().getShaderHandle(),
+      .graphicsProgram = unlitRMaterial.get().getGraphicsProgramHandle(),
       .cullMode = CullMode::Back,
   };
   const Pipeline* unlitPipeline = renderer_.createOrGetPipeline(pipelineCreateInfo);

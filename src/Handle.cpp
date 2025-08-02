@@ -13,7 +13,7 @@ class Material;
 } // namespace asset
 
 namespace render {
-class Shader;
+class GraphicsProgram;
 class Mesh;
 } // namespace render
 
@@ -23,7 +23,7 @@ const TAsset& Handle<TAsset>::get() const {
                 std::is_same_v<TAsset, asset::GraphicsProgram> || std::is_same_v<TAsset, asset::Material> ||
                 std::is_same_v<TAsset, asset::Mesh>)
     return *AppContext::getConst<AssetManager>().get(*this);
-  else if constexpr (std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, render::Shader> ||
+  else if constexpr (std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, render::GraphicsProgram> ||
                      std::is_same_v<TAsset, render::Material> || std::is_same_v<TAsset, render::Mesh>)
     return *AppContext::getConst<Renderer>().get(*this);
   else {
@@ -35,7 +35,7 @@ template const asset::ShaderStage& Handle<asset::ShaderStage>::get() const;
 template const asset::GraphicsProgram& Handle<asset::GraphicsProgram>::get() const;
 template const asset::Material& Handle<asset::Material>::get() const;
 template const asset::Mesh& Handle<asset::Mesh>::get() const;
-template const render::Shader& Handle<render::Shader>::get() const;
+template const render::GraphicsProgram& Handle<render::GraphicsProgram>::get() const;
 template const render::Material& Handle<render::Material>::get() const;
 template const render::Mesh& Handle<render::Mesh>::get() const;
 

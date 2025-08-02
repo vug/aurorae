@@ -15,9 +15,9 @@
 #include "Resources/ShaderModule.h"
 #include "Swapchain.h"
 #include "VulkanContext.h"
+#include "render/GraphicsProgram.h"
 #include "render/Material.h"
 #include "render/Mesh.h"
-#include "render/Shader.h"
 
 struct GLFWwindow;
 
@@ -124,11 +124,11 @@ public:
   template <typename TObject>
   void setDebugName(const TObject& obj, const std::string_view name) const;
 
-  [[nodiscard]] Handle<render::Shader> uploadOrGet(Handle<asset::GraphicsProgram> shaderHnd);
+  [[nodiscard]] Handle<render::GraphicsProgram> uploadOrGet(Handle<asset::GraphicsProgram> shaderHnd);
   [[nodiscard]] Handle<render::Material> uploadOrGet(Handle<asset::Material> materialHnd);
   [[nodiscard]] Handle<render::Mesh> uploadOrGet(Handle<asset::Mesh> meshHnd);
 
-  [[nodiscard]] inline const render::Shader* get(Handle<render::Shader> handle) const {
+  [[nodiscard]] inline const render::GraphicsProgram* get(Handle<render::GraphicsProgram> handle) const {
     return &shaders_.at(handle);
   }
   [[nodiscard]] inline const render::Material* get(Handle<render::Material> handle) const {
@@ -192,10 +192,10 @@ private:
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
 
   std::unordered_map<PipelineCreateInfo, Pipeline> pipelineCacheMap_;
-  std::vector<render::Shader> shaders_;
+  std::vector<render::GraphicsProgram> shaders_;
   std::vector<render::Material> materials_;
   std::vector<render::Mesh> meshes_;
-  std::unordered_map<Handle<asset::GraphicsProgram>, Handle<render::Shader>> shaderAssetToRenderHandleMap_;
+  std::unordered_map<Handle<asset::GraphicsProgram>, Handle<render::GraphicsProgram>> shaderAssetToRenderHandleMap_;
   std::unordered_map<Handle<asset::Material>, Handle<render::Material>> materialAssetToRenderHandleMap_;
   std::unordered_map<Handle<asset::Mesh>, Handle<render::Mesh>> meshAssetToRenderHandleMap_;
 };

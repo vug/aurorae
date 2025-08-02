@@ -9,7 +9,7 @@ class Pipeline;
 } // namespace aur
 
 namespace aur::render {
-class Shader;
+class GraphicsProgram;
 
 class Material {
 public:
@@ -22,12 +22,14 @@ public:
   Material& operator=(const Material& other) = delete;
   Material& operator=(Material&& other) noexcept = default;
 
-  [[nodiscard]] inline Handle<render::Shader> getShaderHandle() const { return shaderHnd_; }
+  [[nodiscard]] inline Handle<render::GraphicsProgram> getGraphicsProgramHandle() const {
+    return graphicsProgramHandle_;
+  }
 
 private:
   Renderer* renderer_{};
   Handle<asset::Material> assetHandle_;
-  Handle<render::Shader> shaderHnd_;
+  Handle<render::GraphicsProgram> graphicsProgramHandle_;
   const Pipeline* pipeline_{};
 };
 

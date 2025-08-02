@@ -46,18 +46,18 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
 
       return renderer_->createPipelineLayout(layoutCreateInfo, "Unlit Pipeline Layout");
     }()} {
-  const render::Shader& shader = createInfo.shader.get();
+  const render::GraphicsProgram& graphicsProgram = createInfo.graphicsProgram.get();
 
   const VkPipelineShaderStageCreateInfo vertShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_VERTEX_BIT,
-      .module = shader.getVertexShaderModule().getHandle(),
+      .module = graphicsProgram.getVertexShaderModule().getHandle(),
       .pName = "main",
   };
   const VkPipelineShaderStageCreateInfo fragShaderStageInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .module = shader.getFragmentShaderModule().getHandle(),
+      .module = graphicsProgram.getFragmentShaderModule().getHandle(),
       .pName = "main",
   };
   std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};

@@ -11,15 +11,15 @@ namespace aur {
 class Renderer;
 class AssetManager;
 namespace render {
-class Shader;
+class GraphicsProgram;
 }
 
 struct PipelineCreateInfo {
-  Handle<render::Shader> shader;
+  Handle<render::GraphicsProgram> graphicsProgram;
   CullMode cullMode{CullMode::Back};
 
   // Compare members in a fixed order.
-  [[nodiscard]] auto identifier() const { return std::tie(shader.id, cullMode); }
+  [[nodiscard]] auto identifier() const { return std::tie(graphicsProgram.id, cullMode); }
   bool operator<(const PipelineCreateInfo& other) const { return identifier() < other.identifier(); }
   bool operator==(const PipelineCreateInfo& other) const { return identifier() == other.identifier(); }
 };
@@ -56,7 +56,7 @@ private:
 template <>
 struct std::hash<aur::PipelineCreateInfo> {
   size_t operator()(const aur::PipelineCreateInfo& createInfo) const noexcept {
-    const size_t shaderHash = std::hash<aur::u32>()(createInfo.shader.id);
+    const size_t shaderHash = std::hash<aur::u32>()(createInfo.graphicsProgram.id);
     const size_t cullModeHash =
         std::hash<std::underlying_type_t<aur::CullMode>>()(std::to_underlying(createInfo.cullMode));
     // left shift helps with distributing bits

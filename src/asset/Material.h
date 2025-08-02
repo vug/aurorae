@@ -13,8 +13,8 @@ struct MaterialDefinition {
 
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
-  // values. Then, Renderer::getOrCreateMaterial() takes this create info and creates a renderer::Shader, a
-  // Pipeline object, and corresponding buffers and images
+  // values. Then, Renderer::getOrCreateMaterial() takes this create info and creates a
+  // renderer::GraphicsProgram, a Pipeline object, and corresponding buffers and images
 };
 
 class Material {
