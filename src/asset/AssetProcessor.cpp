@@ -17,6 +17,16 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_reflect.hpp>
 
+#include <glaze/glaze/glaze.hpp>
+
+namespace glz {
+template <>
+struct meta<aur::DefinitionType> {
+  using enum aur::DefinitionType;
+  static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
+};
+} // namespace glz
+
 namespace aur {
 
 AssetProcessor::AssetProcessor(AssetRegistry& registry)
@@ -41,104 +51,122 @@ using DefinitionVariant =
 using Definitions = std::unordered_map<AssetBuildMode, DefinitionVariant>;
 
 void AssetProcessor::processAllAssets() {
-  for (const std::filesystem::directory_entry& dirEntry :
-       std::filesystem::recursive_directory_iterator(kAssetsFolder)) {
-    if (!dirEntry.is_regular_file())
-      continue;
-    if (!std::unordered_set<std::string>{".vert", ".frag", ".shader"}.contains(
-            dirEntry.path().extension().string()))
-      continue;
-    const DefinitionType defType = extensionToDefinitionType(dirEntry.path().extension());
-    const auto& srcPath = dirEntry.path();
-    log().info("Processing asset ingestion file: {}...", srcPath.generic_string());
-    const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
-    struct ProcessingResult {
-      std::unordered_map<AssetBuildMode, DefinitionVariant> definitions;
-      std::vector<AssetUuid> dependencies;
-      std::string_view extension;
-    };
-    ProcessingResult result = [this, defType, &srcPath]() -> ProcessingResult {
-      switch (defType) {
-      case DefinitionType::ShaderStage: {
-        return ProcessingResult{.definitions =
-                                    [this, &srcPath]() {
-                                      Definitions result;
-                                      for (auto [assetMode, shaderMode] :
-                                           {std::pair{AssetBuildMode::Debug, ShaderBuildMode::Debug},
-                                            std::pair{AssetBuildMode::Release, ShaderBuildMode::Release}})
-                                        if (auto defOpt = processShaderStage(srcPath, shaderMode))
-                                          result.emplace(assetMode, std::move(*defOpt));
-                                      return result;
-                                    }(),
-                                .extension = "shaderStageDef"};
-      } break;
-      case DefinitionType::GraphicsProgram: {
-        return processGraphicsProgram(srcPath)
-            .transform([this](asset::GraphicsProgramDefinition def) -> ProcessingResult {
-              def.vert.setRegistry(registry_);
-              def.frag.setRegistry(registry_);
-              const AssetUuid vertUuid = def.vert;
-              const AssetUuid fragUuid = def.frag;
+  namespace rv = std::views;
+  namespace r = std::ranges;
 
-              return {
-                  .definitions = {{AssetBuildMode::Any, std::move(def)}},
-                  .dependencies = {vertUuid, fragUuid},
-                  .extension = "graphicsProgramDef",
-              };
-            })
-            .value_or(ProcessingResult{});
-      } break;
-      case DefinitionType::Material: {
-        log().fatal("Not implemented yet.");
-      } break;
-      case DefinitionType::Mesh: {
-        log().fatal("Not implemented yet.");
-      } break;
-      }
-      std::unreachable();
-    }();
+  const std::unordered_set<std::string_view> kFileExtensionsToProcess = {".vert", ".frag", ".shader"};
+  constexpr std::array kAssetOrder = {DefinitionType::ShaderStage, DefinitionType::GraphicsProgram,
+                                      DefinitionType::Material, DefinitionType::Mesh};
 
-    std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantRelPaths;
-    for (auto& [mode, definition] : result.definitions) {
-      std::expected<std::string, glz::error_ctx> serResult =
-          std::visit([](auto& def) { return glz::write_beve(def); }, definition);
-      if (!serResult.has_value()) {
-        log().warn("Failed to serialize definition: {}", serResult.error().custom_error_message);
-        continue;
+  const auto assetsByType = std::filesystem::recursive_directory_iterator(kAssetsFolder) |
+                            rv::filter([](const std::filesystem::directory_entry& dirEntry) {
+                              return dirEntry.is_regular_file();
+                            }) |
+                            rv::transform(&std::filesystem::directory_entry::path) |
+                            rv::filter([&kFileExtensionsToProcess](const auto& path) {
+                              return kFileExtensionsToProcess.contains(path.extension().string());
+                            }) |
+                            rv::transform([this](const auto& path) {
+                              return std::pair{extensionToDefinitionType(path.extension()), path};
+                            }) |
+                            r::to<std::unordered_multimap<DefinitionType, std::filesystem::path>>();
+
+  for (const DefinitionType defType : kAssetOrder) {
+    log().info("Processing asset type: {}", glz::write_json(defType).value_or("unknown"));
+    const auto range = assetsByType.equal_range(defType);
+    for (const auto& [_, srcPath] : r::subrange(range.first, range.second)) {
+      const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
+      log().info("   Processing asset ingestion file: {}...", srcPath.generic_string());
+
+      struct ProcessingResult {
+        std::unordered_map<AssetBuildMode, DefinitionVariant> definitions;
+        std::vector<AssetUuid> dependencies;
+        std::string_view extension;
+      };
+      ProcessingResult result = [this, defType, &srcPath]() -> ProcessingResult {
+        switch (defType) {
+        case DefinitionType::ShaderStage: {
+          return ProcessingResult{.definitions =
+                                      [this, &srcPath]() {
+                                        Definitions result;
+                                        for (auto [assetMode, shaderMode] :
+                                             {std::pair{AssetBuildMode::Debug, ShaderBuildMode::Debug},
+                                              std::pair{AssetBuildMode::Release, ShaderBuildMode::Release}})
+                                          if (auto defOpt = processShaderStage(srcPath, shaderMode))
+                                            result.emplace(assetMode, std::move(*defOpt));
+                                        return result;
+                                      }(),
+                                  .extension = "shaderStageDef"};
+        } break;
+        case DefinitionType::GraphicsProgram: {
+          return processGraphicsProgram(srcPath)
+              .transform([this](asset::GraphicsProgramDefinition def) -> ProcessingResult {
+                def.vert.setRegistry(registry_);
+                def.frag.setRegistry(registry_);
+                const AssetUuid vertUuid = def.vert;
+                const AssetUuid fragUuid = def.frag;
+
+                return {
+                    .definitions = {{AssetBuildMode::Any, std::move(def)}},
+                    .dependencies = {vertUuid, fragUuid},
+                    .extension = "graphicsProgramDef",
+                };
+              })
+              .value_or(ProcessingResult{});
+        } break;
+        case DefinitionType::Material: {
+          log().fatal("Not implemented yet.");
+        } break;
+        case DefinitionType::Mesh: {
+          log().fatal("Not implemented yet.");
+        } break;
+        }
+        std::unreachable();
+      }();
+
+      std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantRelPaths;
+      for (auto& [mode, definition] : result.definitions) {
+        std::expected<std::string, glz::error_ctx> serResult =
+            std::visit([](auto& def) { return glz::write_beve(def); }, definition);
+        if (!serResult.has_value()) {
+          log().warn("Failed to serialize definition: {}", serResult.error().custom_error_message);
+          continue;
+        }
+        const std::string serializedDef = serResult.value();
+        const std::string_view modeStr = mode == AssetBuildMode::Debug     ? "debug."
+                                         : mode == AssetBuildMode::Release ? "release."
+                                                                           : "";
+        const auto dstRelPath =
+            srcRelPath.filename().concat(std::format(".{}.{}beve", result.extension, modeStr));
+        const auto dstPath = registry_->getRootFolder() / dstRelPath;
+        if (!writeBinaryFile(dstPath, serializedDef)) {
+          log().warn("Failed to write asset definition to file: {}", srcPath.generic_string());
+          continue;
+        }
+        dstVariantRelPaths[mode] = dstRelPath;
+        log().info("      Processed and saved to {}", dstRelPath.generic_string());
       }
-      const std::string serializedDef = serResult.value();
-      const std::string_view modeStr = mode == AssetBuildMode::Debug     ? "debug."
-                                       : mode == AssetBuildMode::Release ? "release."
-                                                                         : "";
-      const auto dstRelPath =
-          srcRelPath.filename().concat(std::format(".{}.{}beve", result.extension, modeStr));
-      const auto dstPath = registry_->getRootFolder() / dstRelPath;
-      if (!writeBinaryFile(dstPath, serializedDef)) {
-        log().warn("Failed to write asset definition to file: {}", srcPath.generic_string());
-        continue;
-      }
-      dstVariantRelPaths[mode] = dstRelPath;
-      log().info(">>> processed it to {}", dstRelPath.generic_string());
+
+      const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
+      const muuid::uuid assetId = makeUuid(stableSourceIdentifier);
+      const AssetEntry entry{
+          .type = defType,
+          .uuid = assetId,
+          .srcRelPath = srcRelPath.generic_string(),
+          .dstVariantRelPaths = dstVariantRelPaths,
+          .dependencies = [&result]() -> std::optional<std::vector<AssetUuid>> {
+            if (result.dependencies.empty())
+              return std::nullopt;
+            return std::move(result.dependencies);
+          }(),
+      };
+      registry_->addEntry(assetId, entry);
+      registry_->addAlias(stableSourceIdentifier, assetId);
     }
-
-    const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
-    const muuid::uuid assetId = makeUuid(stableSourceIdentifier);
-    const AssetEntry entry{
-        .type = defType,
-        .uuid = assetId,
-        .srcRelPath = srcRelPath.generic_string(),
-        .dstVariantRelPaths = dstVariantRelPaths,
-        .dependencies = [&result]() -> std::optional<std::vector<AssetUuid>> {
-          if (result.dependencies.empty())
-            return std::nullopt;
-          return std::move(result.dependencies);
-        }(),
-    };
-    registry_->addEntry(assetId, entry);
-    registry_->addAlias(stableSourceIdentifier, assetId);
   }
 
   registry_->save();
+  log().info("Processing completed.");
 }
 
 // Try this out again! But my hunch tells me that this is mostly to turn off// optimization in a release

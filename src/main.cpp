@@ -1,5 +1,4 @@
 /*
-TODO(vug): When processing (a dependent) asset, first process dependee assets. DFS traversal.
 TODO(vug): Trait improvements: put UUID namespaces to traits, add a trait to get DefinitionType enum
 TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)
 TODO(vug): get stable identifiers of generated assets for a given source asset
