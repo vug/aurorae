@@ -51,8 +51,9 @@ struct to<BEVE, aur::glaze_uuid> {
 
 namespace aur {
 
-const std::filesystem::path AssetRegistry::kProcessedAssetsRoot{kAssetsFolder / "../processedAssets"};
-const std::filesystem::path AssetRegistry::kRegistryPath{kProcessedAssetsRoot / "registry.json"};
+const std::filesystem::path AssetRegistry::kDefaultProcessedAssetsRoot{kAssetsFolder / "../processedAssets"};
+const std::filesystem::path AssetRegistry::kDefaultRegistryPath{kDefaultProcessedAssetsRoot /
+                                                                "registry.json"};
 
 // Create a temporary struct to match the original serialization format
 struct RegistryData {
@@ -61,38 +62,39 @@ struct RegistryData {
 };
 
 void AssetRegistry::initEmptyRegistryFile() {
-  if (!std::filesystem::exists(filePath_)) {
-    std::filesystem::create_directories(filePath_.parent_path());
+  if (!std::filesystem::exists(registryPath_)) {
+    std::filesystem::create_directories(registryPath_.parent_path());
 
     const std::string serializedReg =
         glz::write_json(RegistryData{}).value_or("{\"error\": \"Couldn't serialize the registry object.\"}");
-    if (!writeBinaryFile(filePath_, glz::prettify_json(serializedReg)))
-      log().fatal("Failed to initialize the registry file: {}.", filePath_.string());
+    if (!writeBinaryFile(registryPath_, glz::prettify_json(serializedReg)))
+      log().fatal("Failed to initialize the registry file: {}.", registryPath_.string());
   }
 }
 
 AssetRegistry::AssetRegistry(const std::filesystem::path& registryFilePath)
-    : filePath_(registryFilePath) {}
+    : registryRootFolder_(registryFilePath.parent_path())
+    , registryPath_(registryFilePath) {}
 
 void AssetRegistry::clear() {
   entries_.clear();
   aliases_.clear();
 
-  const std::uintmax_t removedCnt = std::filesystem::remove_all(kProcessedAssetsRoot);
+  const std::uintmax_t removedCnt = std::filesystem::remove_all(kDefaultProcessedAssetsRoot);
   log().info("Number of files and directories removed: {}.", removedCnt);
 
   initEmptyRegistryFile();
 }
 
 void AssetRegistry::load() {
-  if (!std::filesystem::exists(filePath_)) {
+  if (!std::filesystem::exists(registryPath_)) {
     initEmptyRegistryFile();
   }
 
-  std::vector<std::byte> buffer = readBinaryFileBytes(filePath_);
+  std::vector<std::byte> buffer = readBinaryFileBytes(registryPath_);
   RegistryData data;
   if (const glz::error_ctx err = glz::read_json(data, buffer)) {
-    log().fatal("Failed to read registry file: {}. error code: {}, msg: {}.", filePath_.string(),
+    log().fatal("Failed to read registry file: {}. error code: {}, msg: {}.", registryPath_.string(),
                 std::to_underlying(err.ec), err.custom_error_message);
   }
   entries_ = std::move(data.entries);
@@ -103,8 +105,8 @@ void AssetRegistry::save() const {
   RegistryData data{.entries = entries_, .aliases = aliases_};
   const std::string serializedReg =
       glz::write_json(data).value_or(R"({"error": "Couldn't serialize the registry object."})");
-  if (!writeBinaryFile(filePath_, glz::prettify_json(serializedReg))) {
-    log().fatal("Failed to save registry file: {}.", filePath_.string());
+  if (!writeBinaryFile(registryPath_, glz::prettify_json(serializedReg))) {
+    log().fatal("Failed to save registry file: {}.", registryPath_.string());
   }
 }
 
@@ -174,11 +176,12 @@ std::optional<TDefinition> AssetRegistry::getDefinition(const AssetUuid& uuid) c
 
   const AssetBuildMode mode = buildTypeToAssetBuildMode(kBuildType);
 
-  const std::filesystem::path dstPath = [&entry, &mode]() {
-    if (entry.dstVariantPaths.contains(mode))
-      return entry.dstVariantPaths.at(mode);
-    return entry.dstVariantPaths.at(AssetBuildMode::Any);
+  const std::filesystem::path dstRelPath = [&entry, &mode]() {
+    if (entry.dstVariantRelPaths.contains(mode))
+      return entry.dstVariantRelPaths.at(mode);
+    return entry.dstVariantRelPaths.at(AssetBuildMode::Any);
   }();
+  const auto dstPath = getRootFolder() / dstRelPath;
 
   if (!std::filesystem::exists(dstPath))
     log().fatal("Asset in registry '{}' does not have a processed file at {}!", uuid.to_chars(),

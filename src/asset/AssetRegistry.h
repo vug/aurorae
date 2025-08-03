@@ -30,16 +30,18 @@ enum class AssetBuildMode {
 
 struct AssetEntry {
   DefinitionType type;
-  std::filesystem::path srcPath;
-  std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantPaths;
+  // Relative to asset folder
+  std::filesystem::path srcRelPath;
+  // Relative to registry root folder
+  std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantRelPaths;
   // std::chrono::system_clock::time_point lastProcessed;
   std::optional<std::vector<AssetUuid>> dependencies;
 };
 
 class AssetRegistry {
 public:
-  static const std::filesystem::path kProcessedAssetsRoot;
-  static const std::filesystem::path kRegistryPath;
+  static const std::filesystem::path kDefaultProcessedAssetsRoot;
+  static const std::filesystem::path kDefaultRegistryPath;
   struct NameSpaces {
     static constexpr muuid::uuid kShaderStage = muuid::uuid("01982b4e-4295-7490-b404-bed575efa867");
   };
@@ -65,10 +67,12 @@ public:
   template <AssetDefinitionConcept TDefinition>
   [[nodiscard]] std::optional<TDefinition> getDefinition(const AssetUuid& uuid) const;
 
-  [[nodiscard]] inline const std::filesystem::path& getFilePath() const { return filePath_; }
+  [[nodiscard]] inline const std::filesystem::path& getRootFolder() const { return registryRootFolder_; }
+  [[nodiscard]] inline const std::filesystem::path& getPath() const { return registryPath_; }
 
 private:
-  std::filesystem::path filePath_{kRegistryPath};
+  std::filesystem::path registryRootFolder_{kDefaultProcessedAssetsRoot};
+  std::filesystem::path registryPath_{kDefaultRegistryPath};
   std::unordered_map<AssetUuid, AssetEntry> entries_;
   std::unordered_map<std::string, AssetUuid> aliases_;
 

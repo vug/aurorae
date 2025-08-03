@@ -35,7 +35,7 @@ HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& sta
   std::optional<AssetUuid> uuidOpt = registry_->getUuid(stableId);
   if (!uuidOpt) {
     log().warn("Could not find definition for asset with stable id: {} in asset registry {}", stableId,
-               registry_->getFilePath().generic_string());
+               registry_->getPath().generic_string());
     return {};
   }
   return load<TDefinition>(*uuidOpt);

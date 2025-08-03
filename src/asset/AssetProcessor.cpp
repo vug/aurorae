@@ -54,7 +54,7 @@ void AssetProcessor::processAllAssets() {
       continue;
     const DefinitionType defType = extensionToDefinitionType(dirEntry.path().extension());
     const auto& srcPath = dirEntry.path();
-    log().info("processing asset ingestion file: {}", srcPath.generic_string());
+    log().info("Processing asset ingestion file: {}...", srcPath.generic_string());
     const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
     struct ProcessingResult {
       std::unordered_map<AssetBuildMode, DefinitionVariant> definitions;
@@ -92,7 +92,7 @@ void AssetProcessor::processAllAssets() {
       std::unreachable();
     }();
 
-    std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantPaths;
+    std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantRelPaths;
     for (auto& [mode, definition] : result.definitions) {
       std::expected<std::string, glz::error_ctx> serResult =
           std::visit([](auto& def) { return glz::write_beve(def); }, definition);
@@ -104,14 +104,14 @@ void AssetProcessor::processAllAssets() {
       const std::string_view modeStr = mode == AssetBuildMode::Debug     ? "debug."
                                        : mode == AssetBuildMode::Release ? "release."
                                                                          : "";
-      const auto dstPath = AssetRegistry::kProcessedAssetsRoot /
-                           srcPath.filename().concat(std::format(".{}.{}beve", result.extension, modeStr));
-      if (!writeBinaryFile(dstPath, serializedDef)) {
+      const auto dstRelPath =
+          srcRelPath.filename().concat(std::format(".{}.{}beve", result.extension, modeStr));
+      if (!writeBinaryFile(dstRelPath, serializedDef)) {
         log().warn("Failed to write asset definition to file: {}", srcPath.generic_string());
         continue;
       }
-      dstVariantPaths[mode] = dstPath;
-      log().info(">>> processed it to {}", dstPath.generic_string());
+      dstVariantRelPaths[mode] = dstRelPath;
+      log().info(">>> processed it to {}", dstRelPath.generic_string());
     }
 
     const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
@@ -119,8 +119,8 @@ void AssetProcessor::processAllAssets() {
         muuid::uuid::generate_sha1(AssetRegistry::NameSpaces::kShaderStage, stableSourceIdentifier);
     const AssetEntry entry{
         .type = defType,
-        .srcPath = srcPath,
-        .dstVariantPaths = dstVariantPaths,
+        .srcRelPath = srcRelPath,
+        .dstVariantRelPaths = dstVariantRelPaths,
         .dependencies = std::nullopt,
     };
     registry_->addEntry(assetId, entry);
