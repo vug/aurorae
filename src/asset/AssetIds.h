@@ -63,6 +63,26 @@ struct to<JSON, aur::glaze_uuid> {
     serialize<JSON>::op<Opts>(str, args...);
   }
 };
+
+template <>
+struct from<BEVE, aur::glaze_uuid> {
+  template <auto Opts>
+  static void op(aur::glaze_uuid& uuid, auto&&... args) {
+    std::string str;
+    parse<BEVE>::op<Opts>(str, args...);
+    uuid = muuid::uuid::from_chars(str).value();
+  }
+};
+
+template <>
+struct to<BEVE, aur::glaze_uuid> {
+  template <auto Opts>
+  static void op(const aur::glaze_uuid& uuid, auto&&... args) noexcept {
+    std::string str = uuid.to_string();
+    serialize<BEVE>::op<Opts>(str, args...);
+  }
+};
+
 } // namespace glz
 
 template <>
