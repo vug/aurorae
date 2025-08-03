@@ -27,7 +27,7 @@ public:
   static DefinitionType extensionToDefinitionType(const std::filesystem::path& ext);
 
   void processAllAssets();
-  std::optional<AssetEntry> processAsset(const std::filesystem::path& assetPath);
+  std::optional<AssetEntry> processAssetMakeEntry(const std::filesystem::path& assetPath);
   void processOnlyNeedingAssets();
 
   enum class ShaderBuildMode {

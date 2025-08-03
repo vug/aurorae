@@ -59,7 +59,7 @@ public:
   void save() const;
 
   // Asset entry management
-  void addEntry(const AssetUuid& uuid, const AssetEntry& entry);
+  void addEntry(const AssetUuid& uuid, const AssetEntry&& entry);
   void addAlias(const std::string& alias, const AssetUuid& uuid);
   [[nodiscard]] bool hasEntry(const AssetUuid& uuid) const;
   [[nodiscard]] bool hasAlias(const std::string& alias) const;

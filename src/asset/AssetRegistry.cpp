@@ -80,8 +80,8 @@ void AssetRegistry::save() const {
   }
 }
 
-void AssetRegistry::addEntry(const AssetUuid& uuid, const AssetEntry& entry) {
-  entries_[uuid] = entry;
+void AssetRegistry::addEntry(const AssetUuid& uuid, const AssetEntry&& entry) {
+  entries_.emplace(uuid, std::move(entry));
 }
 
 void AssetRegistry::addAlias(const std::string& alias, const AssetUuid& uuid) {

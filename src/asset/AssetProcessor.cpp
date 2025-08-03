@@ -70,20 +70,20 @@ void AssetProcessor::processAllAssets() {
 
     std::vector<std::optional<AssetEntry>> entries(srcPaths.size());
     std::transform(std::execution::par, srcPaths.begin(), srcPaths.end(), entries.begin(),
-                   [this](const auto& srcPath) { return processAsset(srcPath); });
+                   [this](const auto& srcPath) { return processAssetMakeEntry(srcPath); });
 
     for (const std::optional<AssetEntry> entryOpt : entries) {
       if (!entryOpt)
         continue;
       registry_->addAlias(entryOpt->alias, entryOpt->uuid);
-      registry_->addEntry(entryOpt->uuid, *entryOpt);
+      registry_->addEntry(entryOpt->uuid, std::move(*entryOpt));
     }
   }
 
   registry_->save();
   log().info("Processing completed.");
 }
-std::optional<AssetEntry> AssetProcessor::processAsset(const std::filesystem::path& srcPath) {
+std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::filesystem::path& srcPath) {
   const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
   const DefinitionType defType = extensionToDefinitionType(srcRelPath.extension());
   log().info("   Processing asset ingestion file: {}...", srcPath.generic_string());
@@ -165,9 +165,9 @@ std::optional<AssetEntry> AssetProcessor::processAsset(const std::filesystem::pa
   return AssetEntry{
       .type = defType,
       .uuid = assetId,
-      .alias = stableSourceIdentifier,
+      .alias = std::move(stableSourceIdentifier),
       .srcRelPath = srcRelPath.generic_string(),
-      .dstVariantRelPaths = dstVariantRelPaths,
+      .dstVariantRelPaths = std::move(dstVariantRelPaths),
       .dependencies = [&result]() -> std::optional<std::vector<AssetUuid>> {
         if (result.dependencies.empty())
           return std::nullopt;
