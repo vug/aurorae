@@ -154,6 +154,7 @@ add_executable(Aurorae
         render/GraphicsProgram.h render/RenderGraphicsProgram.cpp
         render/Material.h render/RenderMaterial.cpp
         render/Mesh.h render/RenderMesh.cpp
+        asset/AssetIds.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
@@ -163,7 +164,7 @@ target_compile_options(Aurorae PRIVATE
         /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0 # ignore warnings from dependencies
         /EHsc # something related to exceptions
         /MP # enable parallel builds
-        /Bt+      # Show time for each compilation phase
+        #/Bt+      # Show time for each compilation phase
         #/d1reportTime  # Template instantiation times
         /Zc:enumTypes
 )

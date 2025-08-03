@@ -23,83 +23,9 @@ struct meta<aur::AssetBuildMode> {
   static constexpr auto value = glz::enumerate(Any, Debug, Release);
 };
 
-// Ser/de logic for AssetUuid
-template <>
-struct from<JSON, aur::glaze_uuid> {
-  template <auto Opts>
-  static void op(aur::glaze_uuid& uuid, auto&&... args) {
-    // Initialize a string_view with the appropriately sized buffer
-    // Alternatively, use a std::string for any size (but this will allocate)
-    std::string_view str = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-    parse<JSON>::op<Opts>(str, args...);
-    uuid = muuid::uuid::from_chars(str).value();
-  }
-};
-
-// ---------------------------------------------------------------
-
-template <>
-struct to<JSON, aur::glaze_uuid> {
-  template <auto Opts>
-  static void op(const aur::glaze_uuid& uuid, auto&&... args) noexcept {
-    std::string str = uuid.to_string();
-    serialize<JSON>::op<Opts>(str, args...);
-  }
-};
-
-template <>
-struct from<BEVE, aur::glaze_uuid> {
-  template <auto Opts>
-  static void op(aur::glaze_uuid& uuid, auto&&... args) {
-    std::string str;
-    parse<BEVE>::op<Opts>(str, args...);
-    uuid = muuid::uuid::from_chars(str).value();
-  }
-};
-
-template <>
-struct to<BEVE, aur::glaze_uuid> {
-  template <auto Opts>
-  static void op(const aur::glaze_uuid& uuid, auto&&... args) noexcept {
-    std::string str = uuid.to_string();
-    serialize<BEVE>::op<Opts>(str, args...);
-  }
-};
-
 } // namespace glz
 
 namespace aur {
-
-AssetRef::operator AssetUuid() const {
-  if (mode_ == Mode::Invalid)
-    log().fatal("AssetRef uninitialized");
-
-  if (mode_ == Mode::AssetUuid)
-    return uuid_;
-
-  if (!registry_)
-    log().fatal("Cannot convert to UUID without registry context");
-
-  auto uuidOpt = registry_->getUuid(stableId_);
-  if (!uuidOpt)
-    log().fatal("Cannot resolve stable ID to UUID: " + stableId_);
-
-  return *uuidOpt;
-}
-
-AssetRef::operator std::string() const {
-  if (mode_ == Mode::Invalid)
-    log().fatal("AssetRef uninitialized");
-
-  if (mode_ == Mode::StableId)
-    return stableId_;
-
-  if (!registry_)
-    log().fatal("Cannot convert to StableId without registry context");
-
-  // TODO(vug): reverse look-up
-  return stableId_;
-}
 
 // ---------------------------------------------------------------
 

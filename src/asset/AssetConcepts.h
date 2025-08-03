@@ -1,10 +1,8 @@
 #pragma once
 
-#include <type_traits>
-
 namespace aur {
 
-enum class DefinitionType : u32 {
+enum class DefinitionType : unsigned int {
   ShaderStage = 0,
   GraphicsProgram = 1,
   Material = 2,

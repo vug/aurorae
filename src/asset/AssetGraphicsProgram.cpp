@@ -7,7 +7,6 @@ GraphicsProgram GraphicsProgram::create(const GraphicsProgramDefinition& program
 
   GraphicsProgram program;
   program.def_ = programDef;
-  // TODO(vug): later change with a reference to ShaderModule via asset handle
   program.vert_ = vertStage;
   program.frag_ = fragStage;
 
