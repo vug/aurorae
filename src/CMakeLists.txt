@@ -144,16 +144,16 @@ add_executable(Aurorae
         asset/AssetIds.h
         asset/AssetTraits.h
         asset/ShaderStage.h asset/ShaderStage.cpp
-        asset/GraphicsProgram.h asset/GraphicsProgram.cpp
-        asset/Material.h asset/Material.cpp
-        asset/Mesh.h asset/Mesh.cpp
+        asset/GraphicsProgram.h asset/AssetGraphicsProgram.cpp
+        asset/Material.h asset/AssetMaterial.cpp
+        asset/Mesh.h asset/AssetMesh.cpp
         asset/AssetRegistry.h asset/AssetRegistry.cpp
         asset/AssimpUtils.h asset/AssimpUtils.cpp
         asset/AssetProcessor.h asset/AssetProcessor.cpp
         asset/AssetManager.h asset/AssetManager.cpp
-        render/GraphicsProgram.h render/GraphicsProgram.cpp
-        render/Material.h render/Material.cpp
-        render/Mesh.h render/Mesh.cpp
+        render/GraphicsProgram.h render/RenderGraphicsProgram.cpp
+        render/Material.h render/RenderMaterial.cpp
+        render/Mesh.h render/RenderMesh.cpp
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
