@@ -57,17 +57,18 @@ void AssetProcessor::processAllAssets() {
       std::vector<AssetUuid> dependencies;
       std::string_view extension;
     };
-    ProcessingResult result = [this, defType, &srcPath]() {
+    ProcessingResult result = [this, defType, &srcPath]() -> ProcessingResult {
       switch (defType) {
       case DefinitionType::ShaderStage: {
         return ProcessingResult{.definitions =
                                     [this, &srcPath]() {
-                                      Definitions definitions;
-                                      if (auto defOpt = processShaderStage(srcPath, ShaderBuildMode::Debug))
-                                        definitions[AssetBuildMode::Debug] = std::move(*defOpt);
-                                      if (auto defOpt = processShaderStage(srcPath, ShaderBuildMode::Release))
-                                        definitions[AssetBuildMode::Release] = std::move(*defOpt);
-                                      return definitions;
+                                      Definitions result;
+                                      for (auto [assetMode, shaderMode] :
+                                           {std::pair{AssetBuildMode::Debug, ShaderBuildMode::Debug},
+                                            std::pair{AssetBuildMode::Release, ShaderBuildMode::Release}})
+                                        if (auto defOpt = processShaderStage(srcPath, shaderMode))
+                                          result.emplace(assetMode, std::move(*defOpt));
+                                      return result;
                                     }(),
                                 .extension = "shaderStageDef"};
       } break;
