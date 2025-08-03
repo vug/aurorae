@@ -80,4 +80,49 @@ private:
   void initEmptyRegistryFile();
   [[nodiscard]] AssetBuildMode buildTypeToAssetBuildMode(BuildType buildType) const;
 };
+
+// AssetRef can hold either a UUID or a string and converts between them automatically
+class AssetRef {
+public:
+  enum class Mode {
+    Invalid,
+    AssetUuid,
+    StableId,
+  };
+
+  // Constructors
+  AssetRef() = default;
+  explicit AssetRef(const AssetUuid& uuid)
+      : uuid_(uuid)
+      , mode_(Mode::AssetUuid) {}
+  explicit AssetRef(const std::string& stableId)
+      : stableId_(stableId)
+      , mode_(Mode::StableId) {}
+  explicit AssetRef(std::string_view stableId)
+      : stableId_(stableId)
+      , mode_(Mode::StableId) {}
+
+  operator AssetUuid() const;
+  operator std::string() const;
+
+  // Getters
+  const AssetUuid& getUuid() const { return static_cast<AssetUuid>(*this); }
+  const std::string& getStableId() const { return static_cast<std::string>(*this); }
+
+  // Context injection for registry access
+  void setRegistry(const AssetRegistry* registry) { registry_ = registry; }
+
+  bool hasUuid() const { return mode_ == Mode::AssetUuid; }
+  bool hasStableId() const { return mode_ == Mode::StableId; }
+
+private:
+  AssetUuid uuid_;
+  std::string stableId_;
+  Mode mode_{Mode::Invalid};
+
+  // Context for conversion - injected during serialization
+  mutable const AssetRegistry* registry_ = nullptr;
+
+  // friend class AssetRefSerializer; // For Glaze integration
+};
 } // namespace aur
