@@ -20,7 +20,10 @@
 namespace aur {
 
 AssetProcessor::AssetProcessor(AssetRegistry& registry)
-    : registry_{&registry} {}
+    : registry_{&registry}
+    , shaderCompiler_{std::make_unique<shaderc::Compiler>()} {}
+
+AssetProcessor::~AssetProcessor() {}
 
 DefinitionType AssetProcessor::extensionToDefinitionType(std::filesystem::path ext) {
   if (ext == ".vert" || ext == ".frag")
@@ -53,11 +56,11 @@ void AssetProcessor::processAllAssets() {
       std::unordered_map<AssetBuildMode, DefinitionVariant> definitions;
       std::string_view extension;
     };
-    const ProcessingResult result = [defType, &srcPath]() {
+    const ProcessingResult result = [this, defType, &srcPath]() {
       switch (defType) {
       case DefinitionType::ShaderStage: {
         return ProcessingResult{.definitions =
-                                    [&srcPath]() {
+                                    [this, &srcPath]() {
                                       Definitions definitions;
                                       if (auto defOpt = processShaderStage(srcPath, ShaderBuildMode::Debug))
                                         definitions[AssetBuildMode::Debug] = std::move(*defOpt);
@@ -68,7 +71,7 @@ void AssetProcessor::processAllAssets() {
                                 .extension = "shaderStageDef"};
       } break;
       case DefinitionType::GraphicsProgram: {
-        return ProcessingResult{.definitions = [&srcPath]() -> Definitions {
+        return ProcessingResult{.definitions = [this, &srcPath]() -> Definitions {
                                   if (auto defOpt = processGraphicsProgram(srcPath))
                                     return {{AssetBuildMode::Any, std::move(*defOpt)}};
                                   return {};
@@ -140,7 +143,6 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
     return {shaderc_glsl_infer_from_source, ShaderStageType::Vertex};
   }();
 
-  const shaderc::Compiler compiler;
   shaderc::CompileOptions options;
   options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_4);
   switch (buildMode) {
@@ -157,8 +159,8 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
   // options.SetIncluder(myIncluderPtr);
   // options.SetAutoBindUniforms(true);
 
-  const shaderc::SpvCompilationResult result =
-      compiler.CompileGlslToSpv(source.data(), source.size(), kind, srcPath.string().c_str(), options);
+  const shaderc::SpvCompilationResult result = shaderCompiler_->CompileGlslToSpv(
+      source.data(), source.size(), kind, srcPath.string().c_str(), options);
   if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
     log().warn("Error when compiling shader: {}", result.GetErrorMessage());
     return std::nullopt;
@@ -170,18 +172,18 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
       .spirv = std::move(spirv),
   };
 
-  if (!validateSpirV(def.spirv)) {
-    log().warn("Invalid SPIR-V generated from: {}", srcPath.generic_string());
-    return std::nullopt;
-  }
+  // if (!validateSpirV(def.spirv)) {
+  //   log().warn("Invalid SPIR-V generated from: {}", srcPath.generic_string());
+  //   return std::nullopt;
+  // }
 
-  const spirv_cross::Compiler comp(def.spirv);
-  auto resources = comp.get_shader_resources();
-  log().debug("Vertex Inputs:");
-  for (const auto& input : resources.stage_inputs) {
-    uint32_t loc = comp.get_decoration(input.id, spv::DecorationLocation);
-    log().debug("    Location: {}, Name: {}", loc, input.name);
-  }
+  // const spirv_cross::Compiler comp(def.spirv);
+  // auto resources = comp.get_shader_resources();
+  // log().debug("Vertex Inputs:");
+  // for (const auto& input : resources.stage_inputs) {
+  //   uint32_t loc = comp.get_decoration(input.id, spv::DecorationLocation);
+  //   log().debug("    Location: {}, Name: {}", loc, input.name);
+  // }
 
   return def;
 }
