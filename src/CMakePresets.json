@@ -60,51 +60,41 @@
   ],
   "buildPresets": [
     {
-      "name": "build-app-debug",
-      "displayName": "Build Aurorae App (Debug)",
-      "configurePreset": "app-debug",
+      "name": "build-common",
+      "hidden": true,
       "nativeToolOptions": [
-        "/m:8"
+        "/m"
       ],
       "targets": [
         "Aurorae"
-      ],
+      ]
+    },
+    {
+      "name": "build-app-debug",
+      "displayName": "Build Aurorae App (Debug)",
+      "inherits": "build-common",
+      "configurePreset": "app-debug",
       "configuration": "Debug"
     },
     {
       "name": "build-app-debug-asan",
       "displayName": "Build Aurorae App (Debug & Asan)",
+      "inherits": "build-common",
       "configurePreset": "app-debug-asan",
-      "nativeToolOptions": [
-        "/m:8"
-      ],
-      "targets": [
-        "Aurorae"
-      ],
       "configuration": "Debug"
     },
     {
       "name": "build-app-release",
       "displayName": "Build Aurorae App (Release)",
+      "inherits": "build-common",
       "configurePreset": "app-release",
-      "nativeToolOptions": [
-        "/m:8"
-      ],
-      "targets": [
-        "Aurorae"
-      ],
       "configuration": "Release"
     },
     {
       "name": "build-app-release-with-debug-info",
       "displayName": "Build Aurorae App (Release w/Debug Info)",
+      "inherits": "build-common",
       "configurePreset": "app-release-with-debug-info",
-      "nativeToolOptions": [
-        "/m:8"
-      ],
-      "targets": [
-        "Aurorae"
-      ],
       "configuration": "RelWithDebInfo"
     }
   ]
