@@ -1,13 +1,12 @@
 /*
 TODO(vug): Trait improvements: put UUID namespaces to traits, add a trait to get DefinitionType enum
 TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)
-TODO(vug): get stable identifiers of generated assets for a given source asset
-TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
-           shader asset ids.
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
            `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
 TODO(vug): Process Materials in processAllAssets
+TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
+           shader asset ids.
 TODO(vug): Process Meshes in processAllAssets
 TODO(vug): Process assets in parallel
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions

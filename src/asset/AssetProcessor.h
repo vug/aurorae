@@ -22,6 +22,7 @@ public:
   DefinitionType extensionToDefinitionType(std::filesystem::path ext);
 
   void processAllAssets();
+  void processAsset(const std::filesystem::path& assetPath);
   void processOnlyNeedingAssets();
 
   enum class ShaderBuildMode {

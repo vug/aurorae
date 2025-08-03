@@ -34,4 +34,15 @@ template <typename TAsset>
 concept AssetConcept =
     std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, asset::GraphicsProgram> ||
     std::is_same_v<TAsset, asset::Material> || std::is_same_v<TAsset, asset::Mesh>;
+
+constexpr std::array kAssetOrder = {DefinitionType::ShaderStage, DefinitionType::GraphicsProgram,
+                                    DefinitionType::Material, DefinitionType::Mesh};
 } // namespace aur
+
+namespace glz {
+template <>
+struct meta<aur::DefinitionType> {
+  using enum aur::DefinitionType;
+  static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
+};
+} // namespace glz
