@@ -1,6 +1,4 @@
 /*
-TODO(vug): GraphicsProgramDefinition has dependencies in the registry to ShaderStages it refers to.
-TODO(vug): make registry injection easier (maybe use AppContext?)
 TODO(vug): When processing (a dependent) asset, first process dependee assets. DFS traversal.
 TODO(vug): Trait improvements: put UUID namespaces to traits, add a trait to get DefinitionType enum
 TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)
@@ -22,6 +20,7 @@ TODO(vug): bring a texture (stb or oiio)
 TODO(vug): go over more ideas from more_on_registry_and_build_mode_variants.md
 TODO(vug): store debug names with objects
 TODO(vug): a std::function based listener system for asset changes
+TODO(vug): make registry injection easier (maybe use AppContext?)
 TODO(vug): Create some default Materials (with different debug names) -> store them in AssetManager
 TODO(vug): continue going over clang-tidy settings from performance-.
            https://clang.llvm.org/extra/clang-tidy/checks/list.html

@@ -54,6 +54,7 @@ void AssetProcessor::processAllAssets() {
     const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
     struct ProcessingResult {
       std::unordered_map<AssetBuildMode, DefinitionVariant> definitions;
+      std::vector<AssetUuid> dependencies;
       std::string_view extension;
     };
     ProcessingResult result = [this, defType, &srcPath]() {
@@ -71,12 +72,20 @@ void AssetProcessor::processAllAssets() {
                                 .extension = "shaderStageDef"};
       } break;
       case DefinitionType::GraphicsProgram: {
-        return ProcessingResult{.definitions = [this, &srcPath]() -> Definitions {
-                                  if (auto defOpt = processGraphicsProgram(srcPath))
-                                    return {{AssetBuildMode::Any, std::move(*defOpt)}};
-                                  return {};
-                                }(),
-                                .extension = "graphicsProgramDef"};
+        return processGraphicsProgram(srcPath)
+            .transform([this](asset::GraphicsProgramDefinition def) -> ProcessingResult {
+              def.vert.setRegistry(registry_);
+              def.frag.setRegistry(registry_);
+              const AssetUuid vertUuid = def.vert;
+              const AssetUuid fragUuid = def.frag;
+
+              return {
+                  .definitions = {{AssetBuildMode::Any, std::move(def)}},
+                  .dependencies = {vertUuid, fragUuid},
+                  .extension = "graphicsProgramDef",
+              };
+            })
+            .value_or(ProcessingResult{});
       } break;
       case DefinitionType::Material: {
         log().fatal("Not implemented yet.");
@@ -90,11 +99,6 @@ void AssetProcessor::processAllAssets() {
 
     std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantRelPaths;
     for (auto& [mode, definition] : result.definitions) {
-      if (asset::GraphicsProgramDefinition* defPtr =
-              std::get_if<asset::GraphicsProgramDefinition>(&definition)) {
-        defPtr->vert.setRegistry(registry_);
-        defPtr->frag.setRegistry(registry_);
-      }
       std::expected<std::string, glz::error_ctx> serResult =
           std::visit([](auto& def) { return glz::write_beve(def); }, definition);
       if (!serResult.has_value()) {
@@ -123,7 +127,11 @@ void AssetProcessor::processAllAssets() {
         .uuid = assetId,
         .srcRelPath = srcRelPath.generic_string(),
         .dstVariantRelPaths = dstVariantRelPaths,
-        .dependencies = std::nullopt,
+        .dependencies = [&result]() -> std::optional<std::vector<AssetUuid>> {
+          if (result.dependencies.empty())
+            return std::nullopt;
+          return std::move(result.dependencies);
+        }(),
     };
     registry_->addEntry(assetId, entry);
     registry_->addAlias(stableSourceIdentifier, assetId);
