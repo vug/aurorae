@@ -100,7 +100,8 @@ void AssetProcessor::processAllAssets() {
                                                                          : "";
       const auto dstRelPath =
           srcRelPath.filename().concat(std::format(".{}.{}beve", result.extension, modeStr));
-      if (!writeBinaryFile(dstRelPath, serializedDef)) {
+      const auto dstPath = registry_->getRootFolder() / dstRelPath;
+      if (!writeBinaryFile(dstPath, serializedDef)) {
         log().warn("Failed to write asset definition to file: {}", srcPath.generic_string());
         continue;
       }
