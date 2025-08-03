@@ -11,6 +11,7 @@
       "hidden": true,
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
+      "toolset": "host=x64",
       "cacheVariables": {
         "AURORAE_DEPENDENCIES_DIR": "${sourceDir}/../superbuild/build/dependencies-install"
       }
@@ -62,6 +63,9 @@
       "name": "build-app-debug",
       "displayName": "Build Aurorae App (Debug)",
       "configurePreset": "app-debug",
+      "nativeToolOptions": [
+        "/m:8"
+      ],
       "targets": [
         "Aurorae"
       ],
@@ -71,6 +75,9 @@
       "name": "build-app-debug-asan",
       "displayName": "Build Aurorae App (Debug & Asan)",
       "configurePreset": "app-debug-asan",
+      "nativeToolOptions": [
+        "/m:8"
+      ],
       "targets": [
         "Aurorae"
       ],
@@ -80,6 +87,9 @@
       "name": "build-app-release",
       "displayName": "Build Aurorae App (Release)",
       "configurePreset": "app-release",
+      "nativeToolOptions": [
+        "/m:8"
+      ],
       "targets": [
         "Aurorae"
       ],
@@ -89,6 +99,9 @@
       "name": "build-app-release-with-debug-info",
       "displayName": "Build Aurorae App (Release w/Debug Info)",
       "configurePreset": "app-release-with-debug-info",
+      "nativeToolOptions": [
+        "/m:8"
+      ],
       "targets": [
         "Aurorae"
       ],
