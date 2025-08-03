@@ -28,7 +28,6 @@ FORWARD_DEFINE_VK_HANDLE(VkPipelineCache)
 FORWARD_DEFINE_VK_HANDLE(VkPipeline)
 using VkDeviceSize = uint64_t;
 using VkBufferUsageFlags = uint32_t;
-enum VmaMemoryUsage : int32_t;
 
 namespace aur {
 

@@ -2,8 +2,6 @@
 
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <modern-uuid/uuid.h>
-#include <volk/volk.h>
 
 #include "AppContext.h"
 #include "GlfwUtils.h"
@@ -38,8 +36,9 @@ Application::Application(u32 initialWidth, u32 initialHeight, const char* appNam
 
   AppContext::initialize(assetRegistry_, assetProcessor_, assetManager_, renderer_);
 
-  assetManager_.addGraphicsProgramUpdateListener(
-      [&renderer = renderer_](Handle<asset::GraphicsProgram> hnd) { renderer.onGraphicsProgramAssetUpdated(hnd); });
+  assetManager_.addGraphicsProgramUpdateListener([&renderer = renderer_](Handle<asset::GraphicsProgram> hnd) {
+    renderer.onGraphicsProgramAssetUpdated(hnd);
+  });
 
   log().trace("Application constructed successfully.");
 }

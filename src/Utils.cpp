@@ -1,7 +1,5 @@
 #include "Utils.h"
 
-#include <volk/volk.h>
-
 namespace aur {
 
 //----------------------------------------------------------------

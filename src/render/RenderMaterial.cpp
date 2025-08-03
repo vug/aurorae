@@ -2,7 +2,6 @@
 
 #include "../Pipeline.h"
 #include "../Renderer.h"
-#include "GraphicsProgram.h"
 
 namespace aur::render {
 

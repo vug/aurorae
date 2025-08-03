@@ -12,7 +12,6 @@
 #include "Resources/DescriptorPool.h"
 #include "Resources/DescriptorSet.h"
 #include "Utils.h"
-#include "Vertex.h"
 #include "VulkanWrappers.h"
 #include "asset/Mesh.h"
 

@@ -158,8 +158,52 @@ add_executable(Aurorae
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
 message(STATUS "EXTERNAL: ${PROJECT_SOURCE_DIR}/../superbuild")
-target_compile_options(Aurorae PRIVATE /W4 /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0 /EHsc /MP)
+target_compile_options(Aurorae PRIVATE
+        /W4 # get lots of warnings
+        /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0 # ignore warnings from dependencies
+        /EHsc # something related to exceptions
+        /MP # enable parallel builds
+        /Bt+      # Show time for each compilation phase
+        #/d1reportTime  # Template instantiation times
+        /Zc:enumTypes
+)
+target_link_options(Aurorae PRIVATE /time)
+target_precompile_headers(Aurorae PRIVATE
+        # STL
+        <array>
+        <cassert>
+        <cstddef>
+        <cstdio>
+        <filesystem>
+        <format>
+        <functional>
+        <memory>
+        <optional>
+        <ranges>
+        <source_location>
+        <string>
+        <string_view>
+        <tuple>
+        <type_traits>
+        <unordered_map>
+        <utility>
+        <vector>
+        # Dependencies
+        ## Assimp and GLFW files are only included in single CPP files
+        <glaze/glaze/glaze.hpp>
+        <modern-uuid/uuid.h>
+        <glm/gtc/type_ptr.hpp>
+        <glm/mat4x4.hpp>
+        <vk-bootstrap/VkBootstrap.h>
+        <volk/volk.h>
+        <VulkanMemoryAllocator/vk_mem_alloc.h>
+        <vulkan/vulkan_core.h>
+        <vulkan/vulkan.h>
+)
+
+
 target_compile_definitions(Aurorae PRIVATE
+        VK_NO_PROTOTYPES
         SPDLOG_USE_STD_FORMAT SPDLOG_USE_STD_SOURCE_LOCATION
         GLM_FORCE_DEPTH_ZERO_TO_ONE #GLM_FORCE_LEFT_HANDED
 )
