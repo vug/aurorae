@@ -114,7 +114,8 @@ void AssetProcessor::processAllAssets() {
         muuid::uuid::generate_sha1(AssetRegistry::NameSpaces::kShaderStage, stableSourceIdentifier);
     const AssetEntry entry{
         .type = defType,
-        .srcRelPath = srcRelPath,
+        .uuid = assetId,
+        .srcRelPath = srcRelPath.generic_string(),
         .dstVariantRelPaths = dstVariantRelPaths,
         .dependencies = std::nullopt,
     };
