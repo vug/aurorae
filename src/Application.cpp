@@ -56,7 +56,7 @@ void Application::run() {
   } else {
     assetRegistry_.load();
   }
-  const StableId<asset::GraphicsProgramDefinition> kUnlitGraphicsProgramId{"shaders/unlit.shader"};
+  const StableId<asset::GraphicsProgramDefinition> kUnlitGraphicsProgramId{"shaders/unlit2.shader"};
 
   // "Asset Library"
   const Handle<asset::GraphicsProgram> unlitAGraphicsProgram = assetManager_.load(kUnlitGraphicsProgramId);
