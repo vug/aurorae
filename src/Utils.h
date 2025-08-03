@@ -18,7 +18,7 @@ using u64 = unsigned long long;
 using f32 = float;
 using f64 = double;
 
-// C:/Users/veliu/repos/aurorae/src/assets
+// e.g. C:/Users/veliu/repos/aurorae/src/assets
 inline const std::filesystem::path kAssetsFolder{ASSETS_FOLDER};
 
 enum class BuildType : u8 {
@@ -43,23 +43,6 @@ constexpr BuildType kBuildType{BuildType::RelWithDebInfo};
 constexpr BuildType kBuildType{BuildType::Release};
 #endif
 inline constexpr const char* kModelsFolder{ASSETS_FOLDER "/models"};
-
-class PathBuffer {
-public:
-  explicit PathBuffer(char* data);
-  ~PathBuffer();
-  PathBuffer(const PathBuffer&) = delete;
-  PathBuffer& operator=(const PathBuffer&) = delete;
-  PathBuffer(PathBuffer&& other) noexcept;
-  PathBuffer& operator=(PathBuffer&& other) noexcept;
-  const char* c_str() const;
-  explicit operator const char*() const;
-
-private:
-  char* data_;
-};
-
-PathBuffer pathJoin(const char* path, const char* relativeSubpath);
 
 // In Utils.h - don't reference VkResult at all
 const char* vkResultToString(i32 result);
