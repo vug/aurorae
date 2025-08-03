@@ -1,7 +1,8 @@
 /*
-TODO(vug): GraphicsProgramDefinition has AssetRef instead of stableId to reference ShaderStages
-TODO(vug): GraphicsProgramDefinition has dependencies in the registry to ShaderStages it refers to.
 TODO(vug): maybe ProcessingResult does not need an extension
+TODO(vug): makeStableId function (either in AssetRegistry or AssetProcessor)
+TODO(vug): GraphicsProgramDefinition has dependencies in the registry to ShaderStages it refers to.
+TODO(vug): When processing (a dependent) asset, first process dependee assets. DFS traversal.
 TODO(vug): Trait improvements: put UUID namespaces to traits, add a trait to get DefinitionType enum
 TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)
 TODO(vug): get stable identifiers of generated assets for a given source asset
@@ -10,6 +11,7 @@ TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and sim
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
            `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
+TODO(vug): Process Materials in processAllAssets
 TODO(vug): Process Meshes in processAllAssets
 TODO(vug): Process assets in parallel
 TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
@@ -24,11 +26,9 @@ TODO(vug): a std::function based listener system for asset changes
 TODO(vug): Create some default Materials (with different debug names) -> store them in AssetManager
 TODO(vug): continue going over clang-tidy settings from performance-.
            https://clang.llvm.org/extra/clang-tidy/checks/list.html
-TODO(vug): add STL includes to a precompiled header pch_stl.h
-           Also add headers such as utils and logger that are included in
-           every file into pch_aur.h. and maybe a pch_dependencies
+TODO(vug): Also add frequent aur headers such as utils and logger to PCH.
+           (Can I have multiple PCH groups in CMake?)
 TODO(vug): introduce RenderDoc
-TODO(vug): Delete BinaryBlob
 TODO(vug): Very simple scene abstraction that has a vector entities w/render mesh handles and transforms.
 TODO(vug): try out C++ modules, but don't obsess if it does not work well
            https://gemini.google.com/app/31dc373a7f5b3005
@@ -70,7 +70,6 @@ TODO(vug): do screen-space GI Global Illumination for Poor People | TurboGI Devl
            https://www.youtube.com/watch?v=dmdyqzelBIY
 TODO(vug): Consider using https://en.cppreference.com/w/cpp/execution.html,
            here is an implementation https://github.com/NVIDIA/stdexec
-TODO(vug): Make AssetProcessor to persist cooked/processed blob assets
 */
 
 #include "Application.h"

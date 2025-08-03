@@ -56,7 +56,7 @@ void AssetProcessor::processAllAssets() {
       std::unordered_map<AssetBuildMode, DefinitionVariant> definitions;
       std::string_view extension;
     };
-    const ProcessingResult result = [this, defType, &srcPath]() {
+    ProcessingResult result = [this, defType, &srcPath]() {
       switch (defType) {
       case DefinitionType::ShaderStage: {
         return ProcessingResult{.definitions =
@@ -90,6 +90,11 @@ void AssetProcessor::processAllAssets() {
 
     std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantRelPaths;
     for (auto& [mode, definition] : result.definitions) {
+      if (asset::GraphicsProgramDefinition* defPtr =
+              std::get_if<asset::GraphicsProgramDefinition>(&definition)) {
+        defPtr->vert.setRegistry(registry_);
+        defPtr->frag.setRegistry(registry_);
+      }
       std::expected<std::string, glz::error_ctx> serResult =
           std::visit([](auto& def) { return glz::write_beve(def); }, definition);
       if (!serResult.has_value()) {

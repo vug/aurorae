@@ -101,10 +101,10 @@ AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shade
 
 Handle<asset::GraphicsProgram>
 AssetManager::loadGraphicsProgramFromDefinition(const asset::GraphicsProgramDefinition& graphicsProgramDef) {
-  Handle<asset::ShaderStage> vert = load(graphicsProgramDef.vert);
+  Handle<asset::ShaderStage> vert{load<asset::ShaderStageDefinition>(graphicsProgramDef.vert.getUuid())};
   if (!vert.isValid())
     return {};
-  Handle<asset::ShaderStage> frag = load(graphicsProgramDef.frag);
+  Handle<asset::ShaderStage> frag{load<asset::ShaderStageDefinition>(graphicsProgramDef.frag.getUuid())};
   if (!frag.isValid())
     return {};
   asset::GraphicsProgram graphicsProgram = asset::GraphicsProgram::create(graphicsProgramDef, vert, frag);

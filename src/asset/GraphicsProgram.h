@@ -9,8 +9,8 @@
 namespace aur::asset {
 
 struct GraphicsProgramDefinition {
-  StableId<ShaderStageDefinition> vert;
-  StableId<ShaderStageDefinition> frag;
+  AssetRef vert;
+  AssetRef frag;
 };
 
 class GraphicsProgram {
