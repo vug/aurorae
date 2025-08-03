@@ -112,7 +112,7 @@ AssetBuildMode AssetRegistry::buildTypeToAssetBuildMode(BuildType buildType) con
   std::unreachable();
 }
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 std::optional<TDefinition> AssetRegistry::getDefinition(const AssetUuid& uuid) const {
   const std::optional<const AssetEntry> entryOpt = getEntry(uuid);
   if (!entryOpt)

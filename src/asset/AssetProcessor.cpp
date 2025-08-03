@@ -18,6 +18,12 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_reflect.hpp>
 
+template <>
+struct glz::meta<aur::DefinitionType> {
+  using enum aur::DefinitionType;
+  static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
+};
+
 namespace aur {
 
 AssetProcessor::AssetProcessor(AssetRegistry& registry)

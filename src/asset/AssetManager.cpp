@@ -12,7 +12,7 @@ namespace aur {
 AssetManager::AssetManager(AssetRegistry& registry)
     : registry_{&registry} {}
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 HandleTypeFor_t<TDefinition> AssetManager::load(const AssetUuid& uuid) {
   CacheTypeFor_t<TDefinition>& assetCache = getCache<TDefinition>();
   auto defIt = assetCache.find(uuid);
@@ -29,7 +29,7 @@ HandleTypeFor_t<TDefinition> AssetManager::load(const AssetUuid& uuid) {
   return handle;
 }
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& stableId) {
 
   std::optional<AssetUuid> uuidOpt = registry_->getUuid(stableId);
@@ -41,7 +41,7 @@ HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& sta
   return load<TDefinition>(*uuidOpt);
 }
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 HandleTypeFor_t<TDefinition> AssetManager::loadFromDefinition(TDefinition&& def) {
   using TAsset = AssetTypeFor_t<TDefinition>;
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
@@ -58,7 +58,7 @@ HandleTypeFor_t<TDefinition> AssetManager::loadFromDefinition(TDefinition&& def)
   }
 }
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 StorageTypeFor_t<TDefinition>& AssetManager::getStorage() {
   using TAsset = AssetTypeFor_t<TDefinition>;
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
@@ -70,12 +70,12 @@ StorageTypeFor_t<TDefinition>& AssetManager::getStorage() {
   } else if constexpr (std::is_same_v<TAsset, asset::Mesh>) {
     return meshes_;
   } else {
-    static_assert(AssetType<TAsset>, "Asset type doesn't support caching");
+    static_assert(AssetConcept<TAsset>, "Asset type doesn't support caching");
     std::unreachable();
   }
 }
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 CacheTypeFor_t<TDefinition>& AssetManager::getCache() {
   using TAsset = AssetTypeFor_t<TDefinition>;
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
@@ -87,7 +87,7 @@ CacheTypeFor_t<TDefinition>& AssetManager::getCache() {
   } else if constexpr (std::is_same_v<TAsset, asset::Mesh>) {
     return loadedMeshes_;
   } else {
-    static_assert(AssetType<TAsset>, "Asset type doesn't support caching");
+    static_assert(AssetConcept<TAsset>, "Asset type doesn't support caching");
     std::unreachable();
   }
 }

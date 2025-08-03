@@ -47,7 +47,7 @@ public:
   [[nodiscard]] std::optional<AssetUuid> getUuid(const std::string& alias) const;
   [[nodiscard]] std::optional<AssetEntry> getEntry(const AssetUuid& uuid) const;
   // Template method for type-safe asset definition retrieval
-  template <AssetDefinition TDefinition>
+  template <AssetDefinitionConcept TDefinition>
   [[nodiscard]] std::optional<TDefinition> getDefinition(const AssetUuid& uuid) const;
 
   [[nodiscard]] inline const std::filesystem::path& getFilePath() const { return filePath_; }

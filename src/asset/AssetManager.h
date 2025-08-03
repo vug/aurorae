@@ -22,11 +22,11 @@ class AssetManager {
 public:
   AssetManager(AssetRegistry& registry);
 
-  template <AssetDefinition TDefinition>
+  template <AssetDefinitionConcept TDefinition>
   HandleTypeFor_t<TDefinition> load(const AssetUuid& uuid);
-  template <AssetDefinition TDefinition>
+  template <AssetDefinitionConcept TDefinition>
   HandleTypeFor_t<TDefinition> load(const StableId<TDefinition>& stableId);
-  template <AssetDefinition TDefinition>
+  template <AssetDefinitionConcept TDefinition>
   HandleTypeFor_t<TDefinition> loadFromDefinition(TDefinition&& def);
 
   Handle<asset::Mesh> registerExistingMesh(asset::Mesh& mesh);
@@ -50,7 +50,7 @@ private:
   AssetRegistry* registry_{};
 
   // The manager OWNS the actual asset data in vectors.
-  template <AssetDefinition TDefinition>
+  template <AssetDefinitionConcept TDefinition>
   StorageTypeFor_t<TDefinition>& getStorage();
   StorageTypeFor_t<asset::ShaderStageDefinition> shaderStages_;
   StorageTypeFor_t<asset::GraphicsProgramDefinition> graphicsPrograms_;
@@ -58,7 +58,7 @@ private:
   StorageTypeFor_t<asset::MeshDefinition> meshes_;
 
   // Caching to prevent loading the same file twice
-  template <AssetDefinition TDefinition>
+  template <AssetDefinitionConcept TDefinition>
   CacheTypeFor_t<TDefinition>& getCache();
   CacheTypeFor_t<asset::ShaderStageDefinition> loadedShaderStages_;
   CacheTypeFor_t<asset::GraphicsProgramDefinition> loadedGraphicsPrograms_;

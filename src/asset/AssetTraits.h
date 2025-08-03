@@ -1,41 +1,17 @@
 #pragma once
 
 #include "../Handle.h"
+#include "AssetConcepts.h"
 
 namespace aur {
 
-// To prevent circular dependencies we forward declare all asset types here first
-namespace asset {
-struct ShaderStageDefinition;
-struct GraphicsProgramDefinition;
-struct MaterialDefinition;
-struct MeshDefinition;
-
-class ShaderStage;
-class GraphicsProgram;
-class Material;
-class Mesh;
-} // namespace asset
-
-// Concepts
-template <typename TDefinition>
-concept AssetDefinition = std::is_same_v<TDefinition, asset::ShaderStageDefinition> ||
-                          std::is_same_v<TDefinition, asset::GraphicsProgramDefinition> ||
-                          std::is_same_v<TDefinition, asset::MaterialDefinition> ||
-                          std::is_same_v<TDefinition, asset::MeshDefinition>;
-
-template <typename TAsset>
-concept AssetType =
-    std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, asset::GraphicsProgram> ||
-    std::is_same_v<TAsset, asset::Material> || std::is_same_v<TAsset, asset::Mesh>;
-
-template <AssetType TAsset>
+template <AssetConcept TAsset>
 struct AssetWithCacheType {
   using CacheType = std::unordered_map<StableId<TAsset>, Handle<TAsset>>;
 };
 
 // Trait to map definition types to asset types
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 struct AssetTypeFor {
   // No default implementation - will cause compile error for unsupported types
 };
@@ -58,11 +34,11 @@ struct AssetTypeFor<asset::MeshDefinition> {
   using type = asset::Mesh;
 };
 // Helper alias for cleaner syntax
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 using AssetTypeFor_t = typename AssetTypeFor<TDefinition>::type;
 
 // Reverse mapping (asset type to definition type)
-template <AssetType TAsset>
+template <AssetConcept TAsset>
 struct DefinitionTypeFor {
   // no default implementation
 };
@@ -82,10 +58,10 @@ template <>
 struct DefinitionTypeFor<asset::Mesh> {
   using type = asset::MeshDefinition;
 };
-template <AssetType TAsset>
+template <AssetConcept TAsset>
 using DefinitionTypeFor_t = typename DefinitionTypeFor<TAsset>::type;
 
-template <AssetType TAsset>
+template <AssetConcept TAsset>
 struct AssetLabelFor {
   // no default implementation
 };
@@ -105,28 +81,28 @@ template <>
 struct AssetLabelFor<asset::Mesh> {
   static constexpr const char* value = "Mesh";
 };
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 constexpr const char* AssetLabelFor_v = AssetLabelFor<TDefinition>::value;
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 struct CacheTypeFor {
   using type = std::unordered_map<AssetUuid, Handle<AssetTypeFor_t<TDefinition>>>;
 };
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 using CacheTypeFor_t = typename CacheTypeFor<TDefinition>::type;
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 struct StorageTypeFor {
   using type = std::vector<AssetTypeFor_t<TDefinition>>;
 };
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 using StorageTypeFor_t = typename StorageTypeFor<TDefinition>::type;
 
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 struct HandleTypeFor {
   using type = Handle<AssetTypeFor_t<TDefinition>>;
 };
-template <AssetDefinition TDefinition>
+template <AssetDefinitionConcept TDefinition>
 using HandleTypeFor_t = typename HandleTypeFor<TDefinition>::type;
 
 } // namespace aur

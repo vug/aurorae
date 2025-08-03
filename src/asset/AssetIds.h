@@ -3,15 +3,11 @@
 #include <glaze/glaze/glaze.hpp>
 #include <modern-uuid/uuid.h>
 
-#include "../Utils.h"
+#include "AssetConcepts.h"
 
 namespace aur {
-enum class DefinitionType : u32 {
-  ShaderStage = 0,
-  GraphicsProgram = 1,
-  Material = 2,
-  Mesh = 3,
-};
+
+// --- Asset UUID ---
 
 // Wrapper class to overcome the glaze issue https://github.com/stephenberry/glaze/issues/1477
 // When `to<JSON, NotConvertibleToStringType>` glaze put extra double quotes when the type is used as a key
@@ -85,19 +81,12 @@ struct to<BEVE, aur::glaze_uuid> {
 
 } // namespace glz
 
-template <>
-struct glz::meta<aur::DefinitionType> {
-  using enum aur::DefinitionType;
-  static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
-};
-
 namespace aur {
 using AssetUuid = glaze_uuid;
 
-// -----------
+// --- Asset Stable Source Identifier ---
 
-// Stable Source Identifier
-template <typename TAssetDef>
+template <AssetDefinitionConcept TDefinition>
 class StableId : public std::string {
 public:
   using std::string::string;
@@ -110,9 +99,9 @@ public:
 } // namespace aur
 
 namespace std {
-template <typename TAssetDef>
-struct hash<aur::StableId<TAssetDef>> {
-  size_t operator()(const aur::StableId<TAssetDef>& stableId) const noexcept {
+template <aur::AssetDefinitionConcept TDefinition>
+struct hash<aur::StableId<TDefinition>> {
+  size_t operator()(const aur::StableId<TDefinition>& stableId) const noexcept {
     // Use the hash of the underlying string
     return std::hash<std::string>{}(static_cast<const std::string&>(stableId));
   }
