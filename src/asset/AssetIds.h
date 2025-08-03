@@ -8,7 +8,6 @@
 namespace aur {
 
 // --- Asset UUID ---
-
 // Wrapper class to overcome the glaze issue https://github.com/stephenberry/glaze/issues/1477
 // When `to<JSON, NotConvertibleToStringType>` glaze put extra double quotes when the type is used as a key
 // in a map To prevent that we derive a thin class that adds `operator std::string_view()` operator, and use
@@ -29,63 +28,9 @@ struct glaze_uuid : muuid::uuid {
   // operator muuid::uuid() const { return *this; }
   // glaze_uuid() = default;
 };
-} // namespace aur
-
-namespace std {
-template <>
-struct hash<aur::glaze_uuid> {
-  size_t operator()(const aur::glaze_uuid& uuid) const noexcept { return std::hash<muuid::uuid>()(uuid); }
-};
-} // namespace std
-
-namespace glz {
-template <>
-struct from<JSON, aur::glaze_uuid> {
-  template <auto Opts>
-  static void op(aur::glaze_uuid& uuid, auto&&... args) {
-    // Initialize a string_view with the appropriately sized buffer
-    // Alternatively, use a std::string for any size (but this will allocate)
-    std::string_view str = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-    parse<JSON>::op<Opts>(str, args...);
-    uuid = muuid::uuid::from_chars(str).value();
-  }
-};
-
-template <>
-struct to<JSON, aur::glaze_uuid> {
-  template <auto Opts>
-  static void op(const aur::glaze_uuid& uuid, auto&&... args) noexcept {
-    std::string str = uuid.to_string();
-    serialize<JSON>::op<Opts>(str, args...);
-  }
-};
-
-template <>
-struct from<BEVE, aur::glaze_uuid> {
-  template <auto Opts>
-  static void op(aur::glaze_uuid& uuid, auto&&... args) {
-    std::string str;
-    parse<BEVE>::op<Opts>(str, args...);
-    uuid = muuid::uuid::from_chars(str).value();
-  }
-};
-
-template <>
-struct to<BEVE, aur::glaze_uuid> {
-  template <auto Opts>
-  static void op(const aur::glaze_uuid& uuid, auto&&... args) noexcept {
-    std::string str = uuid.to_string();
-    serialize<BEVE>::op<Opts>(str, args...);
-  }
-};
-
-} // namespace glz
-
-namespace aur {
 using AssetUuid = glaze_uuid;
 
 // --- Asset Stable Source Identifier ---
-
 template <AssetDefinitionConcept TDefinition>
 class StableId : public std::string {
 public:
@@ -97,13 +42,3 @@ public:
       : std::string(s) {}
 };
 } // namespace aur
-
-namespace std {
-template <aur::AssetDefinitionConcept TDefinition>
-struct hash<aur::StableId<TDefinition>> {
-  size_t operator()(const aur::StableId<TDefinition>& stableId) const noexcept {
-    // Use the hash of the underlying string
-    return std::hash<std::string>{}(static_cast<const std::string&>(stableId));
-  }
-};
-} // namespace std

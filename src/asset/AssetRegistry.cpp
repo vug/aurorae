@@ -6,6 +6,49 @@
 
 #include <glaze/glaze/glaze.hpp>
 
+namespace glz {
+template <>
+struct from<JSON, aur::glaze_uuid> {
+  template <auto Opts>
+  static void op(aur::glaze_uuid& uuid, auto&&... args) {
+    // Initialize a string_view with the appropriately sized buffer
+    // Alternatively, use a std::string for any size (but this will allocate)
+    std::string_view str = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    parse<JSON>::op<Opts>(str, args...);
+    uuid = muuid::uuid::from_chars(str).value();
+  }
+};
+
+template <>
+struct to<JSON, aur::glaze_uuid> {
+  template <auto Opts>
+  static void op(const aur::glaze_uuid& uuid, auto&&... args) noexcept {
+    std::string str = uuid.to_string();
+    serialize<JSON>::op<Opts>(str, args...);
+  }
+};
+
+template <>
+struct from<BEVE, aur::glaze_uuid> {
+  template <auto Opts>
+  static void op(aur::glaze_uuid& uuid, auto&&... args) {
+    std::string str;
+    parse<BEVE>::op<Opts>(str, args...);
+    uuid = muuid::uuid::from_chars(str).value();
+  }
+};
+
+template <>
+struct to<BEVE, aur::glaze_uuid> {
+  template <auto Opts>
+  static void op(const aur::glaze_uuid& uuid, auto&&... args) noexcept {
+    std::string str = uuid.to_string();
+    serialize<BEVE>::op<Opts>(str, args...);
+  }
+};
+
+} // namespace glz
+
 namespace aur {
 
 const std::filesystem::path AssetRegistry::kProcessedAssetsRoot{kAssetsFolder / "../processedAssets"};
@@ -57,9 +100,9 @@ void AssetRegistry::load() {
 }
 
 void AssetRegistry::save() const {
-  RegistryData data{entries_, aliases_};
+  RegistryData data{.entries = entries_, .aliases = aliases_};
   const std::string serializedReg =
-      glz::write_json(data).value_or("{\"error\": \"Couldn't serialize the registry object.\"}");
+      glz::write_json(data).value_or(R"({"error": "Couldn't serialize the registry object."})");
   if (!writeBinaryFile(filePath_, glz::prettify_json(serializedReg))) {
     log().fatal("Failed to save registry file: {}.", filePath_.string());
   }

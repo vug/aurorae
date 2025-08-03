@@ -4,6 +4,21 @@
 #include "AssetIds.h"
 #include "AssetTraits.h"
 
+namespace std {
+template <>
+struct hash<aur::glaze_uuid> {
+  size_t operator()(const aur::glaze_uuid& uuid) const noexcept { return std::hash<muuid::uuid>()(uuid); }
+};
+
+template <aur::AssetDefinitionConcept TDefinition>
+struct hash<aur::StableId<TDefinition>> {
+  size_t operator()(const aur::StableId<TDefinition>& stableId) const noexcept {
+    // Use the hash of the underlying string
+    return std::hash<std::string>{}(static_cast<const std::string&>(stableId));
+  }
+};
+} // namespace std
+
 namespace aur {
 enum class AssetBuildMode {
   // To be used by assets for which the build mode does not matter, such as Mesh, Texture.
