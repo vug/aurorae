@@ -7,6 +7,21 @@
 #include <glaze/glaze/glaze.hpp>
 
 namespace glz {
+
+// Additions to glz::meta makes enums human-readable
+template <>
+struct meta<aur::DefinitionType> {
+  using enum aur::DefinitionType;
+  static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
+};
+
+template <>
+struct meta<aur::AssetBuildMode> {
+  using enum aur::AssetBuildMode;
+  static constexpr auto value = glz::enumerate(Any, Debug, Release);
+};
+
+// Ser/de logic for AssetUuid
 template <>
 struct from<JSON, aur::glaze_uuid> {
   template <auto Opts>
