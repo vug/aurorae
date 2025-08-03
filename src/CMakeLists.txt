@@ -166,6 +166,7 @@ target_compile_options(Aurorae PRIVATE
         /MP # enable parallel builds
         #/Bt+      # Show time for each compilation phase
         #/d1reportTime  # Template instantiation times
+        #/d2cgsummary
         /Zc:enumTypes
 )
 target_link_options(Aurorae PRIVATE /time)

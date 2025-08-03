@@ -117,8 +117,7 @@ void AssetProcessor::processAllAssets() {
     }
 
     const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
-    const muuid::uuid assetId =
-        muuid::uuid::generate_sha1(AssetRegistry::NameSpaces::kShaderStage, stableSourceIdentifier);
+    const muuid::uuid assetId = makeUuid(stableSourceIdentifier);
     const AssetEntry entry{
         .type = defType,
         .uuid = assetId,
@@ -133,6 +132,9 @@ void AssetProcessor::processAllAssets() {
   registry_->save();
 }
 
+// Try this out again! But my hunch tells me that this is mostly to turn off// optimization in a release
+// build, and not to turn on optimization in a debug build:
+// #pragma optimize("gt", on)
 std::optional<asset::ShaderStageDefinition>
 AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderBuildMode buildMode) {
   const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
@@ -192,6 +194,8 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
 
   return def;
 }
+// #pragma optimize("", on)
+
 std::optional<asset::GraphicsProgramDefinition>
 AssetProcessor::processGraphicsProgram(const std::filesystem::path& srcPath) {
   if (!std::filesystem::exists(srcPath))
@@ -356,6 +360,11 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
   return defs;
 }
 
+template <AssetDefinitionConcept TDefinition>
+AssetUuid AssetProcessor::makeUuid(const StableId<TDefinition>& stableId) {
+  return muuid::uuid::generate_sha1(AssetRegistry::NameSpaces::kShaderStage, stableId);
+}
+
 // A structure to hold the relevant information about a single variable
 // in the interface between shader stages (e.g., a `vec3` at `location = 0`).
 struct ShaderInterfaceVariable {
@@ -507,5 +516,13 @@ bool validate_shader_linkage(const std::vector<uint32_t>& vertex_spirv,
     return false;
   }
 }
+
+#define EXPLICITLY_INSTANTIATE_TEMPLATES(TDefinition)                                                        \
+  template AssetUuid AssetProcessor::makeUuid<TDefinition>(const StableId<TDefinition>& stableId);
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgramDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MaterialDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MeshDefinition)
+#undef EXPLICITLY_INSTANTIATE_TEMPLATES
 
 } // namespace aur

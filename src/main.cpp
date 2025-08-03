@@ -1,7 +1,6 @@
 /*
-TODO(vug): maybe ProcessingResult does not need an extension
-TODO(vug): makeStableId function (either in AssetRegistry or AssetProcessor)
 TODO(vug): GraphicsProgramDefinition has dependencies in the registry to ShaderStages it refers to.
+TODO(vug): make registry injection easier (maybe use AppContext?)
 TODO(vug): When processing (a dependent) asset, first process dependee assets. DFS traversal.
 TODO(vug): Trait improvements: put UUID namespaces to traits, add a trait to get DefinitionType enum
 TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)

@@ -30,11 +30,12 @@ public:
   };
   std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath,
                                                                  ShaderBuildMode buildMode);
-
   std::optional<asset::GraphicsProgramDefinition>
   processGraphicsProgram(const std::filesystem::path& srcPath);
-
   std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
+
+  template <AssetDefinitionConcept TDefinition>
+  static AssetUuid makeUuid(const StableId<TDefinition>& stableId);
 
   static bool validateSpirV(const std::vector<u32>& blob);
 
@@ -42,5 +43,4 @@ private:
   AssetRegistry* registry_;
   std::unique_ptr<shaderc::Compiler> shaderCompiler_;
 };
-
 } // namespace aur
