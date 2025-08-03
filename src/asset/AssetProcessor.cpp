@@ -1,21 +1,21 @@
 #include "AssetProcessor.h"
 
+#include <execution>
 #include <filesystem>
 #include <ranges>
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <glaze/glaze/glaze.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <shaderc/shaderc.hpp>
+#include <spirv_cross/spirv_reflect.hpp>
 
 #include "../FileIO.h"
 #include "../Logger.h"
 #include "../Utils.h"
 #include "AssetRegistry.h"
-
-#include <glaze/glaze/glaze.hpp>
-#include <shaderc/shaderc.hpp>
-#include <spirv_cross/spirv_reflect.hpp>
 
 namespace aur {
 
@@ -25,9 +25,9 @@ AssetProcessor::AssetProcessor(AssetRegistry& registry)
 
 // Weird but an empty implementation is needed so that std::unique_ptr<shaderc::Compiler> shaderCompiler_
 // can be destructed automatically. And no, it can't be default implementation :-)
-AssetProcessor::~AssetProcessor() {}
+AssetProcessor::~AssetProcessor() {} // NOLINT
 
-DefinitionType AssetProcessor::extensionToDefinitionType(std::filesystem::path ext) {
+DefinitionType AssetProcessor::extensionToDefinitionType(const std::filesystem::path& ext) {
   if (ext == ".vert" || ext == ".frag")
     return DefinitionType::ShaderStage;
   else if (ext == ".shader")
@@ -64,14 +64,26 @@ void AssetProcessor::processAllAssets() {
   for (const DefinitionType defType : kAssetOrder) {
     log().info("Processing assets of type: {}...", glz::write_json(defType).value_or("unknown"));
     const auto range = assetsByType.equal_range(defType);
-    for (const auto& [_, srcPath] : r::subrange(range.first, range.second))
-      processAsset(srcPath);
+    const std::vector<std::filesystem::path> srcPaths =
+        r::subrange(range.first, range.second) | rv::transform([](const auto& pair) { return pair.second; }) |
+        r::to<std::vector>();
+
+    std::vector<std::optional<AssetEntry>> entries(srcPaths.size());
+    std::transform(std::execution::par, srcPaths.begin(), srcPaths.end(), entries.begin(),
+                   [this](const auto& srcPath) { return processAsset(srcPath); });
+
+    for (const std::optional<AssetEntry> entryOpt : entries) {
+      if (!entryOpt)
+        continue;
+      registry_->addAlias(entryOpt->alias, entryOpt->uuid);
+      registry_->addEntry(entryOpt->uuid, *entryOpt);
+    }
   }
 
   registry_->save();
   log().info("Processing completed.");
 }
-void AssetProcessor::processAsset(const std::filesystem::path& srcPath) {
+std::optional<AssetEntry> AssetProcessor::processAsset(const std::filesystem::path& srcPath) {
   const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
   const DefinitionType defType = extensionToDefinitionType(srcRelPath.extension());
   log().info("   Processing asset ingestion file: {}...", srcPath.generic_string());
@@ -95,7 +107,7 @@ void AssetProcessor::processAsset(const std::filesystem::path& srcPath) {
                                     return result;
                                   }(),
                               .extension = "shaderStageDef"};
-    } break;
+    }
     case DefinitionType::GraphicsProgram: {
       return processGraphicsProgram(srcPath)
           .transform([this](asset::GraphicsProgramDefinition def) -> ProcessingResult {
@@ -111,7 +123,7 @@ void AssetProcessor::processAsset(const std::filesystem::path& srcPath) {
             };
           })
           .value_or(ProcessingResult{});
-    } break;
+    }
     case DefinitionType::Material: {
       log().fatal("Not implemented yet.");
     } break;
@@ -121,6 +133,9 @@ void AssetProcessor::processAsset(const std::filesystem::path& srcPath) {
     }
     std::unreachable();
   }();
+
+  if (result.definitions.empty())
+    return std::nullopt;
 
   std::unordered_map<AssetBuildMode, std::filesystem::path> dstVariantRelPaths;
   for (auto& [mode, definition] : result.definitions) {
@@ -147,9 +162,10 @@ void AssetProcessor::processAsset(const std::filesystem::path& srcPath) {
 
   const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
   const muuid::uuid assetId = makeUuid(stableSourceIdentifier);
-  const AssetEntry entry{
+  return AssetEntry{
       .type = defType,
       .uuid = assetId,
+      .alias = stableSourceIdentifier,
       .srcRelPath = srcRelPath.generic_string(),
       .dstVariantRelPaths = dstVariantRelPaths,
       .dependencies = [&result]() -> std::optional<std::vector<AssetUuid>> {
@@ -158,15 +174,13 @@ void AssetProcessor::processAsset(const std::filesystem::path& srcPath) {
         return std::move(result.dependencies);
       }(),
   };
-  registry_->addEntry(assetId, entry);
-  registry_->addAlias(stableSourceIdentifier, assetId);
 }
 
 // Try this out again! But my hunch tells me that this is mostly to turn off// optimization in a release
 // build, and not to turn on optimization in a debug build:
 // #pragma optimize("gt", on)
 std::optional<asset::ShaderStageDefinition>
-AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderBuildMode buildMode) {
+AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderBuildMode buildMode) const {
   const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
   if (bytes.empty())
     return std::nullopt;

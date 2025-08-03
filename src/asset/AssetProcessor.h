@@ -16,13 +16,18 @@ namespace aur {
 
 class AssetProcessor {
 public:
-  AssetProcessor(AssetRegistry& registry);
+  explicit AssetProcessor(AssetRegistry& registry);
   ~AssetProcessor();
 
-  DefinitionType extensionToDefinitionType(std::filesystem::path ext);
+  AssetProcessor(const AssetProcessor& other) = delete;
+  AssetProcessor(AssetProcessor&& other) noexcept = delete;
+  AssetProcessor& operator=(const AssetProcessor& other) = delete;
+  AssetProcessor& operator=(AssetProcessor&& other) noexcept = delete;
+
+  static DefinitionType extensionToDefinitionType(const std::filesystem::path& ext);
 
   void processAllAssets();
-  void processAsset(const std::filesystem::path& assetPath);
+  std::optional<AssetEntry> processAsset(const std::filesystem::path& assetPath);
   void processOnlyNeedingAssets();
 
   enum class ShaderBuildMode {
@@ -30,9 +35,9 @@ public:
     Release,
   };
   std::optional<asset::ShaderStageDefinition> processShaderStage(const std::filesystem::path& srcPath,
-                                                                 ShaderBuildMode buildMode);
-  std::optional<asset::GraphicsProgramDefinition>
-  processGraphicsProgram(const std::filesystem::path& srcPath);
+                                                                 ShaderBuildMode buildMode) const;
+  std::optional<asset::GraphicsProgramDefinition> static processGraphicsProgram(
+      const std::filesystem::path& srcPath);
   std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
 
   template <AssetDefinitionConcept TDefinition>

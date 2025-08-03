@@ -31,6 +31,7 @@ enum class AssetBuildMode {
 struct AssetEntry {
   DefinitionType type;
   AssetUuid uuid;
+  std::string alias;
   // Relative to asset folder
   std::filesystem::path srcRelPath;
   // Relative to registry root folder
