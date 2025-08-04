@@ -54,13 +54,13 @@ public:
 
   // Constructors
   AssetRef() = default;
-  explicit AssetRef(const AssetUuid& uuid)
+  AssetRef(const AssetUuid& uuid)
       : uuid_(uuid)
       , mode_(Mode::AssetUuid) {}
-  explicit AssetRef(const std::string& stableId)
+  AssetRef(const std::string& stableId)
       : stableId_(stableId)
       , mode_(Mode::StableId) {}
-  explicit AssetRef(std::string_view stableId)
+  AssetRef(std::string_view stableId)
       : stableId_(stableId)
       , mode_(Mode::StableId) {}
 
@@ -68,11 +68,9 @@ public:
   operator std::string() const;
 
   // Getters
-  const AssetUuid& getUuid() const { return uuid_; }
+  const AssetUuid& getUuid() const;
   template <AssetConcept TAsset>
-  const StableId<TAsset>& getStableId() const {
-    return stableId_;
-  }
+  const StableId<TAsset>& getStableId() const;
 
   // Context injection for registry access
   void setRegistry(const AssetRegistry* registry) { registry_ = registry; }

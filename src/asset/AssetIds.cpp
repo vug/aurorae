@@ -37,4 +37,16 @@ AssetRef::operator std::string() const {
   return stableId_;
 }
 
+const AssetUuid& AssetRef::getUuid() const {
+  if (uuid_ == std::array<uint8_t, 16>{})
+    log().fatal("AssetRef has invalid UUID");
+  return uuid_;
+}
+
+template <AssetConcept TAsset>
+const StableId<TAsset>& AssetRef::getStableId() const {
+  if (stableId_ == StableId<TAsset>{})
+    log().fatal("AssetRef has invalid StableId");
+  return stableId_;
+}
 } // namespace aur
