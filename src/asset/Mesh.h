@@ -70,3 +70,61 @@ private:
 };
 
 } // namespace aur::asset
+
+namespace glz {
+
+template <>
+struct from<BEVE, glm::mat4> {
+  template <auto Opts>
+  static void op(glm::mat4& mat, auto&&... args) {
+    std::array<float, 16> matElements;
+    parse<BEVE>::op<Opts>(matElements, args...);
+    std::memcpy(glm::value_ptr(mat), matElements.data(), sizeof(float) * 16);
+  }
+};
+
+template <>
+struct to<BEVE, glm::mat4> {
+  template <auto Opts>
+  static void op(const glm::mat4& mat, auto&&... args) noexcept {
+    std::span matSpan(glm::value_ptr(mat), 16);
+    serialize<BEVE>::op<Opts>(matSpan, args...);
+  }
+};
+
+template <>
+struct from<BEVE, glm::vec3> {
+  template <auto Opts>
+  static void op(glm::vec3& vec, auto&&... args) {
+    std::span<float, 3> components(glm::value_ptr(vec), 3);
+    parse<BEVE>::op<Opts>(components, args...);
+  }
+};
+
+template <>
+struct to<BEVE, glm::vec3> {
+  template <auto Opts>
+  static void op(const glm::vec3& vec, auto&&... args) noexcept {
+    std::span components(glm::value_ptr(vec), 3);
+    serialize<BEVE>::op<Opts>(components, args...);
+  }
+};
+
+template <>
+struct from<BEVE, glm::vec4> {
+  template <auto Opts>
+  static void op(glm::vec4& vec, auto&&... args) {
+    std::span<float, 4> components(glm::value_ptr(vec), 4);
+    parse<BEVE>::op<Opts>(components, args...);
+  }
+};
+
+template <>
+struct to<BEVE, glm::vec4> {
+  template <auto Opts>
+  static void op(const glm::vec4& vec, auto&&... args) noexcept {
+    std::span components(glm::value_ptr(vec), 4);
+    serialize<BEVE>::op<Opts>(components, args...);
+  }
+};
+} // namespace glz
