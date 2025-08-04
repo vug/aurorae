@@ -129,20 +129,16 @@ AssetBuildMode AssetRegistry::buildTypeToAssetBuildMode(BuildType buildType) con
 
 template <AssetDefinitionConcept TDefinition>
 std::optional<TDefinition> AssetRegistry::getDefinition(const AssetUuid& uuid) const {
+  using TAsset = AssetTypeFor_t<TDefinition>;
   const std::optional<const AssetEntry> entryOpt = getEntry(uuid);
   if (!entryOpt)
     return {};
   const auto& entry = entryOpt.value();
 
-  if constexpr (std::is_same_v<TDefinition, asset::ShaderStageDefinition>) {
-    if (entry.type != AssetType::ShaderStage)
-      log().fatal("Asset '{}' is not a shader stage definition.", uuid.to_chars());
-  } else if constexpr (std::is_same_v<TDefinition, asset::GraphicsProgramDefinition>) {
-    if (entry.type != AssetType::GraphicsProgram)
-      log().fatal("Asset '{}' is not a graphics program definition.", uuid.to_chars());
-  } else {
-    static_assert(false, "Unimplemented definition type");
-  }
+  if (entry.type != TAsset::typeEnum)
+    log().fatal(
+        "The asset type from the entry '{} does not match with the definition type '{}' for asset '{}'",
+        glz::write_json(entry.type).value_or("unknown"), TAsset::label, uuid.to_chars());
 
   const AssetBuildMode mode = buildTypeToAssetBuildMode(kBuildType);
 

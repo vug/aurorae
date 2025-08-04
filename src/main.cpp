@@ -1,6 +1,4 @@
 /*
-TODO(vug): Trait improvements: add a trait to get DefinitionType enum, and
-           extension(?)
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
            `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat

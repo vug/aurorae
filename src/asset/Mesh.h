@@ -43,7 +43,8 @@ struct MaterialSpan {
   u32 count{};
 };
 
-class Mesh : public AssetTypeMixin<Mesh, MeshDefinition, "Mesh", "019870da-b469-7073-8c5d-c09cdb24c657"> {
+class Mesh : public AssetTypeMixin<Mesh, MeshDefinition, AssetType::Mesh, "Mesh",
+                                   "019870da-b469-7073-8c5d-c09cdb24c657"> {
 public:
   static Mesh create(MeshDefinition&& meshDef);
 
