@@ -1,5 +1,5 @@
 /*
-TODO(vug): Trait improvements: put UUID namespaces to traits, add a trait to get DefinitionType enum, and
+TODO(vug): Trait improvements: add a trait to get DefinitionType enum, and
            extension(?)
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:

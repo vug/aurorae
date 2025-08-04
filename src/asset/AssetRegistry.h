@@ -44,12 +44,6 @@ class AssetRegistry {
 public:
   static const std::filesystem::path kDefaultProcessedAssetsRoot;
   static const std::filesystem::path kDefaultRegistryPath;
-  struct NameSpaces {
-    static constexpr muuid::uuid kShaderStage = muuid::uuid("019870da-db28-7b80-a02c-f01dadc1ada2");
-    static constexpr muuid::uuid kGraphicsProgram = muuid::uuid("019870da-2c87-7f9e-aece-9484ce47cac9");
-    static constexpr muuid::uuid kMaterial = muuid::uuid("019870da-2c87-7f9e-aece-9484ce47cac9");
-    static constexpr muuid::uuid kMesh = muuid::uuid("019870da-b469-7073-8c5d-c09cdb24c657");
-  };
 
   AssetRegistry() = default;
   explicit AssetRegistry(const std::filesystem::path& registryFilePath);

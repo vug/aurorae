@@ -18,7 +18,8 @@ struct MaterialDefinition {
   // renderer::GraphicsProgram, a Pipeline object, and corresponding buffers and images
 };
 
-class Material : public AssetTypeMixin<Material, MaterialDefinition, "Material"> {
+class Material : public AssetTypeMixin<Material, MaterialDefinition, "Material",
+                                       "019870da-2c87-7f9e-aece-9484ce47cac9"> {
 public:
   static Material create(MaterialDefinition&& createInfo);
 

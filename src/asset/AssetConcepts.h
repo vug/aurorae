@@ -36,9 +36,6 @@ struct fixed_string {
   constexpr operator std::string_view() const { return {data, N - 1}; }       // NOLINT: implicit
 };
 
-template <typename TAsset, AssetDefinitionConcept TDefinition, fixed_string Label>
-struct AssetTypeMixin;
-
 template <typename TAsset>
 concept AssetConcept = requires {
   requires(std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, asset::GraphicsProgram> ||

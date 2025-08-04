@@ -4,9 +4,6 @@
 #include <memory>
 
 #include "AssetRegistry.h"
-#include "GraphicsProgram.h"
-#include "Mesh.h"
-#include "ShaderStage.h"
 
 namespace shaderc {
 class Compiler;

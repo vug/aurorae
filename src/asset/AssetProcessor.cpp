@@ -16,6 +16,10 @@
 #include "../Logger.h"
 #include "../Utils.h"
 #include "AssetRegistry.h"
+#include "GraphicsProgram.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "ShaderStage.h"
 
 namespace aur {
 
@@ -407,7 +411,7 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
 
 template <AssetConcept TAsset>
 AssetUuid AssetProcessor::makeUuid(const StableId<TAsset>& stableId) {
-  return muuid::uuid::generate_sha1(AssetRegistry::NameSpaces::kShaderStage, stableId);
+  return muuid::uuid::generate_sha1(TAsset::uuidNamespace, stableId);
 }
 
 // A structure to hold the relevant information about a single variable

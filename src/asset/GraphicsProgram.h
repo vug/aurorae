@@ -13,7 +13,8 @@ struct GraphicsProgramDefinition {
   AssetRef frag;
 };
 
-class GraphicsProgram : public AssetTypeMixin<GraphicsProgram, GraphicsProgramDefinition, "GraphicsProgram"> {
+class GraphicsProgram : public AssetTypeMixin<GraphicsProgram, GraphicsProgramDefinition, "GraphicsProgram",
+                                              "019870da-2c87-7f9e-aece-9484ce47cac9"> {
 public:
   static GraphicsProgram create(GraphicsProgramDefinition&& programDef, Handle<ShaderStage> vertStage,
                                 Handle<ShaderStage> fragStage);

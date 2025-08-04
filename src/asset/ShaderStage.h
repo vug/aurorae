@@ -14,7 +14,8 @@ struct ShaderStageDefinition {
   SpirV spirv;
 };
 
-class ShaderStage : public AssetTypeMixin<ShaderStage, ShaderStageDefinition, "ShaderStage"> {
+class ShaderStage : public AssetTypeMixin<ShaderStage, ShaderStageDefinition, "ShaderStage",
+                                          "019870da-db28-7b80-a02c-f01dadc1ada2"> {
 public:
   static ShaderStage create(ShaderStageDefinition&& shaderDef);
 

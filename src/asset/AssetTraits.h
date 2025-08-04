@@ -1,5 +1,7 @@
 #pragma once
 
+#include <modern-uuid/uuid.h>
+
 #include "../Handle.h"
 #include "AssetConcepts.h"
 #include "AssetIds.h"
@@ -8,10 +10,12 @@ namespace aur {
 
 // Mixin for asset types via CRTP. All asset classes need to publicly inherit from this.
 
-template <typename TAsset, AssetDefinitionConcept TDefinition, fixed_string Label>
+template <typename TAsset, AssetDefinitionConcept TDefinition, fixed_string Label,
+          fixed_string<37> UuidNamespace>
 struct AssetTypeMixin {
   using DefinitionType = TDefinition;
-  static constexpr std::string_view label = Label;
+  static constexpr std::string_view label{Label};
+  static constexpr muuid::uuid uuidNamespace{UuidNamespace.data};
   using CacheType = std::unordered_map<AssetUuid, Handle<TAsset>>;
   using StorageType = std::vector<TAsset>;
 };
