@@ -1,9 +1,9 @@
 #include "Material.h"
 
 namespace aur::asset {
-Material Material::create(const MaterialDefinition& materialDef) {
+Material Material::create(MaterialDefinition&& materialDef) {
   Material material;
-  material.def_ = materialDef;
+  material.def_ = std::move(materialDef);
   return material;
 }
 } // namespace aur::asset

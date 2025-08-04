@@ -15,7 +15,7 @@ struct GraphicsProgramDefinition {
 
 class GraphicsProgram : public AssetTypeMixin<GraphicsProgram, GraphicsProgramDefinition, "GraphicsProgram"> {
 public:
-  static GraphicsProgram create(const GraphicsProgramDefinition& programDef, Handle<ShaderStage> vertStage,
+  static GraphicsProgram create(GraphicsProgramDefinition&& programDef, Handle<ShaderStage> vertStage,
                                 Handle<ShaderStage> fragStage);
 
   ~GraphicsProgram() = default;

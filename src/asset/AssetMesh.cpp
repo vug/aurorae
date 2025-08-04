@@ -36,10 +36,9 @@ MeshDefinition MeshDefinition::makeCube() {
               4, 5, 1, 1, 0, 4  // Bottom face
           }};
 }
-Mesh Mesh::create(const MeshDefinition& meshDef) {
+Mesh Mesh::create(MeshDefinition&& meshDef) {
   Mesh mesh;
-  mesh.def_ = meshDef;
-
+  mesh.def_ = std::move(meshDef);
   return mesh;
 }
 

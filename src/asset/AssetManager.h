@@ -71,9 +71,9 @@ private:
 
   Handle<asset::ShaderStage> loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shaderStageDef);
   Handle<asset::GraphicsProgram>
-  loadGraphicsProgramFromDefinition(const asset::GraphicsProgramDefinition& graphicsProgramDef);
-  Handle<asset::Material> loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef);
-  Handle<asset::Mesh> loadMeshFromDefinition(const asset::MeshDefinition& meshDef);
+  loadGraphicsProgramFromDefinition(asset::GraphicsProgramDefinition&& graphicsProgramDef);
+  Handle<asset::Material> loadMaterialFromDefinition(asset::MaterialDefinition&& materialDef);
+  Handle<asset::Mesh> loadMeshFromDefinition(asset::MeshDefinition&& meshDef);
 };
 
 } // namespace aur

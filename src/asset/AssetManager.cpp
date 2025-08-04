@@ -98,26 +98,26 @@ AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shade
 }
 
 Handle<asset::GraphicsProgram>
-AssetManager::loadGraphicsProgramFromDefinition(const asset::GraphicsProgramDefinition& graphicsProgramDef) {
-  Handle<asset::ShaderStage> vert{load<asset::ShaderStage>(graphicsProgramDef.vert.getUuid())};
+AssetManager::loadGraphicsProgramFromDefinition(asset::GraphicsProgramDefinition&& graphicsProgramDef) {
+  const Handle vert{load<asset::ShaderStage>(graphicsProgramDef.vert.getUuid())};
   if (!vert.isValid())
     return {};
-  Handle<asset::ShaderStage> frag{load<asset::ShaderStage>(graphicsProgramDef.frag.getUuid())};
+  const Handle frag{load<asset::ShaderStage>(graphicsProgramDef.frag.getUuid())};
   if (!frag.isValid())
     return {};
-  asset::GraphicsProgram graphicsProgram = asset::GraphicsProgram::create(graphicsProgramDef, vert, frag);
+  asset::GraphicsProgram graphicsProgram =
+      asset::GraphicsProgram::create(std::move(graphicsProgramDef), vert, frag);
   graphicsPrograms_.push_back(std::move(graphicsProgram));
   return Handle<asset::GraphicsProgram>{static_cast<u32>(graphicsPrograms_.size() - 1)};
 }
-Handle<asset::Material>
-AssetManager::loadMaterialFromDefinition(const asset::MaterialDefinition& materialDef) {
-  asset::Material material = asset::Material::create(materialDef);
+Handle<asset::Material> AssetManager::loadMaterialFromDefinition(asset::MaterialDefinition&& materialDef) {
+  asset::Material material = asset::Material::create(std::move(materialDef));
   materials_.push_back(std::move(material));
   return Handle<asset::Material>{static_cast<u32>(materials_.size() - 1)};
 }
 
-Handle<asset::Mesh> AssetManager::loadMeshFromDefinition(const asset::MeshDefinition& meshDef) {
-  asset::Mesh mesh = asset::Mesh::create(meshDef);
+Handle<asset::Mesh> AssetManager::loadMeshFromDefinition(asset::MeshDefinition&& meshDef) {
+  asset::Mesh mesh = asset::Mesh::create(std::move(meshDef));
   meshes_.push_back(std::move(mesh));
   return Handle<asset::Mesh>{static_cast<u32>(meshes_.size() - 1)};
 }

@@ -20,7 +20,7 @@ struct MaterialDefinition {
 
 class Material : public AssetTypeMixin<Material, MaterialDefinition, "Material"> {
 public:
-  static Material create(const MaterialDefinition& createInfo);
+  static Material create(MaterialDefinition&& createInfo);
 
   ~Material() = default;
   Material(const Material&) = delete;
@@ -36,10 +36,6 @@ private:
   Material() = default;
 
   MaterialDefinition def_;
-
-  // TO render::Material
-  Pipeline* pipeline{};
-  DescriptorSet descriptorSet;
 };
 
 } // namespace aur::asset

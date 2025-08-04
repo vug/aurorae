@@ -45,7 +45,7 @@ struct MaterialSpan {
 
 class Mesh : public AssetTypeMixin<Mesh, MeshDefinition, "Mesh"> {
 public:
-  static Mesh create(const MeshDefinition& meshDef);
+  static Mesh create(MeshDefinition&& meshDef);
 
   ~Mesh() = default;
   Mesh(const Mesh& other) = delete;
