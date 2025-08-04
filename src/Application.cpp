@@ -56,15 +56,10 @@ void Application::run() {
   } else {
     assetRegistry_.load();
   }
-  const StableId<asset::GraphicsProgram> kUnlitGraphicsProgramId{"shaders/unlit.shader"};
+  const StableId<asset::Material> kUnlitMaterialId{"materials/unlit.mat"};
 
   // "Asset Library"
-  const Handle<asset::GraphicsProgram> unlitAGraphicsProgram = assetManager_.load(kUnlitGraphicsProgramId);
-  asset::MaterialDefinition unlitMaterialDef{
-      .graphicsProgramHandle = unlitAGraphicsProgram,
-  };
-  const Handle<asset::Material> unlitAMaterial =
-      assetManager_.loadFromDefinition<asset::Material>(std::move(unlitMaterialDef));
+  const Handle<asset::Material> unlitAMaterial = assetManager_.load(kUnlitMaterialId);
   const Handle<render::Material> unlitRMaterial = renderer_.uploadOrGet(unlitAMaterial);
 
   // Don't do pipeline creation here but at draw call

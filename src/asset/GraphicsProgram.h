@@ -17,28 +17,24 @@ class GraphicsProgram
     : public AssetTypeMixin<GraphicsProgram, GraphicsProgramDefinition, AssetType::GraphicsProgram,
                             "GraphicsProgram", "019870da-2c87-7f9e-aece-9484ce47cac9"> {
 public:
-  static GraphicsProgram create(GraphicsProgramDefinition&& programDef, Handle<ShaderStage> vertStage,
-                                Handle<ShaderStage> fragStage);
+  static GraphicsProgram create(Handle<ShaderStage> vertStage, Handle<ShaderStage> fragStage);
 
   ~GraphicsProgram() = default;
-
   GraphicsProgram(const GraphicsProgram& other) = delete;
   GraphicsProgram& operator=(const GraphicsProgram& other) = delete;
   GraphicsProgram(GraphicsProgram&& other) noexcept = default;
   GraphicsProgram& operator=(GraphicsProgram&& other) noexcept = default;
 
-  [[nodiscard]] const GraphicsProgramDefinition& getDefinition() const { return def_; }
   [[nodiscard]] const SpirV& getVertexBlob() const { return vert_.get().getSpirVBlob(); }
   [[nodiscard]] const SpirV& getFragmentBlob() const { return frag_.get().getSpirVBlob(); }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
 private:
   GraphicsProgram() = default;
+  std::string debugName_;
 
-  GraphicsProgramDefinition def_;
   Handle<ShaderStage> vert_;
   Handle<ShaderStage> frag_;
-  std::string debugName_;
 };
 
 using GraphicsProgramUpdateCallback = std::function<void(Handle<asset::GraphicsProgram>)>;

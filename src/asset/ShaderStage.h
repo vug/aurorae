@@ -32,9 +32,9 @@ public:
 
 private:
   ShaderStage() = default;
-
-  ShaderStageType stage_;
-  SpirV spirVBlob_;
   std::string debugName_;
+
+  ShaderStageType stage_{};
+  SpirV spirVBlob_;
 };
 } // namespace aur::asset

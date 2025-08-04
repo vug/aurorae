@@ -2,7 +2,6 @@
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
            scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
            `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
-TODO(vug): Process Materials in processAllAssets
 TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
            shader asset ids.
 TODO(vug): Process Meshes in processAllAssets

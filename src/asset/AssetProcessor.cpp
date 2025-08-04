@@ -38,19 +38,21 @@ AssetType AssetProcessor::extensionToDefinitionType(const std::filesystem::path&
     return AssetType::GraphicsProgram;
   else if (ext == ".gltf" || ext == ".fbx" || ext == ".usda")
     return AssetType::Mesh;
+  else if (ext == ".mat")
+    return AssetType::Material;
   else
     log().fatal("Unknown definition type for extension: {}", ext.string());
 }
 
 using DefinitionVariant =
-    std::variant<asset::ShaderStageDefinition, asset::GraphicsProgramDefinition>; // , asset::MeshDefinition
+    std::variant<asset::ShaderStageDefinition, asset::GraphicsProgramDefinition, asset::MaterialDefinition>;
 using Definitions = std::unordered_map<AssetBuildMode, DefinitionVariant>;
 
 void AssetProcessor::processAllAssets() {
   namespace rv = std::views;
   namespace r = std::ranges;
 
-  const std::unordered_set<std::string_view> kFileExtensionsToProcess = {".vert", ".frag", ".shader"};
+  const std::unordered_set<std::string_view> kFileExtensionsToProcess = {".vert", ".frag", ".shader", ".mat"};
 
   const auto assetsByType = std::filesystem::recursive_directory_iterator(kAssetsFolder) |
                             rv::filter([](const std::filesystem::directory_entry& dirEntry) {
@@ -129,7 +131,18 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
           .value_or(ProcessingResult{});
     }
     case AssetType::Material: {
-      log().fatal("Not implemented yet.");
+      return processMaterial(srcPath)
+          .transform([this](asset::MaterialDefinition def) -> ProcessingResult {
+            def.graphicsProgram.setRegistry(registry_);
+            const AssetUuid progUuid = def.graphicsProgram;
+
+            return {
+                .definitions = {{AssetBuildMode::Any, std::move(def)}},
+                .dependencies = {progUuid},
+                .extension = "graphicsProgramDef",
+            };
+          })
+          .value_or(ProcessingResult{});
     } break;
     case AssetType::Mesh: {
       log().fatal("Not implemented yet.");
@@ -253,10 +266,28 @@ AssetProcessor::processGraphicsProgram(const std::filesystem::path& srcPath) {
   const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
   asset::GraphicsProgramDefinition def;
   if (const glz::error_ctx err = glz::read_json(def, bytes)) {
-    log().warn("Failed to generate GraphicsProgramDefinition from file: {}. error code: {}, msg: {}. Try "
-               "editing the "
-               "file to fit to correct schema.",
-               srcPath.generic_string(), std::to_underlying(err.ec), err.custom_error_message);
+    log().warn("Failed to parse '{}' Definition from file: {}. error code: {}, msg: {}. Try "
+               "editing the file to fit to correct schema.",
+               asset::GraphicsProgram::label, srcPath.generic_string(), std::to_underlying(err.ec),
+               err.custom_error_message);
+    return std::nullopt;
+  }
+
+  return def;
+}
+
+std::optional<asset::MaterialDefinition>
+AssetProcessor::processMaterial(const std::filesystem::path& srcPath) {
+  if (!std::filesystem::exists(srcPath))
+    return std::nullopt;
+
+  const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
+  asset::MaterialDefinition def;
+  if (const glz::error_ctx err = glz::read_json(def, bytes)) {
+    log().warn("Failed to parse '{}' Definition from file: {}. error code: {}, msg: {}. Try "
+               "editing the file to fit to correct schema.",
+               asset::Material::label, srcPath.generic_string(), std::to_underlying(err.ec),
+               err.custom_error_message);
     return std::nullopt;
   }
 

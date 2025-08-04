@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Handle.h"
-#include "../Resources/DescriptorSet.h"
 #include "AssetTraits.h"
 
 namespace aur::asset {
@@ -10,7 +9,7 @@ class GraphicsProgram;
 struct Pipeline;
 
 struct MaterialDefinition {
-  Handle<GraphicsProgram> graphicsProgramHandle;
+  AssetRef graphicsProgram;
 
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
@@ -21,7 +20,7 @@ struct MaterialDefinition {
 class Material : public AssetTypeMixin<Material, MaterialDefinition, AssetType::Material, "Material",
                                        "019870da-2c87-7f9e-aece-9484ce47cac9"> {
 public:
-  static Material create(MaterialDefinition&& createInfo);
+  static Material create(Handle<GraphicsProgram> graphProg);
 
   ~Material() = default;
   Material(const Material&) = delete;
@@ -29,14 +28,15 @@ public:
   Material(Material&& other) noexcept = default;
   Material& operator=(Material&& other) noexcept = default;
 
-  [[nodiscard]] inline Handle<GraphicsProgram> getGraphicsProgramHandle() const {
-    return def_.graphicsProgramHandle;
+  [[nodiscard]] inline const Handle<GraphicsProgram>& getGraphicsProgramHandle() const {
+    return graphicsProgram_;
   }
 
 private:
   Material() = default;
+  std::string debugName_;
 
-  MaterialDefinition def_;
+  Handle<GraphicsProgram> graphicsProgram_;
 };
 
 } // namespace aur::asset

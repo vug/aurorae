@@ -1,10 +1,13 @@
 #include "AssetRegistry.h"
 
+#include <glaze/glaze/glaze.hpp>
+
 #include "../FileIO.h"
 #include "../Logger.h"
 #include "GraphicsProgram.h"
-
-#include <glaze/glaze/glaze.hpp>
+#include "Material.h"
+#include "Mesh.h"
+#include "ShaderStage.h"
 
 namespace glz {
 
@@ -162,12 +165,12 @@ std::optional<TDefinition> AssetRegistry::getDefinition(const AssetUuid& uuid) c
   }
   return def;
 }
-
-// Explicit template instantiations
-template std::optional<asset::ShaderStageDefinition>
-AssetRegistry::getDefinition<asset::ShaderStageDefinition>(const AssetUuid& uuid) const;
-
-template std::optional<asset::GraphicsProgramDefinition>
-AssetRegistry::getDefinition<asset::GraphicsProgramDefinition>(const AssetUuid& uuid) const;
-
 } // namespace aur
+
+#define EXPLICITLY_INSTANTIATE_TEMPLATES(TDefinition)                                                        \
+  template std::optional<TDefinition> aur::AssetRegistry::getDefinition<TDefinition>(const AssetUuid& uuid)  \
+      const;
+EXPLICITLY_INSTANTIATE_TEMPLATES(aur::asset::ShaderStageDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(aur::asset::GraphicsProgramDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(aur::asset::MaterialDefinition)
+#undef EXPLICITLY_INSTANTIATE_TEMPLATES

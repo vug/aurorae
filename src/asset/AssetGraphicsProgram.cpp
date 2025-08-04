@@ -2,11 +2,9 @@
 
 namespace aur::asset {
 
-GraphicsProgram GraphicsProgram::create(GraphicsProgramDefinition&& programDef, Handle<ShaderStage> vertStage,
-                                        Handle<ShaderStage> fragStage) {
+GraphicsProgram GraphicsProgram::create(Handle<ShaderStage> vertStage, Handle<ShaderStage> fragStage) {
 
   GraphicsProgram program;
-  program.def_ = programDef;
   program.vert_ = vertStage;
   program.frag_ = fragStage;
 

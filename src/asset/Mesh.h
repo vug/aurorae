@@ -62,6 +62,7 @@ public:
 
 private:
   Mesh() = default;
+  std::string debugName_;
 
   MeshDefinition def_;
   // TODO(vug): Decouple transform from mesh. An entity in a Scene will have both.

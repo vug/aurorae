@@ -105,13 +105,13 @@ AssetManager::loadGraphicsProgramFromDefinition(asset::GraphicsProgramDefinition
   const Handle frag{load<asset::ShaderStage>(graphicsProgramDef.frag.getUuid())};
   if (!frag.isValid())
     return {};
-  asset::GraphicsProgram graphicsProgram =
-      asset::GraphicsProgram::create(std::move(graphicsProgramDef), vert, frag);
+  asset::GraphicsProgram graphicsProgram = asset::GraphicsProgram::create(vert, frag);
   graphicsPrograms_.push_back(std::move(graphicsProgram));
   return Handle<asset::GraphicsProgram>{static_cast<u32>(graphicsPrograms_.size() - 1)};
 }
 Handle<asset::Material> AssetManager::loadMaterialFromDefinition(asset::MaterialDefinition&& materialDef) {
-  asset::Material material = asset::Material::create(std::move(materialDef));
+  const Handle graphProg{load<asset::GraphicsProgram>(materialDef.graphicsProgram.getUuid())};
+  asset::Material material = asset::Material::create(graphProg);
   materials_.push_back(std::move(material));
   return Handle<asset::Material>{static_cast<u32>(materials_.size() - 1)};
 }
@@ -140,6 +140,7 @@ void AssetManager::notifyGraphicsProgramUpdated(Handle<asset::GraphicsProgram> h
   template Handle<TAsset> AssetManager::load<TAsset>(const StableId<TAsset>& stableId);
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgram)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStage)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::Material)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES
 
 #define EXPLICITLY_INSTANTIATE_TEMPLATES(TAsset)                                                             \
