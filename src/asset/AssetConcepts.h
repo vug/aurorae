@@ -2,7 +2,7 @@
 
 namespace aur {
 
-enum class DefinitionType : unsigned int {
+enum class AssetType : unsigned int {
   ShaderStage = 0,
   GraphicsProgram = 1,
   Material = 2,
@@ -10,7 +10,6 @@ enum class DefinitionType : unsigned int {
 };
 
 namespace asset {
-
 // To prevent circular dependencies, we forward declare all asset types here first
 struct ShaderStageDefinition;
 struct GraphicsProgramDefinition;
@@ -30,19 +29,30 @@ concept AssetDefinitionConcept = std::is_same_v<TDefinition, asset::ShaderStageD
                                  std::is_same_v<TDefinition, asset::MaterialDefinition> ||
                                  std::is_same_v<TDefinition, asset::MeshDefinition>;
 
-template <typename TAsset>
-concept AssetConcept =
-    std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, asset::GraphicsProgram> ||
-    std::is_same_v<TAsset, asset::Material> || std::is_same_v<TAsset, asset::Mesh>;
+template <size_t N>
+struct fixed_string {
+  char data[N];
+  constexpr fixed_string(const char (&str)[N]) { std::copy_n(str, N, data); } // NOLINT: implicit
+  constexpr operator std::string_view() const { return {data, N - 1}; }       // NOLINT: implicit
+};
 
-constexpr std::array kAssetOrder = {DefinitionType::ShaderStage, DefinitionType::GraphicsProgram,
-                                    DefinitionType::Material, DefinitionType::Mesh};
+template <typename TAsset, AssetDefinitionConcept TDefinition, fixed_string Label>
+struct AssetTypeMixin;
+
+template <typename TAsset>
+concept AssetConcept = requires {
+  requires(std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, asset::GraphicsProgram> ||
+           std::is_same_v<TAsset, asset::Material> || std::is_same_v<TAsset, asset::Mesh>);
+};
+
+constexpr std::array kAssetOrder = {AssetType::ShaderStage, AssetType::GraphicsProgram, AssetType::Material,
+                                    AssetType::Mesh};
 } // namespace aur
 
 namespace glz {
 template <>
-struct meta<aur::DefinitionType> {
-  using enum aur::DefinitionType;
+struct meta<aur::AssetType> {
+  using enum aur::AssetType;
   static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
 };
 } // namespace glz

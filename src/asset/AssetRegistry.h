@@ -29,7 +29,7 @@ enum class AssetBuildMode {
 };
 
 struct AssetEntry {
-  DefinitionType type;
+  AssetType type;
   AssetUuid uuid;
   std::string alias;
   // Relative to asset folder

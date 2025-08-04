@@ -56,7 +56,7 @@ void Application::run() {
   } else {
     assetRegistry_.load();
   }
-  const StableId<asset::GraphicsProgramDefinition> kUnlitGraphicsProgramId{"shaders/unlit.shader"};
+  const StableId<asset::GraphicsProgram> kUnlitGraphicsProgramId{"shaders/unlit.shader"};
 
   // "Asset Library"
   const Handle<asset::GraphicsProgram> unlitAGraphicsProgram = assetManager_.load(kUnlitGraphicsProgramId);
@@ -64,7 +64,7 @@ void Application::run() {
       .graphicsProgramHandle = unlitAGraphicsProgram,
   };
   const Handle<asset::Material> unlitAMaterial =
-      assetManager_.loadFromDefinition(std::move(unlitMaterialDef));
+      assetManager_.loadFromDefinition<asset::Material>(std::move(unlitMaterialDef));
   const Handle<render::Material> unlitRMaterial = renderer_.uploadOrGet(unlitAMaterial);
 
   // Don't do pipeline creation here but at draw call
@@ -76,11 +76,12 @@ void Application::run() {
   const auto modelPath =
       std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
   std::vector<asset::MeshDefinition> meshDefs = assetProcessor_.processMeshes(modelPath);
-  const Handle<asset::Mesh> boxMeshAssetHandle = assetManager_.loadFromDefinition(std::move(meshDefs[0]));
+  const Handle<asset::Mesh> boxMeshAssetHandle =
+      assetManager_.loadFromDefinition<asset::Mesh>(std::move(meshDefs[0]));
   const Handle<render::Mesh> boxMeshRenderHandle = renderer_.uploadOrGet(boxMeshAssetHandle);
   asset::MeshDefinition triangleMesh = asset::MeshDefinition::makeTriangle();
   const Handle<asset::Mesh> triangleMeshAssetHandle =
-      assetManager_.loadFromDefinition(std::move(triangleMesh));
+      assetManager_.loadFromDefinition<asset::Mesh>(std::move(triangleMesh));
   const Handle<render::Mesh> triangleMeshRenderHandle = renderer_.uploadOrGet(triangleMeshAssetHandle);
   log().trace("Created assets...");
 

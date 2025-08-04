@@ -2,6 +2,7 @@
 
 #include "../Handle.h"
 #include "../Resources/DescriptorSet.h"
+#include "AssetTraits.h"
 
 namespace aur::asset {
 
@@ -17,7 +18,7 @@ struct MaterialDefinition {
   // renderer::GraphicsProgram, a Pipeline object, and corresponding buffers and images
 };
 
-class Material {
+class Material : public AssetTypeMixin<Material, MaterialDefinition, "Material"> {
 public:
   static Material create(const MaterialDefinition& createInfo);
 

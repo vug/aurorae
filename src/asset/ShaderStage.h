@@ -2,6 +2,7 @@
 
 #include "../Utils.h"
 #include "../VulkanWrappers.h"
+#include "AssetTraits.h"
 #include <vector>
 
 namespace aur::asset {
@@ -13,7 +14,7 @@ struct ShaderStageDefinition {
   SpirV spirv;
 };
 
-class ShaderStage {
+class ShaderStage : public AssetTypeMixin<ShaderStage, ShaderStageDefinition, "ShaderStage"> {
 public:
   static ShaderStage create(ShaderStageDefinition&& shaderDef);
 

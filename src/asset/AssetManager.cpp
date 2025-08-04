@@ -12,25 +12,26 @@ namespace aur {
 AssetManager::AssetManager(AssetRegistry& registry)
     : registry_{&registry} {}
 
-template <AssetDefinitionConcept TDefinition>
-HandleTypeFor_t<TDefinition> AssetManager::load(const AssetUuid& uuid) {
-  CacheTypeFor_t<TDefinition>& assetCache = getCache<TDefinition>();
+template <AssetConcept TAsset>
+Handle<TAsset> AssetManager::load(const AssetUuid& uuid) {
+  typename TAsset::CacheType& assetCache = getCache<TAsset>();
   auto defIt = assetCache.find(uuid);
   if (defIt != assetCache.end())
     return defIt->second;
 
+  using TDefinition = typename TAsset::DefinitionType;
   std::optional<TDefinition> defOpt = registry_->getDefinition<TDefinition>(uuid);
   if (!defOpt.has_value())
     return {};
 
-  const HandleTypeFor_t<TDefinition> handle = loadFromDefinition(std::move(defOpt.value()));
+  const Handle<TAsset> handle = loadFromDefinition<TAsset>(std::move(defOpt.value()));
   assetCache[uuid] = handle;
 
   return handle;
 }
 
-template <AssetDefinitionConcept TDefinition>
-HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& stableId) {
+template <AssetConcept TAsset>
+Handle<TAsset> AssetManager::load(const StableId<TAsset>& stableId) {
 
   std::optional<AssetUuid> uuidOpt = registry_->getUuid(stableId);
   if (!uuidOpt) {
@@ -38,12 +39,11 @@ HandleTypeFor_t<TDefinition> AssetManager::load(const StableId<TDefinition>& sta
                registry_->getPath().generic_string());
     return {};
   }
-  return load<TDefinition>(*uuidOpt);
+  return load<TAsset>(*uuidOpt);
 }
 
-template <AssetDefinitionConcept TDefinition>
-HandleTypeFor_t<TDefinition> AssetManager::loadFromDefinition(TDefinition&& def) {
-  using TAsset = AssetTypeFor_t<TDefinition>;
+template <AssetConcept TAsset>
+Handle<TAsset> AssetManager::loadFromDefinition(typename TAsset::DefinitionType&& def) {
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return loadShaderStageFromDefinition(std::move(def));
   } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
@@ -58,9 +58,8 @@ HandleTypeFor_t<TDefinition> AssetManager::loadFromDefinition(TDefinition&& def)
   }
 }
 
-template <AssetDefinitionConcept TDefinition>
-StorageTypeFor_t<TDefinition>& AssetManager::getStorage() {
-  using TAsset = AssetTypeFor_t<TDefinition>;
+template <AssetConcept TAsset>
+typename TAsset::StorageType& AssetManager::getStorage() {
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return shaderStages_;
   } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
@@ -75,9 +74,8 @@ StorageTypeFor_t<TDefinition>& AssetManager::getStorage() {
   }
 }
 
-template <AssetDefinitionConcept TDefinition>
-CacheTypeFor_t<TDefinition>& AssetManager::getCache() {
-  using TAsset = AssetTypeFor_t<TDefinition>;
+template <AssetConcept TAsset>
+typename TAsset::CacheType& AssetManager::getCache() {
   if constexpr (std::is_same_v<TAsset, asset::ShaderStage>) {
     return loadedShaderStages_;
   } else if constexpr (std::is_same_v<TAsset, asset::GraphicsProgram>) {
@@ -101,10 +99,10 @@ AssetManager::loadShaderStageFromDefinition(asset::ShaderStageDefinition&& shade
 
 Handle<asset::GraphicsProgram>
 AssetManager::loadGraphicsProgramFromDefinition(const asset::GraphicsProgramDefinition& graphicsProgramDef) {
-  Handle<asset::ShaderStage> vert{load<asset::ShaderStageDefinition>(graphicsProgramDef.vert.getUuid())};
+  Handle<asset::ShaderStage> vert{load<asset::ShaderStage>(graphicsProgramDef.vert.getUuid())};
   if (!vert.isValid())
     return {};
-  Handle<asset::ShaderStage> frag{load<asset::ShaderStageDefinition>(graphicsProgramDef.frag.getUuid())};
+  Handle<asset::ShaderStage> frag{load<asset::ShaderStage>(graphicsProgramDef.frag.getUuid())};
   if (!frag.isValid())
     return {};
   asset::GraphicsProgram graphicsProgram = asset::GraphicsProgram::create(graphicsProgramDef, vert, frag);
@@ -137,22 +135,20 @@ void AssetManager::notifyGraphicsProgramUpdated(Handle<asset::GraphicsProgram> h
     callback(hnd);
 }
 
-#define EXPLICITLY_INSTANTIATE_TEMPLATES(DefinitionType)                                                     \
-  template HandleTypeFor_t<DefinitionType> AssetManager::load<DefinitionType>(                               \
-      const StableId<DefinitionType>& stableId);                                                             \
-  template HandleTypeFor_t<DefinitionType> AssetManager::load<DefinitionType>(const AssetUuid& stableId);
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgramDefinition)
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
+#define EXPLICITLY_INSTANTIATE_TEMPLATES(TAsset)                                                             \
+  template Handle<TAsset> AssetManager::load<TAsset>(const AssetUuid& uuid);                                 \
+  template Handle<TAsset> AssetManager::load<TAsset>(const StableId<TAsset>& stableId);
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgram)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStage)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES
 
-#define EXPLICITLY_INSTANTIATE_TEMPLATES(DefinitionType)                                                     \
-  template CacheTypeFor_t<DefinitionType>& AssetManager::getCache<DefinitionType>();                         \
-  template HandleTypeFor_t<DefinitionType> AssetManager::loadFromDefinition<DefinitionType>(                 \
-      DefinitionType && def);
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgramDefinition)
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MaterialDefinition)
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MeshDefinition)
+#define EXPLICITLY_INSTANTIATE_TEMPLATES(TAsset)                                                             \
+  template typename TAsset::CacheType& AssetManager::getCache<TAsset>();                                     \
+  template Handle<TAsset> AssetManager::loadFromDefinition<TAsset>(typename TAsset::DefinitionType && def);
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgram)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStage)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::Material)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::Mesh)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES
 
 } // namespace aur

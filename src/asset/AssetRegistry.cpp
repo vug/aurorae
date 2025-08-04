@@ -135,10 +135,10 @@ std::optional<TDefinition> AssetRegistry::getDefinition(const AssetUuid& uuid) c
   const auto& entry = entryOpt.value();
 
   if constexpr (std::is_same_v<TDefinition, asset::ShaderStageDefinition>) {
-    if (entry.type != DefinitionType::ShaderStage)
+    if (entry.type != AssetType::ShaderStage)
       log().fatal("Asset '{}' is not a shader stage definition.", uuid.to_chars());
   } else if constexpr (std::is_same_v<TDefinition, asset::GraphicsProgramDefinition>) {
-    if (entry.type != DefinitionType::GraphicsProgram)
+    if (entry.type != AssetType::GraphicsProgram)
       log().fatal("Asset '{}' is not a graphics program definition.", uuid.to_chars());
   } else {
     static_assert(false, "Unimplemented definition type");

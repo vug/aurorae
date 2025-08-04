@@ -27,13 +27,13 @@ AssetProcessor::AssetProcessor(AssetRegistry& registry)
 // can be destructed automatically. And no, it can't be default implementation :-)
 AssetProcessor::~AssetProcessor() {} // NOLINT
 
-DefinitionType AssetProcessor::extensionToDefinitionType(const std::filesystem::path& ext) {
+AssetType AssetProcessor::extensionToDefinitionType(const std::filesystem::path& ext) {
   if (ext == ".vert" || ext == ".frag")
-    return DefinitionType::ShaderStage;
+    return AssetType::ShaderStage;
   else if (ext == ".shader")
-    return DefinitionType::GraphicsProgram;
+    return AssetType::GraphicsProgram;
   else if (ext == ".gltf" || ext == ".fbx" || ext == ".usda")
-    return DefinitionType::Mesh;
+    return AssetType::Mesh;
   else
     log().fatal("Unknown definition type for extension: {}", ext.string());
 }
@@ -59,9 +59,9 @@ void AssetProcessor::processAllAssets() {
                             rv::transform([this](const auto& path) {
                               return std::pair{extensionToDefinitionType(path.extension()), path};
                             }) |
-                            r::to<std::unordered_multimap<DefinitionType, std::filesystem::path>>();
+                            r::to<std::unordered_multimap<AssetType, std::filesystem::path>>();
 
-  for (const DefinitionType defType : kAssetOrder) {
+  for (const AssetType defType : kAssetOrder) {
     log().info("Processing assets of type: {}...", glz::write_json(defType).value_or("unknown"));
     const auto range = assetsByType.equal_range(defType);
     const std::vector<std::filesystem::path> srcPaths =
@@ -85,7 +85,7 @@ void AssetProcessor::processAllAssets() {
 }
 std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::filesystem::path& srcPath) {
   const std::filesystem::path srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
-  const DefinitionType defType = extensionToDefinitionType(srcRelPath.extension());
+  const AssetType defType = extensionToDefinitionType(srcRelPath.extension());
   log().info("   Processing asset ingestion file: {}...", srcPath.generic_string());
 
   struct ProcessingResult {
@@ -95,7 +95,7 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
   };
   ProcessingResult result = [this, defType, &srcPath]() -> ProcessingResult {
     switch (defType) {
-    case DefinitionType::ShaderStage: {
+    case AssetType::ShaderStage: {
       return ProcessingResult{.definitions =
                                   [this, &srcPath]() {
                                     Definitions result;
@@ -108,7 +108,7 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
                                   }(),
                               .extension = "shaderStageDef"};
     }
-    case DefinitionType::GraphicsProgram: {
+    case AssetType::GraphicsProgram: {
       return processGraphicsProgram(srcPath)
           .transform([this](asset::GraphicsProgramDefinition def) -> ProcessingResult {
             def.vert.setRegistry(registry_);
@@ -124,10 +124,10 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
           })
           .value_or(ProcessingResult{});
     }
-    case DefinitionType::Material: {
+    case AssetType::Material: {
       log().fatal("Not implemented yet.");
     } break;
-    case DefinitionType::Mesh: {
+    case AssetType::Mesh: {
       log().fatal("Not implemented yet.");
     } break;
     }
@@ -160,7 +160,8 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
     log().info("      Processed and saved to {}", dstRelPath.generic_string());
   }
 
-  const StableId<asset::ShaderStageDefinition> stableSourceIdentifier = srcRelPath.generic_string();
+  // TODO(vug): this should be more general. asset::ShaderStage is wrong for other asset types!
+  const StableId<asset::ShaderStage> stableSourceIdentifier = srcRelPath.generic_string();
   const muuid::uuid assetId = makeUuid(stableSourceIdentifier);
   return AssetEntry{
       .type = defType,
@@ -404,8 +405,8 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
   return defs;
 }
 
-template <AssetDefinitionConcept TDefinition>
-AssetUuid AssetProcessor::makeUuid(const StableId<TDefinition>& stableId) {
+template <AssetConcept TAsset>
+AssetUuid AssetProcessor::makeUuid(const StableId<TAsset>& stableId) {
   return muuid::uuid::generate_sha1(AssetRegistry::NameSpaces::kShaderStage, stableId);
 }
 
@@ -561,12 +562,12 @@ bool validate_shader_linkage(const std::vector<uint32_t>& vertex_spirv,
   }
 }
 
-#define EXPLICITLY_INSTANTIATE_TEMPLATES(TDefinition)                                                        \
-  template AssetUuid AssetProcessor::makeUuid<TDefinition>(const StableId<TDefinition>& stableId);
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgramDefinition)
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStageDefinition)
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MaterialDefinition)
-EXPLICITLY_INSTANTIATE_TEMPLATES(asset::MeshDefinition)
+#define EXPLICITLY_INSTANTIATE_TEMPLATES(TAsset)                                                             \
+  template AssetUuid AssetProcessor::makeUuid<TAsset>(const StableId<TAsset>& stableId);
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgram)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStage)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::Material)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::Mesh)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES
 
 } // namespace aur

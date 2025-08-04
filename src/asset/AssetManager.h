@@ -20,14 +20,14 @@ class Mesh;
 
 class AssetManager {
 public:
-  AssetManager(AssetRegistry& registry);
+  explicit AssetManager(AssetRegistry& registry);
 
-  template <AssetDefinitionConcept TDefinition>
-  HandleTypeFor_t<TDefinition> load(const AssetUuid& uuid);
-  template <AssetDefinitionConcept TDefinition>
-  HandleTypeFor_t<TDefinition> load(const StableId<TDefinition>& stableId);
-  template <AssetDefinitionConcept TDefinition>
-  HandleTypeFor_t<TDefinition> loadFromDefinition(TDefinition&& def);
+  template <AssetConcept TAsset>
+  Handle<TAsset> load(const AssetUuid& uuid);
+  template <AssetConcept TAsset>
+  Handle<TAsset> load(const StableId<TAsset>& stableId);
+  template <AssetConcept TAsset>
+  Handle<TAsset> loadFromDefinition(typename TAsset::DefinitionType&& def);
 
   Handle<asset::Mesh> registerExistingMesh(asset::Mesh& mesh);
 
@@ -50,20 +50,20 @@ private:
   AssetRegistry* registry_{};
 
   // The manager OWNS the actual asset data in vectors.
-  template <AssetDefinitionConcept TDefinition>
-  StorageTypeFor_t<TDefinition>& getStorage();
-  StorageTypeFor_t<asset::ShaderStageDefinition> shaderStages_;
-  StorageTypeFor_t<asset::GraphicsProgramDefinition> graphicsPrograms_;
-  StorageTypeFor_t<asset::MaterialDefinition> materials_;
-  StorageTypeFor_t<asset::MeshDefinition> meshes_;
+  template <AssetConcept TAsset>
+  typename TAsset::StorageType& getStorage();
+  asset::ShaderStage::StorageType shaderStages_;
+  asset::GraphicsProgram::StorageType graphicsPrograms_;
+  asset::Material::StorageType materials_;
+  asset::Mesh::StorageType meshes_;
 
   // Caching to prevent loading the same file twice
-  template <AssetDefinitionConcept TDefinition>
-  CacheTypeFor_t<TDefinition>& getCache();
-  CacheTypeFor_t<asset::ShaderStageDefinition> loadedShaderStages_;
-  CacheTypeFor_t<asset::GraphicsProgramDefinition> loadedGraphicsPrograms_;
-  CacheTypeFor_t<asset::MaterialDefinition> loadedMaterials_;
-  CacheTypeFor_t<asset::MeshDefinition> loadedMeshes_;
+  template <AssetConcept TAsset>
+  typename TAsset::CacheType& getCache();
+  asset::ShaderStage::CacheType loadedShaderStages_;
+  asset::GraphicsProgram::CacheType loadedGraphicsPrograms_;
+  asset::Material::CacheType loadedMaterials_;
+  asset::Mesh::CacheType loadedMeshes_;
 
   std::vector<asset::GraphicsProgramUpdateCallback> graphicsProgramUpdateListeners_;
   // std::vector<asset::ShaderDeleteCallback> shaderDeleteListeners_;

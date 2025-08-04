@@ -9,6 +9,7 @@
 #include "../Handle.h"
 #include "../Utils.h"
 #include "../Vertex.h"
+#include "AssetTraits.h"
 
 namespace aur::asset {
 
@@ -42,7 +43,7 @@ struct MaterialSpan {
   u32 count{};
 };
 
-class Mesh {
+class Mesh : public AssetTypeMixin<Mesh, MeshDefinition, "Mesh"> {
 public:
   static Mesh create(const MeshDefinition& meshDef);
 

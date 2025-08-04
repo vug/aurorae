@@ -30,7 +30,7 @@ struct glaze_uuid : muuid::uuid {
 using AssetUuid = glaze_uuid;
 
 // --- Asset Stable Source Identifier ---
-template <AssetDefinitionConcept TDefinition>
+template <AssetConcept TAsset>
 class StableId : public std::string {
 public:
   using std::string::string;
@@ -69,8 +69,8 @@ public:
 
   // Getters
   const AssetUuid& getUuid() const { return uuid_; }
-  template <AssetDefinitionConcept TDefinition>
-  const StableId<TDefinition>& getStableId() const {
+  template <AssetConcept TAsset>
+  const StableId<TAsset>& getStableId() const {
     return stableId_;
   }
 
