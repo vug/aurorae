@@ -1,17 +1,14 @@
 /*
-TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
-           scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
-           `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
-TODO(vug): MeshDefinition refers to MaterialDefinition by asset name/id, and similarly material refers to
-           shader asset ids.
-TODO(vug): Process Meshes in processAllAssets
-TODO(vug): Introduce the drawMesh, drawSubmesh(MeshHandle, drawSpanIx) etc. functions
+
+TODO(vug): Introduce drawSubmesh(MeshHandle, drawSpanIx) function. At draw time create a PipelineCreateInfo
+           and do a createOrGetPipeline, or do this at render::Material creation time
+TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
-TODO(vug): Use CRTP mixin style concept/traits (see chat with AI)
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
 TODO(vug): asset::Texture, render::Texture
 TODO(vug): bring a Khronos sample asset with textures
 TODO(vug): bring a texture (stb or oiio)
+TODO(vug): processOnlyNeedingAssets
 TODO(vug): go over more ideas from more_on_registry_and_build_mode_variants.md
 TODO(vug): store debug names with objects
 TODO(vug): a std::function based listener system for asset changes
@@ -22,12 +19,13 @@ TODO(vug): continue going over clang-tidy settings from performance-.
 TODO(vug): Also add frequent aur headers such as utils and logger to PCH.
            (Can I have multiple PCH groups in CMake?)
 TODO(vug): introduce RenderDoc
+TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
+           scene->mMaterials[m->mMaterialIndex]->GetName().C_Str() 2) custom renderer materials:
+           `glowing_embers.aurmat` 3) Mapped materials: given name -> aurmat
 TODO(vug): Very simple scene abstraction that has a vector entities w/render mesh handles and transforms.
 TODO(vug): try out C++ modules, but don't obsess if it does not work well
            https://gemini.google.com/app/31dc373a7f5b3005
-TODO(vug): bring https://github.com/Neargye/magic_enum and use it for auto enum -> string conversions.
-           and https://github.com/getml/reflect-cpp for general reflection
-TODO(vug): Introduce a default material, and a missing material.
+TODO(vug): Introduce a missing material.
 TODO(vug): Renderer also has a cache for render objects it uploaded from asset handles.
 TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin()`, `end()`, `submit()`
            methods.
@@ -55,6 +53,8 @@ TODO(vug): consider making all members of dependency library types pointers, so 
 TODO(vug): looks like at app start, longest duration is spent on graphics pipeline creation.
            Add a timer to measure important perf durations (cold start etc)
 TODO(vug): smoother resize (current vkDeviceWaitIdle in recreate causes stutter)
+.
+TODO(vug): Material Editor, Asset Viewer
 TODO(vug): normal maps
 TODO(vug): Indirect rendering (various brush shapes for painterly render), 2D/3D gaussian splats,
            order independent transparency, differential rendering, bring Mitsuba, PBRT etc
@@ -63,6 +63,8 @@ TODO(vug): do screen-space GI Global Illumination for Poor People | TurboGI Devl
            https://www.youtube.com/watch?v=dmdyqzelBIY
 TODO(vug): Consider using https://en.cppreference.com/w/cpp/execution.html,
            here is an implementation https://github.com/NVIDIA/stdexec
+TODO(vug): bring https://github.com/Neargye/magic_enum and use it for auto enum -> string conversions.
+           and https://github.com/getml/reflect-cpp for general reflection <- I can use glaze in the meantime
 */
 
 #include "Application.h"

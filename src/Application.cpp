@@ -56,24 +56,22 @@ void Application::run() {
   } else {
     assetRegistry_.load();
   }
-  const StableId<asset::Material> kUnlitMaterialId{"materials/unlit.mat"};
 
   // "Asset Library"
+  const StableId<asset::Material> kUnlitMaterialId{"materials/unlit.mat"};
   const Handle<asset::Material> unlitAMaterial = assetManager_.load(kUnlitMaterialId);
   const Handle<render::Material> unlitRMaterial = renderer_.uploadOrGet(unlitAMaterial);
-
   // Don't do pipeline creation here but at draw call
   const PipelineCreateInfo pipelineCreateInfo{
       .graphicsProgram = unlitRMaterial.get().getGraphicsProgramHandle(),
       .cullMode = CullMode::Back,
   };
   const Pipeline* unlitPipeline = renderer_.createOrGetPipeline(pipelineCreateInfo);
-  const auto modelPath =
-      std::filesystem::path(kModelsFolder) / "glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf";
-  std::vector<asset::MeshDefinition> meshDefs = assetProcessor_.processMeshes(modelPath);
-  const Handle<asset::Mesh> boxMeshAssetHandle =
-      assetManager_.loadFromDefinition<asset::Mesh>(std::move(meshDefs[0]));
-  const Handle<render::Mesh> boxMeshRenderHandle = renderer_.uploadOrGet(boxMeshAssetHandle);
+
+  const StableId<asset::Mesh> kBoxMeshId{
+      "models/glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf"};
+  const Handle<asset::Mesh> aBoxMesh = assetManager_.load(kBoxMeshId);
+  const Handle<render::Mesh> rBoxMesh = renderer_.uploadOrGet(aBoxMesh);
   asset::MeshDefinition triangleMesh = asset::MeshDefinition::makeTriangle();
   const Handle<asset::Mesh> triangleMeshAssetHandle =
       assetManager_.loadFromDefinition<asset::Mesh>(std::move(triangleMesh));
@@ -136,8 +134,8 @@ void Application::run() {
         .sizeBytes = sizeof(worldFromObject2),
         .data = glm::value_ptr(worldFromObject2),
     };
-    renderer_.drawIndexed(*unlitPipeline, boxMeshRenderHandle.get().getVertexBuffer(),
-                          boxMeshRenderHandle.get().getIndexBuffer(), &pcInfo2);
+    renderer_.drawIndexed(*unlitPipeline, rBoxMesh.get().getVertexBuffer(), rBoxMesh.get().getIndexBuffer(),
+                          &pcInfo2);
     renderer_.endFrame();
   }
 

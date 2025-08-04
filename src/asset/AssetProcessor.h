@@ -36,7 +36,7 @@ public:
   std::optional<asset::GraphicsProgramDefinition> static processGraphicsProgram(
       const std::filesystem::path& srcPath);
   std::optional<asset::MaterialDefinition> static processMaterial(const std::filesystem::path& srcPath);
-  std::vector<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
+  std::optional<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
 
   template <AssetConcept TAsset>
   static AssetUuid makeUuid(const StableId<TAsset>& stableId);

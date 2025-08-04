@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <glaze/glaze/glaze.hpp>
 #include <glm/mat4x4.hpp>
 
 #include "../Handle.h"
@@ -16,7 +17,7 @@ namespace aur::asset {
 class Material;
 
 struct SubMesh {
-  std::string materialAssetName;
+  AssetRef material;
   u32 offset{};
   u32 count{};
 };
@@ -24,8 +25,8 @@ struct SubMesh {
 struct MeshDefinition {
   std::vector<Vertex> vertices;
   std::vector<u32> indices;
-  std::vector<SubMesh> materialSpans;
-  glm::mat4 objetFromModel{1};
+  std::vector<SubMesh> subMeshes;
+  glm::mat4 transform{1};
 
   static MeshDefinition makeTriangle();
   // TODO(vug): quads are used a lot, could be nice to generate them procedurally
@@ -46,7 +47,7 @@ struct MaterialSpan {
 class Mesh : public AssetTypeMixin<Mesh, MeshDefinition, AssetType::Mesh, "Mesh",
                                    "019870da-b469-7073-8c5d-c09cdb24c657"> {
 public:
-  static Mesh create(MeshDefinition&& meshDef);
+  static Mesh create(MeshDefinition&& meshDef, std::vector<Handle<Material>>&& materials);
 
   ~Mesh() = default;
   Mesh(const Mesh& other) = delete;
@@ -54,9 +55,9 @@ public:
   Mesh(Mesh&& other) noexcept = default;
   Mesh& operator=(Mesh&& other) noexcept = default;
 
-  [[nodiscard]] std::vector<Vertex> getVertices() const { return def_.vertices; }
-  [[nodiscard]] std::vector<u32> getIndicates() const { return def_.indices; }
-  [[nodiscard]] std::vector<SubMesh> getSubMeshes() const { return def_.materialSpans; }
+  [[nodiscard]] std::vector<Vertex> getVertices() const { return vertices_; }
+  [[nodiscard]] std::vector<u32> getIndicates() const { return indices_; }
+  [[nodiscard]] std::vector<MaterialSpan> getMaterialSpans() const { return materialSpans_; }
 
   std::string debugName;
 
@@ -64,9 +65,12 @@ private:
   Mesh() = default;
   std::string debugName_;
 
-  MeshDefinition def_;
-  // TODO(vug): Decouple transform from mesh. An entity in a Scene will have both.
-  glm::mat4 transform{1};
+  std::vector<Vertex> vertices_;
+  std::vector<u32> indices_;
+  std::vector<MaterialSpan> materialSpans_;
+  // TODO(vug): Decouple transform from mesh. An entity in a Scene will have both. (Can be combined with
+  //            transform from transform component?)
+  glm::mat4 worldFromObject{1};
 };
 
 } // namespace aur::asset

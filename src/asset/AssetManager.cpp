@@ -5,7 +5,9 @@
 #include "../AppContext.h"
 #include "AssetTraits.h"
 #include "GraphicsProgram.h"
+#include "Material.h"
 #include "Mesh.h"
+#include "ShaderStage.h"
 
 namespace aur {
 
@@ -117,7 +119,13 @@ Handle<asset::Material> AssetManager::loadMaterialFromDefinition(asset::Material
 }
 
 Handle<asset::Mesh> AssetManager::loadMeshFromDefinition(asset::MeshDefinition&& meshDef) {
-  asset::Mesh mesh = asset::Mesh::create(std::move(meshDef));
+  namespace rv = std::ranges::views;
+  std::vector<Handle<asset::Material>> materials = meshDef.subMeshes |
+                                                   rv::transform([this](const asset::SubMesh& subMesh) {
+                                                     return load<asset::Material>(subMesh.material.getUuid());
+                                                   }) |
+                                                   std::ranges::to<std::vector>();
+  asset::Mesh mesh = asset::Mesh::create(std::move(meshDef), std::move(materials));
   meshes_.push_back(std::move(mesh));
   return Handle<asset::Mesh>{static_cast<u32>(meshes_.size() - 1)};
 }
@@ -141,6 +149,7 @@ void AssetManager::notifyGraphicsProgramUpdated(Handle<asset::GraphicsProgram> h
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::GraphicsProgram)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::ShaderStage)
 EXPLICITLY_INSTANTIATE_TEMPLATES(asset::Material)
+EXPLICITLY_INSTANTIATE_TEMPLATES(asset::Mesh)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES
 
 #define EXPLICITLY_INSTANTIATE_TEMPLATES(TAsset)                                                             \

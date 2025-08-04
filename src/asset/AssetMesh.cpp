@@ -36,9 +36,23 @@ MeshDefinition MeshDefinition::makeCube() {
               4, 5, 1, 1, 0, 4  // Bottom face
           }};
 }
-Mesh Mesh::create(MeshDefinition&& meshDef) {
+Mesh Mesh::create(MeshDefinition&& meshDef, std::vector<Handle<Material>>&& materials) {
   Mesh mesh;
-  mesh.def_ = std::move(meshDef);
+  mesh.vertices_ = std::move(meshDef.vertices);
+  mesh.indices_ = std::move(meshDef.indices);
+  namespace rv = std::ranges::views;
+
+  mesh.materialSpans_ = rv::zip(materials, meshDef.subMeshes) | rv::transform([](const auto& tuple) {
+                          return MaterialSpan{
+                              .material = std::get<0>(tuple),
+                              .offset = std::get<1>(tuple).offset,
+                              .count = std::get<1>(tuple).count,
+                          };
+                        }) |
+                        std::ranges::to<std::vector>();
+  // TODO(vug): Decouple transform from mesh. An entity in a Scene will have both. (Can be combined with
+  //            transform from transform component?)
+  mesh.worldFromObject = meshDef.transform;
   return mesh;
 }
 

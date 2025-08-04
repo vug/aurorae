@@ -173,4 +173,5 @@ std::optional<TDefinition> AssetRegistry::getDefinition(const AssetUuid& uuid) c
 EXPLICITLY_INSTANTIATE_TEMPLATES(aur::asset::ShaderStageDefinition)
 EXPLICITLY_INSTANTIATE_TEMPLATES(aur::asset::GraphicsProgramDefinition)
 EXPLICITLY_INSTANTIATE_TEMPLATES(aur::asset::MaterialDefinition)
+EXPLICITLY_INSTANTIATE_TEMPLATES(aur::asset::MeshDefinition)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES

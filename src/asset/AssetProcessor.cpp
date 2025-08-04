@@ -44,15 +44,16 @@ AssetType AssetProcessor::extensionToDefinitionType(const std::filesystem::path&
     log().fatal("Unknown definition type for extension: {}", ext.string());
 }
 
-using DefinitionVariant =
-    std::variant<asset::ShaderStageDefinition, asset::GraphicsProgramDefinition, asset::MaterialDefinition>;
+using DefinitionVariant = std::variant<asset::ShaderStageDefinition, asset::GraphicsProgramDefinition,
+                                       asset::MaterialDefinition, asset::MeshDefinition>;
 using Definitions = std::unordered_map<AssetBuildMode, DefinitionVariant>;
 
 void AssetProcessor::processAllAssets() {
   namespace rv = std::views;
   namespace r = std::ranges;
 
-  const std::unordered_set<std::string_view> kFileExtensionsToProcess = {".vert", ".frag", ".shader", ".mat"};
+  const std::unordered_set<std::string_view> kFileExtensionsToProcess = {".vert", ".frag", ".shader", ".mat",
+                                                                         ".gltf"};
 
   const auto assetsByType = std::filesystem::recursive_directory_iterator(kAssetsFolder) |
                             rv::filter([](const std::filesystem::directory_entry& dirEntry) {
@@ -139,14 +140,30 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
             return {
                 .definitions = {{AssetBuildMode::Any, std::move(def)}},
                 .dependencies = {progUuid},
-                .extension = "graphicsProgramDef",
+                .extension = "materialDef",
             };
           })
           .value_or(ProcessingResult{});
-    } break;
+    };
     case AssetType::Mesh: {
-      log().fatal("Not implemented yet.");
-    } break;
+      return processMeshes(srcPath)
+          .transform([this](asset::MeshDefinition def) -> ProcessingResult {
+            for (asset::SubMesh& subMesh : def.subMeshes)
+              subMesh.material.setRegistry(registry_);
+
+            std::vector<AssetUuid> materialUuids;
+            for (const asset::SubMesh& subMesh : def.subMeshes) {
+              materialUuids.push_back(subMesh.material);
+            }
+
+            return {
+                .definitions = {{AssetBuildMode::Any, std::move(def)}},
+                .dependencies = std::move(materialUuids),
+                .extension = "meshDef",
+            };
+          })
+          .value_or(ProcessingResult{});
+    }
     }
     std::unreachable();
   }();
@@ -347,7 +364,7 @@ bool AssetProcessor::validateSpirV(const std::vector<u32>& blob) {
   return true;
 }
 
-std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::filesystem::path& modelPath) {
+std::optional<asset::MeshDefinition> AssetProcessor::processMeshes(const std::filesystem::path& modelPath) {
   std::vector<asset::MeshDefinition> defs;
   Assimp::Importer importer;
 
@@ -398,7 +415,7 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
         asset::MeshDefinition& def = defs.emplace_back();
         def.vertices.reserve(vertexCnt);
         def.indices.reserve(indexCnt);
-        def.objetFromModel = glm::make_mat4(reinterpret_cast<f32*>(&transform));
+        def.transform = glm::make_mat4(reinterpret_cast<f32*>(&transform));
 
         // each aiMesh corresponds to an aur::DrawSpan and includes geometry for that span
         u32 spanOffset{};
@@ -407,9 +424,14 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
           // assert(m->mNumFaces > 0);
           // copy vertex attributes data in this aiMesh to mesh by appending fat vertices
           for (u32 vertIx = 0; vertIx < m->mNumVertices; ++vertIx) {
+            Vertex v{};
             const aiVector3D& pos = m->mVertices[vertIx];
-            const aiColor4D& col0 = m->mColors[0][vertIx];
-            const Vertex v{.position = {pos.x, pos.y, pos.z}, .color = {col0.r, col0.g, col0.b, col0.a}};
+            v.position = {pos.x, pos.y, pos.z};
+            ;
+            if (m->HasVertexColors(0)) {
+              const aiColor4D& col0 = m->mColors[0][vertIx];
+              v.color = {col0.r, col0.g, col0.b, col0.a};
+            }
             def.vertices.push_back(v);
           }
 
@@ -424,12 +446,17 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
             aiMeshIndexCnt += face.mNumIndices;
           }
 
-          // TODO(vug): bring material data to aur too.
+          const StableId<asset::Material> defaultMat{"materials/unlit.mat"};
+          // TODO(vug): Parse materials from model files and map them to existing materials in the asset
+          // library i.e. choose a shader, parse material parameters (constants, textures) and generate a
+          // material definition here
+          // const std::string tempMatAssetName = std::format(
+          //     "material[{}]{}", m->mMaterialIndex,
+          //     scene->mMaterials[m->mMaterialIndex]->GetName().C_Str());
+
           // Record a DrawSpan for this chunk of geometry in the Mesh
-          const std::string tempMatAssetName = std::format(
-              "material[{}]{}", m->mMaterialIndex, scene->mMaterials[m->mMaterialIndex]->GetName().C_Str());
-          def.materialSpans.emplace_back(asset::SubMesh{
-              .materialAssetName = tempMatAssetName, .offset = spanOffset, .count = aiMeshIndexCnt});
+          def.subMeshes.emplace_back(
+              asset::SubMesh{.material = defaultMat, .offset = spanOffset, .count = aiMeshIndexCnt});
           spanOffset += aiMeshIndexCnt;
         }
       };
@@ -437,7 +464,10 @@ std::vector<asset::MeshDefinition> AssetProcessor::processMeshes(const std::file
   aiMatrix4x4 identity;
   traverse(scene->mRootNode, &identity);
 
-  return defs;
+  if (defs.empty())
+    return std::nullopt;
+
+  return defs[0];
 }
 
 template <AssetConcept TAsset>

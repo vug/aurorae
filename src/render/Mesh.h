@@ -2,6 +2,7 @@
 
 #include "../Handle.h"
 #include "../Resources/Buffer.h"
+#include "../render/Material.h"
 
 namespace aur {
 class Renderer;
@@ -13,8 +14,7 @@ class Mesh;
 namespace aur::render {
 
 struct DrawSpan {
-  // TODO(vug): bring render::Material
-  // Handle<render::Material> material;
+  Handle<render::Material> material;
   u32 offset;
   u32 count;
 };
@@ -22,7 +22,7 @@ struct DrawSpan {
 class Mesh {
 public:
   Mesh() = default;
-  Mesh(const Renderer& renderer, Handle<asset::Mesh> asset);
+  Mesh(Renderer& renderer, Handle<asset::Mesh> asset);
   ~Mesh() = default;
 
   Mesh(const Mesh& other) = delete;
@@ -36,7 +36,7 @@ public:
   [[nodiscard]] const std::vector<DrawSpan>& getDrawSpans() const { return drawSpans_; }
 
 private:
-  const Renderer* renderer_{};
+  Renderer* renderer_{};
   Handle<asset::Mesh> assetHandle_;
 
   Buffer vertexBuffer_;
