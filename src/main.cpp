@@ -1,5 +1,4 @@
 /*
-TODO(vug): add cullMode, depthTest, and blendMode to MaterialDefinition
 TODO(vug): use https://github.com/stephenberry/glaze/blob/main/docs/json-schema.md to generate JSON schemas
            for GraphicsPipelineDefinition and MaterialDefinition. This can be a separate CLI executable.
 TODO(vug): Add a version to PipelineCreateInfo (increase it after each change to it to invalidating caches)

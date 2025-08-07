@@ -1,7 +1,47 @@
 #pragma once
 
 #include "../Handle.h"
+#include "../VulkanWrappers.h"
 #include "AssetTraits.h"
+
+namespace aur {
+
+enum class BlendingPreset {
+  // Opaque
+  NoBlend,
+  // Transparent
+  AlphaBlend,
+  // Additive,
+  // PremultipliedAlpha,
+  // Multiply,
+  // Screen,
+  // AlphaToCoverage,
+  //
+  // // Highlight
+  // Xor,
+  // Invert,
+  // // Mask
+  // And,
+  //
+  // Subtractive,
+  // Overlay,
+};
+
+}
+
+namespace glz {
+template <>
+struct meta<aur::BlendingPreset> {
+  using enum aur::BlendingPreset;
+  static constexpr auto value = glz::enumerate(NoBlend, AlphaBlend);
+};
+
+template <>
+struct meta<aur::CullMode> {
+  using enum aur::CullMode;
+  static constexpr auto value = glz::enumerate(None, Front, Back, FrontAndBack);
+};
+} // namespace glz
 
 namespace aur::asset {
 
@@ -10,6 +50,10 @@ struct Pipeline;
 
 struct MaterialDefinition {
   AssetRef graphicsProgram;
+  std::optional<bool> depthTest{true};
+  std::optional<bool> depthWrite{true};
+  std::optional<CullMode> cullMode{CullMode::Back};
+  std::optional<BlendingPreset> blendPreset{BlendingPreset::NoBlend};
 
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
