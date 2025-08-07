@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include <glaze/glaze/json/schema.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -56,6 +57,13 @@ void Application::run() {
   } else {
     assetRegistry_.load();
   }
+
+  // Export schemas
+  if (const auto schema = glz::write_json_schema<asset::GraphicsProgramDefinition>(); schema.has_value())
+    writeBinaryFile(kAssetsFolder / "shaders/graphics_program.schema.json",
+                    glz::prettify_json(schema.value()));
+  if (const auto schema = glz::write_json_schema<asset::MaterialDefinition>(); schema.has_value())
+    writeBinaryFile(kAssetsFolder / "materials/material.schema.json", glz::prettify_json(schema.value()));
 
   // "Asset Library"
   const StableId<asset::Material> kUnlitMaterialId{"materials/unlit.mat"};

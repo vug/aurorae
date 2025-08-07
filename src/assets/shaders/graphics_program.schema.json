@@ -1,0 +1,26 @@
+{
+   "type": [
+      "object"
+   ],
+   "properties": {
+      "frag": {
+         "$ref": "#/$defs/aur::AssetRef"
+      },
+      "vert": {
+         "$ref": "#/$defs/aur::AssetRef"
+      }
+   },
+   "additionalProperties": false,
+   "$defs": {
+      "aur::AssetRef": {
+         "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+         ]
+      }
+   }
+}

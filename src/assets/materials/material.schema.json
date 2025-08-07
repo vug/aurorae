@@ -1,0 +1,81 @@
+{
+   "type": [
+      "object"
+   ],
+   "properties": {
+      "blendPreset": {
+         "$ref": "#/$defs/std::optional<aur::BlendingPreset>"
+      },
+      "cullMode": {
+         "$ref": "#/$defs/std::optional<aur::CullMode>"
+      },
+      "depthTest": {
+         "$ref": "#/$defs/std::optional<bool>"
+      },
+      "depthWrite": {
+         "$ref": "#/$defs/std::optional<bool>"
+      },
+      "graphicsProgram": {
+         "$ref": "#/$defs/aur::AssetRef"
+      }
+   },
+   "additionalProperties": false,
+   "$defs": {
+      "aur::AssetRef": {
+         "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+         ]
+      },
+      "std::optional<aur::BlendingPreset>": {
+         "type": [
+            "string",
+            "null"
+         ],
+         "oneOf": [
+            {
+               "title": "NoBlend",
+               "const": "NoBlend"
+            },
+            {
+               "title": "AlphaBlend",
+               "const": "AlphaBlend"
+            }
+         ]
+      },
+      "std::optional<aur::CullMode>": {
+         "type": [
+            "string",
+            "null"
+         ],
+         "oneOf": [
+            {
+               "title": "None",
+               "const": "None"
+            },
+            {
+               "title": "Front",
+               "const": "Front"
+            },
+            {
+               "title": "Back",
+               "const": "Back"
+            },
+            {
+               "title": "FrontAndBack",
+               "const": "FrontAndBack"
+            }
+         ]
+      },
+      "std::optional<bool>": {
+         "type": [
+            "boolean",
+            "null"
+         ]
+      }
+   }
+}

@@ -98,5 +98,19 @@
   "C_Cpp.formatting": "clangFormat",
   "C_Cpp.clang_format_path": "",
   "editor.formatOnSave": true,
-  "C_Cpp.codeAnalysis.clangTidy.enabled": false
+  "C_Cpp.codeAnalysis.clangTidy.enabled": false,
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "**/*.shader"
+      ],
+      "url": "./src/assets/shaders/graphics_program.schema.json"
+    },
+    {
+      "fileMatch": [
+        "**/*.mat"
+      ],
+      "url": "./src/assets/materials/material.schema.json"
+    }
+  ],
 }
