@@ -1,12 +1,11 @@
 /*
-TODO(vug): use https://github.com/stephenberry/glaze/blob/main/docs/json-schema.md to generate JSON schemas
-           for GraphicsPipelineDefinition and MaterialDefinition. This can be a separate CLI executable.
 TODO(vug): Add a version to PipelineCreateInfo (increase it after each change to it to invalidating caches)
 TODO(vug): asset::Material owns a PipelineCreateInfo prepared from MaterialDefinition. Calculates it's cache
 TODO(vug): render::Material uses the hash of PipelineCreateInfo to load Pipeline if cached on disk
            otherwise create one and store to disk (do storing operations on a separate thread)
 TODO(vug): Introduce drawSubmesh(MeshHandle, drawSpanIx) function. Give pipeline and index range to
-drawIndexed.TODO(vug): Add attributes to fat vertex. (also add meshId too)
+           drawIndexed.
+TODO(vug): Add attributes to fat vertex. (also add meshId too)
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): do the dynamic vs. baked state suggestions for the pipeline
@@ -71,6 +70,8 @@ TODO(vug): Consider using https://en.cppreference.com/w/cpp/execution.html,
            here is an implementation https://github.com/NVIDIA/stdexec
 TODO(vug): bring https://github.com/Neargye/magic_enum and use it for auto enum -> string conversions.
            and https://github.com/getml/reflect-cpp for general reflection <- I can use glaze in the meantime
+TODO(vug): Add definitions to JSON schemas https://github.com/stephenberry/glaze/blob/main/docs/json-schema.md
+           (and make a CLI tool?)
 */
 
 #include "Application.h"
