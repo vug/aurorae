@@ -1,5 +1,8 @@
 {
   "version": 1,
   "graphicsProgram": "shaders/unlit.shader",
-  "polygonMode": "Line"
+  "polygonMode": "Fill",
+  "depthTest": true,
+  "depthWrite": true,
+  "cullMode": "Back"
 }

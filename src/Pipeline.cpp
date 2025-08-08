@@ -89,7 +89,7 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
   };
 
   const VkPipelineRasterizationStateCreateInfo rasterizationState =
-      createInfo.pipelineRasterizationStateCreateInfo.toVk();
+      createInfo.rasterizationStateCreateInfo.toVk();
 
   constexpr VkPipelineMultisampleStateCreateInfo multisampling{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
@@ -97,14 +97,8 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
       .sampleShadingEnable = VK_FALSE,
   };
 
-  constexpr VkPipelineDepthStencilStateCreateInfo depthStencilState{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-      .depthTestEnable = VK_TRUE,
-      .depthWriteEnable = VK_TRUE,
-      .depthCompareOp = VK_COMPARE_OP_LESS, // Standard depth test
-      .depthBoundsTestEnable = VK_FALSE,
-      .stencilTestEnable = VK_FALSE,
-  };
+  const VkPipelineDepthStencilStateCreateInfo depthStencilState =
+      createInfo.depthStencilStateCreateInfo.toVk();
 
   constexpr VkPipelineColorBlendAttachmentState colorBlendAttachment{
       .blendEnable = VK_FALSE,
