@@ -1,11 +1,11 @@
 #pragma once
 
 #include "../Handle.h"
+#include "../Pipeline.h"
 #include "../asset/Material.h"
 
 namespace aur {
 class Renderer;
-class Pipeline;
 } // namespace aur
 
 namespace aur::render {
@@ -30,6 +30,7 @@ private:
   Renderer* renderer_{};
   Handle<asset::Material> assetHandle_;
   Handle<render::GraphicsProgram> graphicsProgramHandle_;
+  PipelineCreateInfo pipelineCreateInfo_;
   const Pipeline* pipeline_{};
 };
 
