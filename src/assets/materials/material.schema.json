@@ -4,16 +4,16 @@
    ],
    "properties": {
       "blendPreset": {
-         "$ref": "#/$defs/std::optional<aur::BlendingPreset>"
+         "$ref": "#/$defs/aur::BlendingPreset"
       },
       "cullMode": {
-         "$ref": "#/$defs/std::optional<aur::CullMode>"
+         "$ref": "#/$defs/aur::CullMode"
       },
       "depthTest": {
-         "$ref": "#/$defs/std::optional<bool>"
+         "$ref": "#/$defs/bool"
       },
       "depthWrite": {
-         "$ref": "#/$defs/std::optional<bool>"
+         "$ref": "#/$defs/bool"
       },
       "graphicsProgram": {
          "$ref": "#/$defs/aur::AssetRef"
@@ -34,10 +34,9 @@
             "null"
          ]
       },
-      "std::optional<aur::BlendingPreset>": {
+      "aur::BlendingPreset": {
          "type": [
-            "string",
-            "null"
+            "string"
          ],
          "oneOf": [
             {
@@ -50,10 +49,9 @@
             }
          ]
       },
-      "std::optional<aur::CullMode>": {
+      "aur::CullMode": {
          "type": [
-            "string",
-            "null"
+            "string"
          ],
          "oneOf": [
             {
@@ -74,10 +72,9 @@
             }
          ]
       },
-      "std::optional<bool>": {
+      "bool": {
          "type": [
-            "boolean",
-            "null"
+            "boolean"
          ]
       },
       "uint32_t": {
