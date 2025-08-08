@@ -32,58 +32,13 @@ using VkBufferUsageFlags = uint32_t;
 namespace aur {
 // sync with VkDescriptorType
 enum class DescriptorType : u32 {
-  // VK_DESCRIPTOR_TYPE_SAMPLER = 0,
-  // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
-  // VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
-  // VK_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
-  // VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
-  // VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
   UniformBuffer = 6,
-  // VK_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
-  // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
-  // VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
-  // VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,
-  // VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK = 1000138000,
-  // VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR = 1000150000,
-  // VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV = 1000165000,
-  // VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM = 1000440000,
-  // VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM = 1000440001,
-  // VK_DESCRIPTOR_TYPE_MUTABLE_EXT = 1000351000,
-  // VK_DESCRIPTOR_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_NV = 1000570000,
-  // VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT = VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK,
-  // VK_DESCRIPTOR_TYPE_MUTABLE_VALVE = VK_DESCRIPTOR_TYPE_MUTABLE_EXT,
-  // VK_DESCRIPTOR_TYPE_MAX_ENUM = 0x7FFFFFFF
 };
 
 // sync with VkShaderStageFlagBits
 enum class ShaderStageType : u32 {
   Vertex = 0x00000001,
-  // VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT = 0x00000002,
-  // VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT = 0x00000004,
-  // VK_SHADER_STAGE_GEOMETRY_BIT = 0x00000008,
   Fragment = 0x00000010,
-  // VK_SHADER_STAGE_COMPUTE_BIT = 0x00000020,
-  // VK_SHADER_STAGE_ALL_GRAPHICS = 0x0000001F,
-  // VK_SHADER_STAGE_ALL = 0x7FFFFFFF,
-  // VK_SHADER_STAGE_RAYGEN_BIT_KHR = 0x00000100,
-  // VK_SHADER_STAGE_ANY_HIT_BIT_KHR = 0x00000200,
-  // VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR = 0x00000400,
-  // VK_SHADER_STAGE_MISS_BIT_KHR = 0x00000800,
-  // VK_SHADER_STAGE_INTERSECTION_BIT_KHR = 0x00001000,
-  // VK_SHADER_STAGE_CALLABLE_BIT_KHR = 0x00002000,
-  // VK_SHADER_STAGE_TASK_BIT_EXT = 0x00000040,
-  // VK_SHADER_STAGE_MESH_BIT_EXT = 0x00000080,
-  // VK_SHADER_STAGE_SUBPASS_SHADING_BIT_HUAWEI = 0x00004000,
-  // VK_SHADER_STAGE_CLUSTER_CULLING_BIT_HUAWEI = 0x00080000,
-  // VK_SHADER_STAGE_RAYGEN_BIT_NV = VK_SHADER_STAGE_RAYGEN_BIT_KHR,
-  // VK_SHADER_STAGE_ANY_HIT_BIT_NV = VK_SHADER_STAGE_ANY_HIT_BIT_KHR,
-  // VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR,
-  // VK_SHADER_STAGE_MISS_BIT_NV = VK_SHADER_STAGE_MISS_BIT_KHR,
-  // VK_SHADER_STAGE_INTERSECTION_BIT_NV = VK_SHADER_STAGE_INTERSECTION_BIT_KHR,
-  // VK_SHADER_STAGE_CALLABLE_BIT_NV = VK_SHADER_STAGE_CALLABLE_BIT_KHR,
-  // VK_SHADER_STAGE_TASK_BIT_NV = VK_SHADER_STAGE_TASK_BIT_EXT,
-  // VK_SHADER_STAGE_MESH_BIT_NV = VK_SHADER_STAGE_MESH_BIT_EXT,
-  // VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
 // sync with VkVertexInputRate
@@ -107,6 +62,13 @@ enum class BufferUsage {
   Uniform = 0x00000010,
   Index = 0x00000040,
   Vertex = 0x00000080,
+};
+
+enum class ColorComponent {
+  Red = 0x00000001,
+  Green = 0x00000002,
+  Blue = 0x00000004,
+  Alpha = 0x00000008,
 };
 
 // sync with VmaMemoryUsage
@@ -160,6 +122,60 @@ template <>
 struct glz::meta<aur::FrontFace> {
   using enum aur::FrontFace;
   static constexpr auto value = glz::enumerate(CounterClockwise, Clockwise);
+};
+
+namespace aur {
+// Sync with VkBlendFactor
+enum class BlendFactor : u32 {
+  Zero = 0,
+  One = 1,
+  SrcColor = 2,
+  OneMinusSrcColor = 3,
+  DstColor = 4,
+  OneMinusDstColor = 5,
+  SrcAlpha = 6,
+  OneMinusSrcAlpha = 7,
+  DstAlpha = 8,
+  OneMinusDstAlpha = 9,
+  ConstantColor = 10,
+  OneMinusConstantColor = 11,
+  ConstantAlpha = 12,
+  OneMinusConstantAlpha = 13,
+  SrcAlphaSaturate = 14,
+  Src1Color = 15,
+  OneMinusSrc1Color = 16,
+  Src1Alpha = 17,
+  OneMinusSrc1Alpha = 18,
+};
+} // namespace aur
+template <>
+struct glz::meta<aur::BlendFactor> {
+  using enum aur::BlendFactor;
+  static constexpr auto value = glz::enumerate(
+      Zero, One, SrcColor, OneMinusSrcColor, DstColor, OneMinusDstColor, SrcAlpha, OneMinusSrcAlpha, DstAlpha,
+      OneMinusDstAlpha, ConstantColor, OneMinusConstantColor, ConstantAlpha, OneMinusConstantAlpha,
+      SrcAlphaSaturate, Src1Color, OneMinusSrc1Color, Src1Alpha, OneMinusSrc1Alpha);
+};
+
+namespace aur {
+// Sync with VkBlendOp (core values only)
+enum class BlendOp : u32 {
+  // src + dst
+  Add = 0,
+  // src - dst
+  Subtract = 1,
+  // dst - src
+  ReverseSubtract = 2,
+  // min(src, dst)
+  Min = 3,
+  // max(src, dst)
+  Max = 4,
+};
+} // namespace aur
+template <>
+struct glz::meta<aur::BlendOp> {
+  using enum aur::BlendOp;
+  static constexpr auto value = glz::enumerate(Add, Subtract, ReverseSubtract, Min, Max);
 };
 
 namespace aur {

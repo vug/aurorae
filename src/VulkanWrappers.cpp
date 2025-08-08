@@ -1,11 +1,18 @@
 #include "VulkanWrappers.h"
 
-// clang-format off
-#include <volk/volk.h>
-#include <VulkanMemoryAllocator/vk_mem_alloc.h>
-// clang-format on
-
 namespace aur {
+template <typename TEnum>
+u32 toVkFlags(const std::vector<TEnum>& enums) {
+  u32 flags{};
+  for (const auto& enm : enums)
+    flags |= static_cast<u32>(enm);
+  return flags;
+}
+
+template u32 toVkFlags(const std::vector<ShaderStageType>& enums);
+template u32 toVkFlags(const std::vector<BufferUsage>& enums);
+
+// clang-format off
 static_assert(static_cast<u32>(DescriptorType::UniformBuffer) == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
 static_assert(static_cast<u32>(ShaderStageType::Vertex) == VK_SHADER_STAGE_VERTEX_BIT);
@@ -43,15 +50,35 @@ static_assert(static_cast<u32>(PolygonMode::Point) == VK_POLYGON_MODE_POINT);
 static_assert(static_cast<u32>(FrontFace::CounterClockwise) == VK_FRONT_FACE_COUNTER_CLOCKWISE);
 static_assert(static_cast<u32>(FrontFace::Clockwise) == VK_FRONT_FACE_CLOCKWISE);
 
-template <typename TEnum>
-u32 toVkFlags(const std::vector<TEnum>& enums) {
-  u32 flags{};
-  for (const auto& enm : enums)
-    flags |= static_cast<u32>(enm);
-  return flags;
-}
+static_assert(static_cast<u32>(BlendFactor::Zero) == VK_BLEND_FACTOR_ZERO);
+static_assert(static_cast<u32>(BlendFactor::One) == VK_BLEND_FACTOR_ONE);
+static_assert(static_cast<u32>(BlendFactor::SrcColor) == VK_BLEND_FACTOR_SRC_COLOR);
+static_assert(static_cast<u32>(BlendFactor::OneMinusSrcColor) == VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR);
+static_assert(static_cast<u32>(BlendFactor::DstColor) == VK_BLEND_FACTOR_DST_COLOR);
+static_assert(static_cast<u32>(BlendFactor::OneMinusDstColor) == VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR);
+static_assert(static_cast<u32>(BlendFactor::SrcAlpha) == VK_BLEND_FACTOR_SRC_ALPHA);
+static_assert(static_cast<u32>(BlendFactor::OneMinusSrcAlpha) == VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+static_assert(static_cast<u32>(BlendFactor::DstAlpha) == VK_BLEND_FACTOR_DST_ALPHA);
+static_assert(static_cast<u32>(BlendFactor::OneMinusDstAlpha) == VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA);
+static_assert(static_cast<u32>(BlendFactor::ConstantColor) == VK_BLEND_FACTOR_CONSTANT_COLOR);
+static_assert(static_cast<u32>(BlendFactor::OneMinusConstantColor) ==  VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR);
+static_assert(static_cast<u32>(BlendFactor::ConstantAlpha) == VK_BLEND_FACTOR_CONSTANT_ALPHA);
+static_assert(static_cast<u32>(BlendFactor::OneMinusConstantAlpha) == VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA);
+static_assert(static_cast<u32>(BlendFactor::SrcAlphaSaturate) == VK_BLEND_FACTOR_SRC_ALPHA_SATURATE);
+static_assert(static_cast<u32>(BlendFactor::Src1Color) == VK_BLEND_FACTOR_SRC1_COLOR);
+static_assert(static_cast<u32>(BlendFactor::OneMinusSrc1Color) == VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR);
+static_assert(static_cast<u32>(BlendFactor::Src1Alpha) == VK_BLEND_FACTOR_SRC1_ALPHA);
+static_assert(static_cast<u32>(BlendFactor::OneMinusSrc1Alpha) == VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA);
 
-template u32 toVkFlags(const std::vector<ShaderStageType>& enums);
-template u32 toVkFlags(const std::vector<BufferUsage>& enums);
+static_assert(static_cast<u32>(BlendOp::Add) == VK_BLEND_OP_ADD);
+static_assert(static_cast<u32>(BlendOp::Subtract) == VK_BLEND_OP_SUBTRACT);
+static_assert(static_cast<u32>(BlendOp::ReverseSubtract) == VK_BLEND_OP_REVERSE_SUBTRACT);
+static_assert(static_cast<u32>(BlendOp::Min) == VK_BLEND_OP_MIN);
+static_assert(static_cast<u32>(BlendOp::Max) == VK_BLEND_OP_MAX);
 
+static_assert(static_cast<u32>(ColorComponent::Red) == VK_COLOR_COMPONENT_R_BIT);
+static_assert(static_cast<u32>(ColorComponent::Green) == VK_COLOR_COMPONENT_G_BIT);
+static_assert(static_cast<u32>(ColorComponent::Blue) == VK_COLOR_COMPONENT_B_BIT);
+static_assert(static_cast<u32>(ColorComponent::Alpha) == VK_COLOR_COMPONENT_A_BIT);
+// clang-format on
 } // namespace aur

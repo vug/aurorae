@@ -67,8 +67,8 @@ struct std::hash<aur::PipelineRasterizationStateCreateInfo> {
 
 namespace aur {
 struct PipelineDepthStencilStateCreateInfo {
-  bool depthTest;
-  bool depthWrite;
+  bool depthTest{true};
+  bool depthWrite{true};
 
   [[nodiscard]] VkPipelineDepthStencilStateCreateInfo toVk() const {
     return {
@@ -103,6 +103,62 @@ struct std::hash<aur::PipelineDepthStencilStateCreateInfo> {
 // clang-format on
 
 namespace aur {
+struct PipelineColorBlendAttachmentState {
+  bool enable{false};
+  BlendFactor srcColorFactor{BlendFactor::One};
+  BlendFactor dstColorFactor{BlendFactor::Zero};
+  BlendOp colorOp{BlendOp::Add};
+  BlendFactor srcAlphaFactor{BlendFactor::One};
+  BlendFactor dstAlphaFactor{BlendFactor::Zero};
+  BlendOp alphaOp{BlendOp::Add};
+  std::vector<ColorComponent> writeMask{ColorComponent::Red, ColorComponent::Green, ColorComponent::Blue,
+                                        ColorComponent::Alpha};
+
+  [[nodiscard]] VkPipelineColorBlendAttachmentState toVk() const {
+    return {
+        .blendEnable = enable,
+        .srcColorBlendFactor = static_cast<VkBlendFactor>(srcColorFactor),
+        .dstColorBlendFactor = static_cast<VkBlendFactor>(dstColorFactor),
+        .colorBlendOp = static_cast<VkBlendOp>(colorOp),
+        .srcAlphaBlendFactor = static_cast<VkBlendFactor>(srcAlphaFactor),
+        .dstAlphaBlendFactor = static_cast<VkBlendFactor>(dstAlphaFactor),
+        .alphaBlendOp = static_cast<VkBlendOp>(alphaOp),
+        .colorWriteMask = toVkFlags(writeMask),
+    };
+  }
+
+  // Compare members in a fixed order.
+  [[nodiscard]] auto identifier() const {
+    return std::tie(enable, srcColorFactor, dstColorFactor, colorOp, srcAlphaFactor, dstAlphaFactor, alphaOp,
+                    writeMask);
+  }
+  bool operator<(const PipelineColorBlendAttachmentState& other) const {
+    return identifier() < other.identifier();
+  }
+  bool operator==(const PipelineColorBlendAttachmentState& other) const {
+    return identifier() == other.identifier();
+  }
+};
+} // namespace aur
+// clang-format off
+template <>
+struct std::hash<aur::PipelineColorBlendAttachmentState> {
+  size_t operator()(const aur::PipelineColorBlendAttachmentState& info) const noexcept {
+    size_t seed = 0;
+    hashCombine(seed, std::hash<bool>()(info.enable));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::BlendFactor>>()(std::to_underlying(info.srcColorFactor)));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::BlendFactor>>()(std::to_underlying(info.dstColorFactor)));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::BlendOp>>()(std::to_underlying(info.colorOp)));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::BlendFactor>>()(std::to_underlying(info.srcAlphaFactor)));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::BlendFactor>>()(std::to_underlying(info.dstAlphaFactor)));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::BlendOp>>()(std::to_underlying(info.alphaOp)));
+    hashCombine(seed, std::hash<uint32_t>()(aur::toVkFlags(info.writeMask)));
+    return seed;
+  }
+};
+// clang-format on
+
+namespace aur {
 struct PipelineCreateInfo {
   // Increment version after each change to the schema or processing logic
   static constexpr u32 schemaVersion{1};
@@ -119,7 +175,21 @@ struct PipelineCreateInfo {
   bool operator<(const PipelineCreateInfo& other) const { return identifier() < other.identifier(); }
   bool operator==(const PipelineCreateInfo& other) const { return identifier() == other.identifier(); }
 };
+} // namespace aur
+// clang-format off
+template <>
+struct std::hash<aur::PipelineCreateInfo> {
+  size_t operator()(const aur::PipelineCreateInfo& info) const noexcept {
+    size_t seed = 0;
+    hashCombine(seed, std::hash<aur::u32>()(info.graphicsProgram.id));
+    hashCombine(seed, std::hash<aur::PipelineRasterizationStateCreateInfo>()(info.rasterizationStateCreateInfo));
+    hashCombine(seed, std::hash<aur::PipelineDepthStencilStateCreateInfo>()(info.depthStencilStateCreateInfo));
+    return seed;
+  }
+};
+// clang-format on
 
+namespace aur {
 class Pipeline {
 public:
   Pipeline() = default;
@@ -147,15 +217,3 @@ private:
   VkPipeline handle_{VK_NULL_HANDLE};
 };
 } // namespace aur
-// clang-format off
-template <>
-struct std::hash<aur::PipelineCreateInfo> {
-  size_t operator()(const aur::PipelineCreateInfo& info) const noexcept {
-    size_t seed = 0;
-    hashCombine(seed, std::hash<aur::u32>()(info.graphicsProgram.id));
-    hashCombine(seed, std::hash<aur::PipelineRasterizationStateCreateInfo>()(info.rasterizationStateCreateInfo));
-    hashCombine(seed, std::hash<aur::PipelineDepthStencilStateCreateInfo>()(info.depthStencilStateCreateInfo));
-    return seed;
-  }
-};
-// clang-format on
