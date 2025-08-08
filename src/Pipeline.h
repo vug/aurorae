@@ -19,16 +19,37 @@ namespace render {
 class GraphicsProgram;
 }
 
+struct PipelineRasterizationStateCreateInfo {
+  CullMode cullMode{CullMode::Back};
+  // Can be set dynamically https://registry.khronos.org/vulkan/specs/latest/man/html/VkFrontFace.html
+  PolygonMode polygonMode{PolygonMode::Fill};
+  // Can be set dynamically
+  // https://registry.khronos.org/vulkan/specs/latest/man/html/vkCmdSetFrontFaceEXT.html
+  FrontFace frontFace{FrontFace::CounterClockwise};
+  f32 lineWidth{1.0f};
+
+  // Compare members in a fixed order.
+  [[nodiscard]] auto identifier() const { return std::tie(cullMode, polygonMode, frontFace, lineWidth); }
+  bool operator<(const PipelineRasterizationStateCreateInfo& other) const {
+    return identifier() < other.identifier();
+  }
+  bool operator==(const PipelineRasterizationStateCreateInfo& other) const {
+    return identifier() == other.identifier();
+  }
+};
+
 struct PipelineCreateInfo {
   // Increment version after each change to the schema or processing logic
   static constexpr u32 schemaVersion{1};
   u32 version{schemaVersion};
 
   Handle<render::GraphicsProgram> graphicsProgram;
-  CullMode cullMode{CullMode::Back};
+  PipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo;
 
   // Compare members in a fixed order.
-  [[nodiscard]] auto identifier() const { return std::tie(graphicsProgram.id, cullMode); }
+  [[nodiscard]] auto identifier() const {
+    return std::tie(graphicsProgram.id, pipelineRasterizationStateCreateInfo);
+  }
   bool operator<(const PipelineCreateInfo& other) const { return identifier() < other.identifier(); }
   bool operator==(const PipelineCreateInfo& other) const { return identifier() == other.identifier(); }
 };
@@ -62,14 +83,27 @@ private:
 
 } // namespace aur
 
+// clang-format off
+template <>
+struct std::hash<aur::PipelineRasterizationStateCreateInfo> {
+  size_t operator()(const aur::PipelineRasterizationStateCreateInfo& createInfo) const noexcept {
+    size_t seed = 0;
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::CullMode>>()(std::to_underlying(createInfo.cullMode)));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::PolygonMode>>()(std::to_underlying(createInfo.polygonMode)));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::FrontFace>>()(std::to_underlying(createInfo.frontFace)));
+    hashCombine(seed, std::hash<aur::f32>()(createInfo.lineWidth));
+    return seed;
+  }
+};
+
+
 template <>
 struct std::hash<aur::PipelineCreateInfo> {
   size_t operator()(const aur::PipelineCreateInfo& createInfo) const noexcept {
-    const size_t shaderHash = std::hash<aur::u32>()(createInfo.graphicsProgram.id);
-    const size_t cullModeHash =
-        std::hash<std::underlying_type_t<aur::CullMode>>()(std::to_underlying(createInfo.cullMode));
-    // left shift helps with distributing bits
-    const size_t hash = shaderHash ^ (cullModeHash << 1);
-    return hash;
+    size_t seed = 0;
+    hashCombine(seed, std::hash<aur::u32>()(createInfo.graphicsProgram.id));
+    hashCombine(seed, std::hash<aur::PipelineRasterizationStateCreateInfo>()(createInfo.pipelineRasterizationStateCreateInfo));
+    return seed;
   }
-}; // namespace std
+};
+// clang-format on

@@ -36,6 +36,13 @@ static_assert(static_cast<u32>(CullMode::Front) == VK_CULL_MODE_FRONT_BIT);
 static_assert(static_cast<u32>(CullMode::Back) == VK_CULL_MODE_BACK_BIT);
 static_assert(static_cast<u32>(CullMode::FrontAndBack) == VK_CULL_MODE_FRONT_AND_BACK);
 
+static_assert(static_cast<u32>(PolygonMode::Fill) == VK_POLYGON_MODE_FILL);
+static_assert(static_cast<u32>(PolygonMode::Line) == VK_POLYGON_MODE_LINE);
+static_assert(static_cast<u32>(PolygonMode::Point) == VK_POLYGON_MODE_POINT);
+
+static_assert(static_cast<u32>(FrontFace::CounterClockwise) == VK_FRONT_FACE_COUNTER_CLOCKWISE);
+static_assert(static_cast<u32>(FrontFace::Clockwise) == VK_FRONT_FACE_CLOCKWISE);
+
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums) {
   u32 flags{};

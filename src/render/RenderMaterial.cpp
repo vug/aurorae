@@ -15,9 +15,10 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
     , pipelineCreateInfo_{[this]() {
       const asset::Material& aMaterial = assetHandle_.get();
       const asset::MaterialDefinition& matDef = aMaterial.getDefinition();
-      PipelineCreateInfo info;
-      info.cullMode = matDef.cullMode;
-
+      PipelineCreateInfo info{.graphicsProgram = graphicsProgramHandle_,
+                              .pipelineRasterizationStateCreateInfo = {
+                                  .cullMode = matDef.cullMode,
+                              }};
       return info;
     }()} {}
 

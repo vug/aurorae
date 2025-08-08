@@ -126,6 +126,18 @@ enum class CullMode : u32 {
   FrontAndBack = 3,
 };
 
+enum class PolygonMode : u32 {
+  Fill = 0,
+  Line = 1,
+  Point = 2,
+  // VK_POLYGON_MODE_FILL_RECTANGLE_NV
+};
+
+enum class FrontFace : u32 {
+  CounterClockwise = 0,
+  Clockwise = 1,
+};
+
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums);
 
