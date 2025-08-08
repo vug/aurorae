@@ -54,10 +54,10 @@ struct MaterialDefinition {
   u32 version{schemaVersion};
 
   AssetRef graphicsProgram;
-  std::optional<bool> depthTest{true};
-  std::optional<bool> depthWrite{true};
-  std::optional<CullMode> cullMode{CullMode::Back};
-  std::optional<BlendingPreset> blendPreset{BlendingPreset::NoBlend};
+  bool depthTest{true};
+  bool depthWrite{true};
+  CullMode cullMode{CullMode::Back};
+  BlendingPreset blendPreset{BlendingPreset::NoBlend};
 
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
@@ -68,7 +68,7 @@ struct MaterialDefinition {
 class Material : public AssetTypeMixin<Material, MaterialDefinition, AssetType::Material, "Material",
                                        "019870da-2c87-7f9e-aece-9484ce47cac9"> {
 public:
-  static Material create(Handle<GraphicsProgram> graphProg);
+  static Material create(MaterialDefinition&& matDef, Handle<GraphicsProgram> graphProg);
 
   ~Material() = default;
   Material(const Material&) = delete;
@@ -79,12 +79,14 @@ public:
   [[nodiscard]] inline const Handle<GraphicsProgram>& getGraphicsProgramHandle() const {
     return graphicsProgram_;
   }
+  [[nodiscard]] inline const MaterialDefinition& getDefinition() const { return materialDef_; }
 
 private:
   Material() = default;
   std::string debugName_;
 
   Handle<GraphicsProgram> graphicsProgram_;
+  MaterialDefinition materialDef_;
 };
 
 } // namespace aur::asset

@@ -113,7 +113,7 @@ AssetManager::loadGraphicsProgramFromDefinition(asset::GraphicsProgramDefinition
 }
 Handle<asset::Material> AssetManager::loadMaterialFromDefinition(asset::MaterialDefinition&& materialDef) {
   const Handle graphProg{load<asset::GraphicsProgram>(materialDef.graphicsProgram.getUuid())};
-  asset::Material material = asset::Material::create(graphProg);
+  asset::Material material = asset::Material::create(std::move(materialDef), graphProg);
   materials_.push_back(std::move(material));
   return Handle<asset::Material>{static_cast<u32>(materials_.size() - 1)};
 }
