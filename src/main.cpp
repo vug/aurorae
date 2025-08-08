@@ -1,5 +1,4 @@
 /*
-TODO(vug): Add a version to PipelineCreateInfo (increase it after each change to it to invalidating caches)
 TODO(vug): asset::Material owns a PipelineCreateInfo prepared from MaterialDefinition. Calculates it's cache
 TODO(vug): render::Material uses the hash of PipelineCreateInfo to load Pipeline if cached on disk
            otherwise create one and store to disk (do storing operations on a separate thread)
@@ -8,6 +7,10 @@ TODO(vug): Introduce drawSubmesh(MeshHandle, drawSpanIx) function. Give pipeline
 TODO(vug): Add attributes to fat vertex. (also add meshId too)
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
+TODO(vug): Once all assets are processed, go over the material assets and create render::Materials.
+           After that, store vulkan cache to disk. Next time load it. It'll be used at next VkPipeline
+           creation!
+TODO(vug): turn on SIMD for glaze https://github.com/stephenberry/glaze?tab=readme-ov-file#simd-cmake-options
 TODO(vug): do the dynamic vs. baked state suggestions for the pipeline
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
 TODO(vug): asset::Texture, render::Texture

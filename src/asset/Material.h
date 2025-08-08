@@ -49,6 +49,10 @@ class GraphicsProgram;
 struct Pipeline;
 
 struct MaterialDefinition {
+  // Increment version after each change to the schema or processing logic
+  static constexpr u32 schemaVersion{1};
+  u32 version{schemaVersion};
+
   AssetRef graphicsProgram;
   std::optional<bool> depthTest{true};
   std::optional<bool> depthWrite{true};

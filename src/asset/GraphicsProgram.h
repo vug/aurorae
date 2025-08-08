@@ -9,6 +9,10 @@
 namespace aur::asset {
 
 struct GraphicsProgramDefinition {
+  // Increment version after each change to the schema or processing logic
+  static constexpr u32 schemaVersion{1};
+  u32 version{schemaVersion};
+
   AssetRef vert;
   AssetRef frag;
 };

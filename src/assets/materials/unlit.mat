@@ -1,3 +1,4 @@
 {
+  "version": 1,
   "graphicsProgram": "shaders/unlit.shader"
 }

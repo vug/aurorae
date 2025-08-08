@@ -23,6 +23,10 @@ struct SubMesh {
 };
 
 struct MeshDefinition {
+  // Increment version after each change to the schema or processing logic
+  static constexpr u32 schemaVersion{1};
+  u32 version{schemaVersion};
+
   std::vector<Vertex> vertices;
   std::vector<u32> indices;
   std::vector<SubMesh> subMeshes;

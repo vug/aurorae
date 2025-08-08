@@ -6,6 +6,9 @@
       "frag": {
          "$ref": "#/$defs/aur::AssetRef"
       },
+      "version": {
+         "$ref": "#/$defs/uint32_t"
+      },
       "vert": {
          "$ref": "#/$defs/aur::AssetRef"
       }
@@ -21,6 +24,13 @@
             "array",
             "null"
          ]
+      },
+      "uint32_t": {
+         "type": [
+            "integer"
+         ],
+         "minimum": 0,
+         "maximum": 4294967295
       }
    }
 }
