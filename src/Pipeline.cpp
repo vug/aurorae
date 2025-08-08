@@ -88,8 +88,7 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
       .scissorCount = 1,  // will be set by dynamic state
   };
 
-  const VkPipelineRasterizationStateCreateInfo rasterizationState =
-      createInfo.rasterizationStateCreateInfo.toVk();
+  const VkPipelineRasterizationStateCreateInfo rasterizationState = createInfo.rasterizationState.toVk();
 
   constexpr VkPipelineMultisampleStateCreateInfo multisampling{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
@@ -97,8 +96,7 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
       .sampleShadingEnable = VK_FALSE,
   };
 
-  const VkPipelineDepthStencilStateCreateInfo depthStencilState =
-      createInfo.depthStencilStateCreateInfo.toVk();
+  const VkPipelineDepthStencilStateCreateInfo depthStencilState = createInfo.depthStencilState.toVk();
 
   constexpr VkPipelineColorBlendAttachmentState colorBlendAttachment{
       .blendEnable = VK_FALSE,

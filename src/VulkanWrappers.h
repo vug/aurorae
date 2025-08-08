@@ -179,6 +179,35 @@ struct glz::meta<aur::BlendOp> {
 };
 
 namespace aur {
+// Sync with VkLogicOp
+enum class LogicOp : u32 {
+  Clear = 0,
+  And = 1,
+  AndReverse = 2,
+  Copy = 3,
+  AndInverted = 4,
+  NoOp = 5,
+  Xor = 6,
+  Or = 7,
+  Nor = 8,
+  Equivalent = 9,
+  Invert = 10,
+  OrReverse = 11,
+  CopyInverted = 12,
+  OrInverted = 13,
+  Nand = 14,
+  Set = 15,
+};
+} // namespace aur
+template <>
+struct glz::meta<aur::LogicOp> {
+  using enum aur::LogicOp;
+  static constexpr auto value =
+      glz::enumerate(Clear, And, AndReverse, Copy, AndInverted, NoOp, Xor, Or, Nor, Equivalent, Invert,
+                     OrReverse, CopyInverted, OrInverted, Nand, Set);
+};
+
+namespace aur {
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums);
 

@@ -11,6 +11,7 @@ u32 toVkFlags(const std::vector<TEnum>& enums) {
 
 template u32 toVkFlags(const std::vector<ShaderStageType>& enums);
 template u32 toVkFlags(const std::vector<BufferUsage>& enums);
+template u32 toVkFlags(const std::vector<ColorComponent>& enums);
 
 // clang-format off
 static_assert(static_cast<u32>(DescriptorType::UniformBuffer) == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -80,5 +81,22 @@ static_assert(static_cast<u32>(ColorComponent::Red) == VK_COLOR_COMPONENT_R_BIT)
 static_assert(static_cast<u32>(ColorComponent::Green) == VK_COLOR_COMPONENT_G_BIT);
 static_assert(static_cast<u32>(ColorComponent::Blue) == VK_COLOR_COMPONENT_B_BIT);
 static_assert(static_cast<u32>(ColorComponent::Alpha) == VK_COLOR_COMPONENT_A_BIT);
+
+static_assert(static_cast<u32>(LogicOp::Clear) == VK_LOGIC_OP_CLEAR);
+static_assert(static_cast<u32>(LogicOp::And) == VK_LOGIC_OP_AND);
+static_assert(static_cast<u32>(LogicOp::AndReverse) == VK_LOGIC_OP_AND_REVERSE);
+static_assert(static_cast<u32>(LogicOp::Copy) == VK_LOGIC_OP_COPY);
+static_assert(static_cast<u32>(LogicOp::AndInverted) == VK_LOGIC_OP_AND_INVERTED);
+static_assert(static_cast<u32>(LogicOp::NoOp) == VK_LOGIC_OP_NO_OP);
+static_assert(static_cast<u32>(LogicOp::Xor) == VK_LOGIC_OP_XOR);
+static_assert(static_cast<u32>(LogicOp::Or) == VK_LOGIC_OP_OR);
+static_assert(static_cast<u32>(LogicOp::Nor) == VK_LOGIC_OP_NOR);
+static_assert(static_cast<u32>(LogicOp::Equivalent) == VK_LOGIC_OP_EQUIVALENT);
+static_assert(static_cast<u32>(LogicOp::Invert) == VK_LOGIC_OP_INVERT);
+static_assert(static_cast<u32>(LogicOp::OrReverse) == VK_LOGIC_OP_OR_REVERSE);
+static_assert(static_cast<u32>(LogicOp::CopyInverted) == VK_LOGIC_OP_COPY_INVERTED);
+static_assert(static_cast<u32>(LogicOp::OrInverted) == VK_LOGIC_OP_OR_INVERTED);
+static_assert(static_cast<u32>(LogicOp::Nand) == VK_LOGIC_OP_NAND);
+static_assert(static_cast<u32>(LogicOp::Set) == VK_LOGIC_OP_SET);
 // clang-format on
 } // namespace aur

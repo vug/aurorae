@@ -159,18 +159,72 @@ struct std::hash<aur::PipelineColorBlendAttachmentState> {
 // clang-format on
 
 namespace aur {
+struct PipelineColorBlendStateCreateInfo {
+  bool logicOpEnable{false};
+  LogicOp logicOp{LogicOp::Copy}; // You might need to create this enum too
+  std::vector<PipelineColorBlendAttachmentState> attachments;
+  std::array<f32, 4> blendConstants{0.0f, 0.0f, 0.0f, 0.0f};
+
+  [[nodiscard]] VkPipelineColorBlendStateCreateInfo toVk() {
+    for (const PipelineColorBlendAttachmentState& att : attachments)
+      vkAttachments_.push_back(att.toVk());
+
+    return {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+        .logicOpEnable = logicOpEnable,
+        .logicOp = static_cast<VkLogicOp>(logicOp),
+        .attachmentCount = static_cast<u32>(attachments.size()),
+        .pAttachments = vkAttachments_.data(),
+        .blendConstants = {blendConstants[0], blendConstants[1], blendConstants[2], blendConstants[3]},
+    };
+  }
+  // Compare members in a fixed order.
+  [[nodiscard]] auto identifier() const {
+    return std::tie(logicOpEnable, logicOp, attachments, blendConstants);
+  }
+  bool operator<(const PipelineColorBlendStateCreateInfo& other) const {
+    return identifier() < other.identifier();
+  }
+  bool operator==(const PipelineColorBlendStateCreateInfo& other) const {
+    return identifier() == other.identifier();
+  }
+
+private:
+  std::vector<VkPipelineColorBlendAttachmentState> vkAttachments_;
+};
+} // namespace aur
+// clang-format off
+template <>
+struct std::hash<aur::PipelineColorBlendStateCreateInfo> {
+  size_t operator()(const aur::PipelineColorBlendStateCreateInfo& info) const noexcept {
+    size_t seed = 0;
+    hashCombine(seed, std::hash<bool>()(info.logicOpEnable));
+    hashCombine(seed, std::hash<std::underlying_type_t<aur::LogicOp>>()(std::to_underlying(info.logicOp)));
+    for (const auto& att : info.attachments)
+      hashCombine(seed, std::hash<aur::PipelineColorBlendAttachmentState>()(att));
+    hashCombine(seed, std::hash<aur::f32>()(info.blendConstants[0]));
+    hashCombine(seed, std::hash<aur::f32>()(info.blendConstants[1]));
+    hashCombine(seed, std::hash<aur::f32>()(info.blendConstants[2]));
+    hashCombine(seed, std::hash<aur::f32>()(info.blendConstants[3]));
+    return seed;
+  }
+};
+// clang-format on
+
+namespace aur {
 struct PipelineCreateInfo {
   // Increment version after each change to the schema or processing logic
   static constexpr u32 schemaVersion{1};
   u32 version{schemaVersion};
 
   Handle<render::GraphicsProgram> graphicsProgram;
-  PipelineRasterizationStateCreateInfo rasterizationStateCreateInfo;
-  PipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
+  PipelineRasterizationStateCreateInfo rasterizationState;
+  PipelineDepthStencilStateCreateInfo depthStencilState;
+  PipelineColorBlendStateCreateInfo colorBlendState;
 
   // Compare members in a fixed order.
   [[nodiscard]] auto identifier() const {
-    return std::tie(graphicsProgram.id, rasterizationStateCreateInfo, depthStencilStateCreateInfo);
+    return std::tie(graphicsProgram.id, rasterizationState, depthStencilState, colorBlendState);
   }
   bool operator<(const PipelineCreateInfo& other) const { return identifier() < other.identifier(); }
   bool operator==(const PipelineCreateInfo& other) const { return identifier() == other.identifier(); }
@@ -182,8 +236,9 @@ struct std::hash<aur::PipelineCreateInfo> {
   size_t operator()(const aur::PipelineCreateInfo& info) const noexcept {
     size_t seed = 0;
     hashCombine(seed, std::hash<aur::u32>()(info.graphicsProgram.id));
-    hashCombine(seed, std::hash<aur::PipelineRasterizationStateCreateInfo>()(info.rasterizationStateCreateInfo));
-    hashCombine(seed, std::hash<aur::PipelineDepthStencilStateCreateInfo>()(info.depthStencilStateCreateInfo));
+    hashCombine(seed, std::hash<aur::PipelineRasterizationStateCreateInfo>()(info.rasterizationState));
+    hashCombine(seed, std::hash<aur::PipelineDepthStencilStateCreateInfo>()(info.depthStencilState));
+    hashCombine(seed, std::hash<aur::PipelineColorBlendStateCreateInfo>()(info.colorBlendState));
     return seed;
   }
 };
