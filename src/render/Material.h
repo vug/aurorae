@@ -25,6 +25,7 @@ public:
   [[nodiscard]] inline Handle<render::GraphicsProgram> getGraphicsProgramHandle() const {
     return graphicsProgramHandle_;
   }
+  [[nodiscard]] inline const PipelineCreateInfo& getPipelineCreateInfo() const { return pipelineCreateInfo_; }
 
 private:
   Renderer* renderer_{};

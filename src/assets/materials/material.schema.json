@@ -15,8 +15,17 @@
       "depthWrite": {
          "$ref": "#/$defs/bool"
       },
+      "frontFace": {
+         "$ref": "#/$defs/aur::FrontFace"
+      },
       "graphicsProgram": {
          "$ref": "#/$defs/aur::AssetRef"
+      },
+      "lineWidth": {
+         "$ref": "#/$defs/float"
+      },
+      "polygonMode": {
+         "$ref": "#/$defs/aur::PolygonMode"
       },
       "version": {
          "$ref": "#/$defs/uint32_t"
@@ -72,10 +81,37 @@
             }
          ]
       },
+      "aur::FrontFace": {
+         "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+         ]
+      },
+      "aur::PolygonMode": {
+         "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+         ]
+      },
       "bool": {
          "type": [
             "boolean"
          ]
+      },
+      "float": {
+         "type": [
+            "number"
+         ],
+         "minimum": -3.4028234663852886E38,
+         "maximum": 3.4028234663852886E38
       },
       "uint32_t": {
          "type": [

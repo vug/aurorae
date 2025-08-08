@@ -17,7 +17,10 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
       const asset::MaterialDefinition& matDef = aMaterial.getDefinition();
       PipelineCreateInfo info{.graphicsProgram = graphicsProgramHandle_,
                               .pipelineRasterizationStateCreateInfo = {
+                                  .polygonMode = matDef.polygonMode,
                                   .cullMode = matDef.cullMode,
+                                  .frontFace = matDef.frontFace,
+                                  .lineWidth = matDef.lineWidth,
                               }};
       return info;
     }()} {}

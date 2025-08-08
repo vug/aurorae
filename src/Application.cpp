@@ -69,15 +69,6 @@ void Application::run() {
   const StableId<asset::Material> kUnlitMaterialId{"materials/unlit.mat"};
   const Handle<asset::Material> unlitAMaterial = assetManager_.load(kUnlitMaterialId);
   const Handle<render::Material> unlitRMaterial = renderer_.uploadOrGet(unlitAMaterial);
-  // Don't do pipeline creation here but at draw call
-  const PipelineCreateInfo pipelineCreateInfo{
-      .graphicsProgram = unlitRMaterial.get().getGraphicsProgramHandle(),
-      .pipelineRasterizationStateCreateInfo =
-          {
-              .cullMode = CullMode::Back,
-          },
-  };
-  const Pipeline* unlitPipeline = renderer_.createOrGetPipeline(pipelineCreateInfo);
 
   const StableId<asset::Mesh> kBoxMeshId{
       "models/glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf"};
@@ -128,6 +119,8 @@ void Application::run() {
 
     renderer_.setClearColor(0.25f, 0.25f, 0.25f);
 
+    const Pipeline* unlitPipeline =
+        renderer_.createOrGetPipeline(unlitRMaterial.get().getPipelineCreateInfo());
     glm::mat4 worldFromObject1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 1.5));
     const PushConstantsInfo pcInfo1{
         .pipelineLayout = unlitPipeline->getPipelineLayout(),

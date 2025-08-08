@@ -56,7 +56,10 @@ struct MaterialDefinition {
   AssetRef graphicsProgram;
   bool depthTest{true};
   bool depthWrite{true};
+  PolygonMode polygonMode{PolygonMode::Fill};
   CullMode cullMode{CullMode::Back};
+  FrontFace frontFace{FrontFace::CounterClockwise};
+  f32 lineWidth{1.0f};
   BlendingPreset blendPreset{BlendingPreset::NoBlend};
 
   // MaterialMetadata using which we can create the PipelineCreateInfo

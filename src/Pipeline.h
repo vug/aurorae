@@ -20,9 +20,9 @@ class GraphicsProgram;
 }
 
 struct PipelineRasterizationStateCreateInfo {
-  CullMode cullMode{CullMode::Back};
   // Can be set dynamically https://registry.khronos.org/vulkan/specs/latest/man/html/VkFrontFace.html
   PolygonMode polygonMode{PolygonMode::Fill};
+  CullMode cullMode{CullMode::Back};
   // Can be set dynamically
   // https://registry.khronos.org/vulkan/specs/latest/man/html/vkCmdSetFrontFaceEXT.html
   FrontFace frontFace{FrontFace::CounterClockwise};
