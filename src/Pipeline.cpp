@@ -88,16 +88,8 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
       .scissorCount = 1,  // will be set by dynamic state
   };
 
-  const VkPipelineRasterizationStateCreateInfo rasterizer{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-      .depthClampEnable = VK_FALSE,
-      .rasterizerDiscardEnable = VK_FALSE,
-      .polygonMode = VK_POLYGON_MODE_FILL,
-      .cullMode = static_cast<u32>(createInfo.cullMode),
-      .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE, // Matches cube.vert winding
-      .depthBiasEnable = VK_FALSE,
-      .lineWidth = 1.0f,
-  };
+  const VkPipelineRasterizationStateCreateInfo rasterizationState =
+      createInfo.pipelineRasterizationStateCreateInfo.toVk();
 
   constexpr VkPipelineMultisampleStateCreateInfo multisampling{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
@@ -151,7 +143,7 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &inputAssembly,
       .pViewportState = &viewportState,
-      .pRasterizationState = &rasterizer,
+      .pRasterizationState = &rasterizationState,
       .pMultisampleState = &multisampling,
       .pDepthStencilState = &depthStencilState,
       .pColorBlendState = &colorBlending,

@@ -28,6 +28,19 @@ struct PipelineRasterizationStateCreateInfo {
   FrontFace frontFace{FrontFace::CounterClockwise};
   f32 lineWidth{1.0f};
 
+  VkPipelineRasterizationStateCreateInfo toVk() const {
+    return VkPipelineRasterizationStateCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+        .depthClampEnable = VK_FALSE,
+        .rasterizerDiscardEnable = VK_FALSE,
+        .polygonMode = static_cast<VkPolygonMode>(polygonMode),
+        .cullMode = static_cast<VkCullModeFlags>(cullMode),
+        .frontFace = static_cast<VkFrontFace>(frontFace),
+        .depthBiasEnable = VK_FALSE,
+        .lineWidth = lineWidth,
+    };
+  }
+
   // Compare members in a fixed order.
   [[nodiscard]] auto identifier() const { return std::tie(cullMode, polygonMode, frontFace, lineWidth); }
   bool operator<(const PipelineRasterizationStateCreateInfo& other) const {

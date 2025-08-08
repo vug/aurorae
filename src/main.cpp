@@ -1,6 +1,4 @@
 /*
-TODO(vug): render::Material owns a PipelineCreateInfo prepared from MaterialDefinition.
-           (Maybe a conversion utility in create into method)
 TODO(vug): Use new depth parameters, and blending presets in building vulkan create into.
 TODO(vug): render::Material uses the hash of PipelineCreateInfo to load Pipeline if cached on disk
            otherwise create one and store to disk (do storing operations on a separate thread)
@@ -14,6 +12,7 @@ TODO(vug): Once all assets are processed, go over the material assets and create
            creation!
 TODO(vug): turn on SIMD for glaze https://github.com/stephenberry/glaze?tab=readme-ov-file#simd-cmake-options
 TODO(vug): do the dynamic vs. baked state suggestions for the pipeline
+TODO(vug): wrappers for aur enums for vk conversion. similar with createInfo structs. (principle of locality)
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
 TODO(vug): asset::Texture, render::Texture
 TODO(vug): bring a Khronos sample asset with textures

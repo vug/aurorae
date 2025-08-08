@@ -119,6 +119,7 @@ enum class MemoryUsage {
   GpuToCpu = 4,
 };
 
+// Sync with VkCullModeFlagBits
 enum class CullMode : u32 {
   None = 0,
   Front = 1,
@@ -126,6 +127,7 @@ enum class CullMode : u32 {
   FrontAndBack = 3,
 };
 
+// Sync with VkPolygonMode
 enum class PolygonMode : u32 {
   Fill = 0,
   Line = 1,
@@ -133,6 +135,7 @@ enum class PolygonMode : u32 {
   // VK_POLYGON_MODE_FILL_RECTANGLE_NV
 };
 
+// Sync with VkFrontFace
 enum class FrontFace : u32 {
   CounterClockwise = 0,
   Clockwise = 1,
