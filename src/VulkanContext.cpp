@@ -80,6 +80,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           .require_dedicated_transfer_queue()
           .require_present()
           .set_required_features(VkPhysicalDeviceFeatures{
+              .fillModeNonSolid{true},
               .samplerAnisotropy{true},
               // automatically turns on when bufferDeviceAddress enabled, but my
               // RTX4090 does not support it
