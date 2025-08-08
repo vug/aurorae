@@ -30,7 +30,6 @@ using VkDeviceSize = uint64_t;
 using VkBufferUsageFlags = uint32_t;
 
 namespace aur {
-
 // sync with VkDescriptorType
 enum class DescriptorType : u32 {
   // VK_DESCRIPTOR_TYPE_SAMPLER = 0,
@@ -118,7 +117,9 @@ enum class MemoryUsage {
   CpuToGpu = 3,
   GpuToCpu = 4,
 };
+} // namespace aur
 
+namespace aur {
 // Sync with VkCullModeFlagBits
 enum class CullMode : u32 {
   None = 0,
@@ -126,7 +127,14 @@ enum class CullMode : u32 {
   Back = 2,
   FrontAndBack = 3,
 };
+} // namespace aur
+template <>
+struct glz::meta<aur::CullMode> {
+  using enum aur::CullMode;
+  static constexpr auto value = glz::enumerate(None, Front, Back, FrontAndBack);
+};
 
+namespace aur {
 // Sync with VkPolygonMode
 enum class PolygonMode : u32 {
   Fill = 0,
@@ -134,13 +142,27 @@ enum class PolygonMode : u32 {
   Point = 2,
   // VK_POLYGON_MODE_FILL_RECTANGLE_NV
 };
+} // namespace aur
+template <>
+struct glz::meta<aur::PolygonMode> {
+  using enum aur::PolygonMode;
+  static constexpr auto value = glz::enumerate(Fill, Line, Point);
+};
 
+namespace aur {
 // Sync with VkFrontFace
 enum class FrontFace : u32 {
   CounterClockwise = 0,
   Clockwise = 1,
 };
+} // namespace aur
+template <>
+struct glz::meta<aur::FrontFace> {
+  using enum aur::FrontFace;
+  static constexpr auto value = glz::enumerate(CounterClockwise, Clockwise);
+};
 
+namespace aur {
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums);
 

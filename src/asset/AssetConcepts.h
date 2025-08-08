@@ -1,14 +1,20 @@
 #pragma once
 
 namespace aur {
-
 enum class AssetType : unsigned int {
   ShaderStage = 0,
   GraphicsProgram = 1,
   Material = 2,
   Mesh = 3,
 };
+}
+template <>
+struct glz::meta<aur::AssetType> {
+  using enum aur::AssetType;
+  static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
+};
 
+namespace aur {
 namespace asset {
 // To prevent circular dependencies, we forward declare all asset types here first
 struct ShaderStageDefinition;
@@ -45,11 +51,3 @@ concept AssetConcept = requires {
 constexpr std::array kAssetOrder = {AssetType::ShaderStage, AssetType::GraphicsProgram, AssetType::Material,
                                     AssetType::Mesh};
 } // namespace aur
-
-namespace glz {
-template <>
-struct meta<aur::AssetType> {
-  using enum aur::AssetType;
-  static constexpr auto value = glz::enumerate(ShaderStage, GraphicsProgram, Material, Mesh);
-};
-} // namespace glz

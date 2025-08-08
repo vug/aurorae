@@ -83,22 +83,36 @@
       },
       "aur::FrontFace": {
          "type": [
-            "number",
-            "string",
-            "boolean",
-            "object",
-            "array",
-            "null"
+            "string"
+         ],
+         "oneOf": [
+            {
+               "title": "CounterClockwise",
+               "const": "CounterClockwise"
+            },
+            {
+               "title": "Clockwise",
+               "const": "Clockwise"
+            }
          ]
       },
       "aur::PolygonMode": {
          "type": [
-            "number",
-            "string",
-            "boolean",
-            "object",
-            "array",
-            "null"
+            "string"
+         ],
+         "oneOf": [
+            {
+               "title": "Fill",
+               "const": "Fill"
+            },
+            {
+               "title": "Line",
+               "const": "Line"
+            },
+            {
+               "title": "Point",
+               "const": "Point"
+            }
          ]
       },
       "bool": {

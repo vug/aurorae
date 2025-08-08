@@ -4,10 +4,6 @@
 
 #include "Utils.h"
 
-namespace std {
-enum class byte : unsigned char;
-} // namespace std
-
 namespace aur {
 // Utility function to read a binary file
 template <typename TItem>

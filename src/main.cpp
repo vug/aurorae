@@ -1,5 +1,4 @@
 /*
-TODO(vug): make new enums convertable to string (locality)
 TODO(vug): Use new depth parameters, and blending presets in building vulkan create into.
 TODO(vug): render::Material uses the hash of PipelineCreateInfo to load Pipeline if cached on disk
            otherwise create one and store to disk (do storing operations on a separate thread)

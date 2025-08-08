@@ -1,5 +1,5 @@
 {
   "version": 1,
   "graphicsProgram": "shaders/unlit.shader",
-  "polygonMode": 1
+  "polygonMode": "Line"
 }

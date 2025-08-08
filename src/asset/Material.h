@@ -5,7 +5,6 @@
 #include "AssetTraits.h"
 
 namespace aur {
-
 enum class BlendingPreset {
   // Opaque
   NoBlend,
@@ -26,22 +25,12 @@ enum class BlendingPreset {
   // Subtractive,
   // Overlay,
 };
-
 }
-
-namespace glz {
 template <>
-struct meta<aur::BlendingPreset> {
+struct glz::meta<aur::BlendingPreset> {
   using enum aur::BlendingPreset;
   static constexpr auto value = glz::enumerate(NoBlend, AlphaBlend);
 };
-
-template <>
-struct meta<aur::CullMode> {
-  using enum aur::CullMode;
-  static constexpr auto value = glz::enumerate(None, Front, Back, FrontAndBack);
-};
-} // namespace glz
 
 namespace aur::asset {
 
