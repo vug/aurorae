@@ -6,6 +6,11 @@
 #include "Resources/PipelineLayout.h"
 #include "VulkanWrappers.h"
 
+// boost::hash_combine
+inline void hashCombine(size_t& seed, size_t hash) {
+  seed ^= hash + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
 namespace aur {
 
 class Renderer;
