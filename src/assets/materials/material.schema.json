@@ -55,6 +55,10 @@
             {
                "title": "AlphaBlend",
                "const": "AlphaBlend"
+            },
+            {
+               "title": "Additive",
+               "const": "Additive"
             }
          ]
       },

@@ -165,9 +165,9 @@ struct PipelineColorBlendStateCreateInfo {
   std::vector<PipelineColorBlendAttachmentState> attachments;
   std::array<f32, 4> blendConstants{0.0f, 0.0f, 0.0f, 0.0f};
 
-  [[nodiscard]] VkPipelineColorBlendStateCreateInfo toVk() {
-    for (const PipelineColorBlendAttachmentState& att : attachments)
-      vkAttachments_.push_back(att.toVk());
+  [[nodiscard]] VkPipelineColorBlendStateCreateInfo toVk() const {
+    vkAttachments_ = attachments | std::views::transform(&PipelineColorBlendAttachmentState::toVk) |
+                     std::ranges::to<std::vector>();
 
     return {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
@@ -190,7 +190,10 @@ struct PipelineColorBlendStateCreateInfo {
   }
 
 private:
-  std::vector<VkPipelineColorBlendAttachmentState> vkAttachments_;
+  // Changing vkAttachments_ won't affect the const-ness of this CreateInfo. It's an implementation detail
+  // used when creating a Pipeline to keep blend state info in memory. It does not contribute to the hash of
+  // the CreateInfo.
+  mutable std::vector<VkPipelineColorBlendAttachmentState> vkAttachments_;
 };
 } // namespace aur
 // clang-format off

@@ -33,6 +33,8 @@ private:
   Handle<render::GraphicsProgram> graphicsProgramHandle_;
   PipelineCreateInfo pipelineCreateInfo_;
   const Pipeline* pipeline_{};
+
+  static PipelineColorBlendStateCreateInfo colorBlendStateFromPreset(BlendingPreset preset);
 };
 
 } // namespace aur::render

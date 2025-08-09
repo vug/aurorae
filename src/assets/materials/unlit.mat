@@ -3,6 +3,7 @@
   "graphicsProgram": "shaders/unlit.shader",
   "polygonMode": "Fill",
   "depthTest": true,
-  "depthWrite": true,
-  "cullMode": "Back"
+  "depthWrite": false,
+  "cullMode": "Back",
+  "blendPreset": "AlphaBlend"
 }

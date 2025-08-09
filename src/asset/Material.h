@@ -6,30 +6,22 @@
 
 namespace aur {
 enum class BlendingPreset {
-  // Opaque
-  NoBlend,
-  // Transparent
-  AlphaBlend,
-  // Additive,
-  // PremultipliedAlpha,
-  // Multiply,
-  // Screen,
+  NoBlend,    // Opaque
+  AlphaBlend, // Transparent
+  Additive,
   // AlphaToCoverage,
-  //
-  // // Highlight
-  // Xor,
-  // Invert,
-  // // Mask
-  // And,
-  //
-  // Subtractive,
+  // PremultipliedAlpha,
   // Overlay,
+  // Subtractive,
+  // Xor, // Highlight
+  // Invert,
+  // And, // Mask
 };
 }
 template <>
 struct glz::meta<aur::BlendingPreset> {
   using enum aur::BlendingPreset;
-  static constexpr auto value = glz::enumerate(NoBlend, AlphaBlend);
+  static constexpr auto value = glz::enumerate(NoBlend, AlphaBlend, Additive);
 };
 
 namespace aur::asset {
