@@ -36,7 +36,8 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   vkb::InstanceBuilder vkbInstanceBuilder;
   vkbInstanceBuilder.set_app_name(appName)
       .enable_extension(VK_KHR_SURFACE_EXTENSION_NAME) // not necessary
-      .require_api_version(VK_MAKE_API_VERSION(0, 1, 4, 313));
+      .require_api_version(VK_API_VERSION_1_3); // Chose 1.3 for RenderDoc compatibility. Volk chooses latest
+                                                // avaiable version actually.
   if constexpr (kEnableValidationLayers) {
     vkbInstanceBuilder.set_debug_callback(debugCallback); // vkb::default_debug_callback
   }
@@ -71,9 +72,7 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
   VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeaturesKHR{
       .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR};
   vkb::Result<vkb::PhysicalDevice> vkbPhysicalDeviceResult =
-      selector
-          .set_minimum_version(1, 4) // Explicitly target Vulkan 1.3
-          .set_surface(vkbInstance_.surface)
+      selector.set_surface(vkbInstance_.surface)
           .prefer_gpu_device_type(vkb::PreferredDeviceType::discrete)
           // vug: I guess it requires a graphics queue by default?
           .require_separate_compute_queue()
@@ -99,10 +98,11 @@ VulkanContext::VulkanContext(GLFWwindow* window, const char* appName) {
           })
           .add_required_extensions({
               VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+              // Stopped requesting the extension below because it's not supported by RenderDoc.
               // Needed for vkCmdPushConstants2KHR [issue #7]. Ideally, this shouldn't be needed because that
               // function is part of Vulkan 1.4, but apparently my laptop graphics drivers do not support it
               // yet.
-              VK_KHR_MAINTENANCE_6_EXTENSION_NAME,
+              // VK_KHR_MAINTENANCE_6_EXTENSION_NAME,
           })
           .add_required_extensions(
               kEnableGpuAssistedValidation

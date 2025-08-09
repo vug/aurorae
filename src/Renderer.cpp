@@ -483,18 +483,9 @@ void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
   if (!layout1.isEqual(layout2) || !layout1.isCompatible(layout2))
     log().fatal("Incompatible pipeline layout and descriptor set's layout are not compatible.");
 
-  const VkBindDescriptorSetsInfoKHR bindDescriptorSetsInfo{
-      .sType = VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO_KHR,
-      .pNext = nullptr,
-      .stageFlags = toVkFlags(bindInfo.stages),
-      .layout = bindInfo.pipelineLayout->getHandle(),
-      .firstSet = bindInfo.setNo,
-      .descriptorSetCount = 1,
-      .pDescriptorSets = &bindInfo.descriptorSet->getHandle(),
-      .dynamicOffsetCount = 0,
-      .pDynamicOffsets = nullptr,
-  };
-  vkCmdBindDescriptorSets2KHR(commandBuffer_, &bindDescriptorSetsInfo); // [issue #7]
+  vkCmdBindDescriptorSets(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          bindInfo.pipelineLayout->getHandle(), bindInfo.setNo, 1,
+                          &bindInfo.descriptorSet->getHandle(), 0, nullptr);
 }
 
 void Renderer::bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* pushConstantInfoOpt) const {
@@ -511,18 +502,10 @@ void Renderer::bindPipeline(const Pipeline& pipeline, const PushConstantsInfo* p
   };
   bindDescriptorSet(perFrameBindDescriptorInfo);
 
-  if (pushConstantInfoOpt) {
-    VkPushConstantsInfoKHR /* [issue #7] */ vkPushConstantsInfo{
-        .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR,
-        .pNext = nullptr,
-        .layout = pipeline.getPipelineLayout().getHandle(),
-        .stageFlags = toVkFlags(pushConstantInfoOpt->stages),
-        .offset = 0,
-        .size = pushConstantInfoOpt->sizeBytes,
-        .pValues = pushConstantInfoOpt->data,
-    };
-    vkCmdPushConstants2KHR /* [issue #7] */ (commandBuffer_, &vkPushConstantsInfo);
-  }
+  if (pushConstantInfoOpt)
+    vkCmdPushConstants(commandBuffer_, pipeline.getPipelineLayout().getHandle(),
+                       toVkFlags(pushConstantInfoOpt->stages), 0, pushConstantInfoOpt->sizeBytes,
+                       pushConstantInfoOpt->data);
   endDebugLabel();
 }
 

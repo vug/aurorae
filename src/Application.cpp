@@ -70,9 +70,9 @@ void Application::run() {
       "models/glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf"};
   const Handle<asset::Mesh> aBoxMesh = assetManager_.load(kBoxMeshId);
   const Handle<render::Mesh> rBoxMesh = renderer_.uploadOrGet(aBoxMesh);
-  const StableId<asset::Mesh> kTriangleMeshId{"models/glTF-Sample-Assets/Triangle/glTF/Triangle.gltf"};
-  const Handle<asset::Mesh> aTriangleMesh = assetManager_.load(kTriangleMeshId);
-  const Handle<render::Mesh> rTriangleMesh = renderer_.uploadOrGet(aTriangleMesh);
+  const StableId<asset::Mesh> kDuckMeshId{"models/glTF-Sample-Assets/Duck/glTF/Duck.gltf"};
+  const Handle<asset::Mesh> aDuckMesh = assetManager_.load(kDuckMeshId);
+  const Handle<render::Mesh> rDuckMesh = renderer_.uploadOrGet(aDuckMesh);
   log().trace("Created assets...");
 
   log().debug("Starting main loop...");
@@ -121,8 +121,8 @@ void Application::run() {
 
     std::vector<Renderable> renderables = {
         {
-            .worldFromObject = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 1.5)),
-            .rMeshHnd = rTriangleMesh,
+            .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f)),
+            .rMeshHnd = rDuckMesh,
         },
         {
             .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
