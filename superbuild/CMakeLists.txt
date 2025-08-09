@@ -185,3 +185,18 @@ foreach(CONFIG ${SUPERBUILD_CONFIGS})
         # Vulkan_${CONFIG}}
     )
 endforeach()
+
+add_custom_target(build_debug_deps)
+  add_dependencies(build_debug_deps
+      Volk_Debug
+      VKBootstrap_Debug
+      SpdLog_Debug
+      Glfw_Debug
+      VMA_Debug
+      GLM_Debug
+      Assimp_Debug
+      Glaze_Debug
+      ModernUuid_Debug
+      # Vulkan_${CONFIG}}
+  )
+
