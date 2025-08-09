@@ -10,7 +10,9 @@ MeshDefinition MeshDefinition::makeTriangle() {
                   {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}}, // Right top vertex (Green)
                   {{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 1.0f, 1.0f}}   // Left top vertex (Blue)
               },
-          .indices = {0, 1, 2}};
+          .indices = {0, 1, 2},
+          .subMeshes = {
+              SubMesh{.material = StableId<asset::Material>{"materials/unlit.mat"}, .offset{0}, .count{3}}}};
 }
 MeshDefinition MeshDefinition::makeCube() {
   return {.vertices =

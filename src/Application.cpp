@@ -66,18 +66,13 @@ void Application::run() {
     writeBinaryFile(kAssetsFolder / "materials/material.schema.json", glz::prettify_json(schema.value()));
 
   // "Asset Library"
-  const StableId<asset::Material> kUnlitMaterialId{"materials/unlit.mat"};
-  const Handle<asset::Material> unlitAMaterial = assetManager_.load(kUnlitMaterialId);
-  const Handle<render::Material> unlitRMaterial = renderer_.uploadOrGet(unlitAMaterial);
-
   const StableId<asset::Mesh> kBoxMeshId{
       "models/glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf"};
   const Handle<asset::Mesh> aBoxMesh = assetManager_.load(kBoxMeshId);
   const Handle<render::Mesh> rBoxMesh = renderer_.uploadOrGet(aBoxMesh);
-  asset::MeshDefinition triangleMesh = asset::MeshDefinition::makeTriangle();
-  const Handle<asset::Mesh> triangleMeshAssetHandle =
-      assetManager_.loadFromDefinition<asset::Mesh>(std::move(triangleMesh));
-  const Handle<render::Mesh> triangleMeshRenderHandle = renderer_.uploadOrGet(triangleMeshAssetHandle);
+  const StableId<asset::Mesh> kTriangleMeshId{"models/glTF-Sample-Assets/Triangle/glTF/Triangle.gltf"};
+  const Handle<asset::Mesh> aTriangleMesh = assetManager_.load(kTriangleMeshId);
+  const Handle<render::Mesh> rTriangleMesh = renderer_.uploadOrGet(aTriangleMesh);
   log().trace("Created assets...");
 
   log().debug("Starting main loop...");
@@ -119,27 +114,36 @@ void Application::run() {
 
     renderer_.setClearColor(0.25f, 0.25f, 0.25f);
 
-    const Pipeline* unlitPipeline =
-        renderer_.createOrGetPipeline(unlitRMaterial.get().getPipelineCreateInfo());
-    glm::mat4 worldFromObject1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 1.5));
-    const PushConstantsInfo pcInfo1{
-        .pipelineLayout = unlitPipeline->getPipelineLayout(),
-        .stages = {ShaderStageType::Vertex},
-        .sizeBytes = sizeof(worldFromObject1),
-        .data = glm::value_ptr(worldFromObject1),
+    struct Renderable {
+      glm::mat4 worldFromObject;
+      Handle<render::Mesh> rMeshHnd;
     };
-    renderer_.drawIndexed(*unlitPipeline, triangleMeshRenderHandle.get().getVertexBuffer(),
-                          triangleMeshRenderHandle.get().getIndexBuffer(), &pcInfo1);
 
-    glm::mat4 worldFromObject2 = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-    const PushConstantsInfo pcInfo2{
-        .pipelineLayout = unlitPipeline->getPipelineLayout(),
-        .stages = {ShaderStageType::Vertex},
-        .sizeBytes = sizeof(worldFromObject2),
-        .data = glm::value_ptr(worldFromObject2),
-    };
-    renderer_.drawIndexed(*unlitPipeline, rBoxMesh.get().getVertexBuffer(), rBoxMesh.get().getIndexBuffer(),
-                          &pcInfo2);
+    std::vector<Renderable> renderables = {
+        {
+            .worldFromObject = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, 1.5)),
+            .rMeshHnd = rTriangleMesh,
+        },
+        {
+            .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
+            .rMeshHnd = rBoxMesh,
+        }};
+    // Can I make renderable const?
+    for (auto& renderable : renderables) {
+      const render::Mesh& rMesh = renderable.rMeshHnd.get();
+      for (const auto& dSpan : rMesh.getDrawSpans()) {
+        const Pipeline* pipeline =
+            renderer_.createOrGetPipeline(dSpan.material.get().getPipelineCreateInfo());
+        const PushConstantsInfo pcInfo{
+            .pipelineLayout = pipeline->getPipelineLayout(),
+            .stages = {ShaderStageType::Vertex},
+            .sizeBytes = sizeof(renderable.worldFromObject),
+            .data = glm::value_ptr(renderable.worldFromObject),
+        };
+        renderer_.drawIndexed(*pipeline, rMesh.getVertexBuffer(), rMesh.getIndexBuffer(), &pcInfo);
+      }
+    }
+
     renderer_.endFrame();
   }
 
