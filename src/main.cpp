@@ -1,6 +1,4 @@
 /*
-TODO(vug): Introduce drawSubmesh(MeshHandle, drawSpanIx) function. Give pipeline and index range to
-           drawIndexed.
 TODO(vug): Add attributes to fat vertex. (also add meshId too)
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.

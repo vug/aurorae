@@ -30,6 +30,9 @@ public:
   Mesh& operator=(const Mesh& other) = delete;
   Mesh& operator=(Mesh&& other) noexcept = default;
 
+  void draw(const glm::mat4& worldFromObject) const;
+  void drawSpan(u32 spanIx, const glm::mat4& worldFromObject) const;
+
   [[nodiscard]] const Handle<asset::Mesh>& getAssetHandle() const { return assetHandle_; }
   [[nodiscard]] const Buffer& getVertexBuffer() const { return vertexBuffer_; }
   [[nodiscard]] const Buffer& getIndexBuffer() const { return indexBuffer_; }

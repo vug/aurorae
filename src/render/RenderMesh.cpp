@@ -2,6 +2,7 @@
 
 #include <ranges>
 
+#include "../Logger.h"
 #include "../Renderer.h"
 #include "../asset/Mesh.h"
 
@@ -31,4 +32,24 @@ Mesh::Mesh(Renderer& renderer, Handle<asset::Mesh> asset)
           std::ranges::to<std::vector<DrawSpan>>();
       return drawSpans;
     }()} {} // render
+
+void Mesh::draw(const glm::mat4& worldFromObject) const {
+  for (u32 spanIx = 0; spanIx < drawSpans_.size(); ++spanIx)
+    drawSpan(spanIx, worldFromObject);
+}
+
+void Mesh::drawSpan(u32 spanIx, const glm::mat4& worldFromObject) const {
+  if (spanIx >= drawSpans_.size())
+    log().fatal("spanIx {} not in range [0, {}].", spanIx, drawSpans_.size() - 1);
+
+  const DrawSpan& dSpan = drawSpans_[spanIx];
+  const Pipeline* pipeline = renderer_->createOrGetPipeline(dSpan.material.get().getPipelineCreateInfo());
+  const PushConstantsInfo pcInfo{
+      .pipelineLayout = pipeline->getPipelineLayout(),
+      .stages = {ShaderStageType::Vertex},
+      .sizeBytes = sizeof(worldFromObject),
+      .data = glm::value_ptr(worldFromObject),
+  };
+  renderer_->drawIndexed(*pipeline, vertexBuffer_, indexBuffer_, &pcInfo);
+}
 } // namespace aur::render

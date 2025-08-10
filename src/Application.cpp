@@ -129,19 +129,9 @@ void Application::run() {
             .rMeshHnd = rBoxMesh,
         }};
     // Can I make renderable const?
-    for (auto& renderable : renderables) {
+    for (const auto& renderable : renderables) {
       const render::Mesh& rMesh = renderable.rMeshHnd.get();
-      for (const auto& dSpan : rMesh.getDrawSpans()) {
-        const Pipeline* pipeline =
-            renderer_.createOrGetPipeline(dSpan.material.get().getPipelineCreateInfo());
-        const PushConstantsInfo pcInfo{
-            .pipelineLayout = pipeline->getPipelineLayout(),
-            .stages = {ShaderStageType::Vertex},
-            .sizeBytes = sizeof(renderable.worldFromObject),
-            .data = glm::value_ptr(renderable.worldFromObject),
-        };
-        renderer_.drawIndexed(*pipeline, rMesh.getVertexBuffer(), rMesh.getIndexBuffer(), &pcInfo);
-      }
+      rMesh.draw(renderable.worldFromObject);
     }
 
     renderer_.endFrame();

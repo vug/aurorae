@@ -15,7 +15,7 @@ struct PushConstantsInfo {
   const PipelineLayout& pipelineLayout;
   std::vector<ShaderStageType> stages;
   u32 sizeBytes{};
-  void* data{};
+  const void* data{};
   u32 offset{};
 };
 
