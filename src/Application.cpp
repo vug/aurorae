@@ -137,9 +137,6 @@ void Application::run() {
     renderer_.endFrame();
   }
 
-  // TODO(vug): With proper RAII, and architecture, we shouldn't need to call wait idle for cleaning up
-  //            pipelines manually
-  renderer_.deviceWaitIdle();
   log().debug("Main loop finished.");
 }
 } // namespace aur
