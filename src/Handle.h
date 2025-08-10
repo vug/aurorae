@@ -18,6 +18,8 @@ struct Handle {
   [[nodiscard]] bool isValid() const { return id != kInvalidId; }
 
   const TAsset& get() const;
+  const TAsset* operator->() const { return &get(); }
+  const TAsset& operator*() const { return get(); }
 
   bool operator==(const Handle<TAsset>& other) const { return id == other.id; }
   // for using as a key in maps

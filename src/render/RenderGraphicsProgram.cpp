@@ -8,14 +8,12 @@ GraphicsProgram::GraphicsProgram(const Renderer& renderer, Handle<asset::Graphic
     : renderer_{&renderer}
     , assetHandle_{asset}
     , vertModule_{[this]() {
-      const asset::GraphicsProgram& aGraphicsProgram = assetHandle_.get();
-      const ShaderModuleCreateInfo vertCreateInfo{.spirv = &aGraphicsProgram.getVertexBlob()};
-      return renderer_->createShaderModule(vertCreateInfo, aGraphicsProgram.getDebugName() + " Module");
+      const ShaderModuleCreateInfo vertCreateInfo{.spirv = &assetHandle_->getVertexBlob()};
+      return renderer_->createShaderModule(vertCreateInfo, assetHandle_->getDebugName() + " Module");
     }()}
     , fragModule_{[this]() {
-      const asset::GraphicsProgram& aGraphicsProgram = assetHandle_.get();
-      const ShaderModuleCreateInfo fragCreateInfo{.spirv = &aGraphicsProgram.getFragmentBlob()};
-      return renderer_->createShaderModule(fragCreateInfo, aGraphicsProgram.getDebugName() + " Module");
+      const ShaderModuleCreateInfo fragCreateInfo{.spirv = &assetHandle_->getFragmentBlob()};
+      return renderer_->createShaderModule(fragCreateInfo, assetHandle_->getDebugName() + " Module");
     }()} {}
 
 } // namespace aur::render

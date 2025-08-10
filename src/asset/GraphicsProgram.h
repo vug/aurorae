@@ -29,8 +29,8 @@ public:
   GraphicsProgram(GraphicsProgram&& other) noexcept = default;
   GraphicsProgram& operator=(GraphicsProgram&& other) noexcept = default;
 
-  [[nodiscard]] const SpirV& getVertexBlob() const { return vert_.get().getSpirVBlob(); }
-  [[nodiscard]] const SpirV& getFragmentBlob() const { return frag_.get().getSpirVBlob(); }
+  [[nodiscard]] const SpirV& getVertexBlob() const { return vert_->getSpirVBlob(); }
+  [[nodiscard]] const SpirV& getFragmentBlob() const { return frag_->getSpirVBlob(); }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
 private:

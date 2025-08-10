@@ -129,10 +129,8 @@ void Application::run() {
             .rMeshHnd = rBoxMesh,
         }};
     // Can I make renderable const?
-    for (const auto& renderable : renderables) {
-      const render::Mesh& rMesh = renderable.rMeshHnd.get();
-      rMesh.draw(renderable.worldFromObject);
-    }
+    for (const auto& renderable : renderables)
+      renderable.rMeshHnd->draw(renderable.worldFromObject);
 
     renderer_.endFrame();
   }
