@@ -7,7 +7,6 @@
 #include "AppContext.h"
 #include "GlfwUtils.h"
 #include "Logger.h"
-#include "Pipeline.h"
 #include "asset/AssetManager.h"
 #include "asset/Mesh.h"
 
@@ -119,7 +118,7 @@ void Application::run() {
       Handle<render::Mesh> rMeshHnd;
     };
 
-    std::vector<Renderable> renderables = {
+    const std::vector<Renderable> renderables = {
         {
             .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f)),
             .rMeshHnd = rDuckMesh,

@@ -29,6 +29,11 @@ public:
   template <AssetConcept TAsset>
   Handle<TAsset> loadFromDefinition(typename TAsset::DefinitionType&& def);
 
+  static constexpr size_t kMaxShaderStageCnt = 10'000;
+  static constexpr size_t kMaxGraphicsProgramCnt = 5'000;
+  static constexpr size_t kMaxMaterialCnt = 10'000;
+  static constexpr size_t kMaxMeshCnt = 10'000;
+
   Handle<asset::Mesh> registerExistingMesh(asset::Mesh& mesh);
 
   [[nodiscard]] inline const asset::ShaderStage* get(Handle<asset::ShaderStage> handle) const {

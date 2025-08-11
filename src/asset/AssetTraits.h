@@ -10,7 +10,7 @@ namespace aur {
 
 // Mixin for asset types via CRTP. All asset classes need to publicly inherit from this.
 
-template <typename TAsset, AssetDefinitionConcept TDefinition, AssetType TypeEnum, fixed_string Label,
+template <AssetConcept TAsset, AssetDefinitionConcept TDefinition, AssetType TypeEnum, fixed_string Label,
           fixed_string<37> UuidNamespace>
 struct AssetTypeMixin {
   using DefinitionType = TDefinition;

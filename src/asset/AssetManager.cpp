@@ -12,7 +12,13 @@
 namespace aur {
 
 AssetManager::AssetManager(AssetRegistry& registry)
-    : registry_{&registry} {}
+    : registry_{&registry} {
+
+  shaderStages_.reserve(kMaxShaderStageCnt);
+  graphicsPrograms_.reserve(kMaxGraphicsProgramCnt);
+  materials_.reserve(kMaxMaterialCnt);
+  meshes_.reserve(kMaxMeshCnt);
+}
 
 template <AssetConcept TAsset>
 Handle<TAsset> AssetManager::load(const AssetUuid& uuid) {
@@ -28,6 +34,9 @@ Handle<TAsset> AssetManager::load(const AssetUuid& uuid) {
 
   const Handle<TAsset> handle = loadFromDefinition<TAsset>(std::move(defOpt.value()));
   assetCache[uuid] = handle;
+
+  if (getStorage<TAsset>().size() == kMaxShaderStageCnt)
+    log().fatal("Asset storage capacity exceeded! Consider increasing reverse size.");
 
   return handle;
 }
