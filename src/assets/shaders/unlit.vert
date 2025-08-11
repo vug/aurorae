@@ -14,6 +14,9 @@ layout (location = 9) in vec4 custom1;
 
 layout (push_constant) uniform PushConstants {
     mat4 modelFromObject;
+    mat4 transposeInverseTransform;
+    int meshId;
+    int spanId;
 } pc;
 
 layout (set = 0, binding = 0, scalar) uniform perFrameData {

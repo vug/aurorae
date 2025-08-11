@@ -15,12 +15,18 @@ namespace aur::render {
 
 struct DrawSpan {
   Handle<render::Material> material;
-  u32 offset;
-  u32 count;
+  u32 offset{};
+  u32 count{};
 };
 
 class Mesh {
 public:
+  struct PushConstant {
+    glm::mat4 worldFromObject;
+    glm::mat4 transposeInverseTransform;
+    i32 meshId;
+    i32 spanId;
+  };
   Mesh() = default;
   Mesh(Renderer& renderer, Handle<asset::Mesh> asset);
   ~Mesh() = default;
@@ -30,8 +36,8 @@ public:
   Mesh& operator=(const Mesh& other) = delete;
   Mesh& operator=(Mesh&& other) noexcept = default;
 
-  void draw(const glm::mat4& worldFromObject) const;
-  void drawSpan(u32 spanIx, const glm::mat4& worldFromObject) const;
+  void draw(const glm::mat4& worldFromObject, i32 meshId = 0) const;
+  void drawSpan(u32 spanIx, const PushConstant& pc) const;
 
   [[nodiscard]] const Handle<asset::Mesh>& getAssetHandle() const { return assetHandle_; }
   [[nodiscard]] const Buffer& getVertexBuffer() const { return vertexBuffer_; }

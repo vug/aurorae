@@ -30,12 +30,19 @@ Mesh::Mesh(Renderer& renderer, Handle<asset::Mesh> asset)
       return drawSpans;
     }()} {} // render
 
-void Mesh::draw(const glm::mat4& worldFromObject) const {
-  for (u32 spanIx = 0; spanIx < drawSpans_.size(); ++spanIx)
-    drawSpan(spanIx, worldFromObject);
+void Mesh::draw(const glm::mat4& worldFromObject, i32 meshId) const {
+  PushConstant pc{
+      .worldFromObject = worldFromObject,
+      .transposeInverseTransform = glm::transpose(glm::inverse(worldFromObject)),
+      .meshId = meshId,
+  };
+  for (u32 spanIx = 0; spanIx < drawSpans_.size(); ++spanIx) {
+    pc.spanId = spanIx;
+    drawSpan(spanIx, pc);
+  }
 }
 
-void Mesh::drawSpan(u32 spanIx, const glm::mat4& worldFromObject) const {
+void Mesh::drawSpan(u32 spanIx, const PushConstant& pc) const {
   if (spanIx >= drawSpans_.size())
     log().fatal("spanIx {} not in range [0, {}].", spanIx, drawSpans_.size() - 1);
 
@@ -44,8 +51,8 @@ void Mesh::drawSpan(u32 spanIx, const glm::mat4& worldFromObject) const {
   const PushConstantsInfo pcInfo{
       .pipelineLayout = pipeline->getPipelineLayout(),
       .stages = {ShaderStageType::Vertex},
-      .sizeBytes = sizeof(worldFromObject),
-      .data = glm::value_ptr(worldFromObject),
+      .sizeBytes = sizeof(pc),
+      .data = &pc,
   };
   renderer_->drawIndexed(*pipeline, vertexBuffer_, indexBuffer_, &pcInfo);
 }

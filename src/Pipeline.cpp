@@ -5,7 +5,7 @@
 #include "Logger.h"
 #include "Renderer.h"
 #include "Vertex.h"
-#include "asset/GraphicsProgram.h"
+#include "render/Mesh.h"
 
 namespace aur {
 VkVertexInputBindingDescription toVkVertexInputBindingDescription(const VertexInputBindingDescription& desc) {
@@ -37,7 +37,7 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
       // WorldFromObject / Model matrix
       const PushConstant pushConstant{
           .stages = {ShaderStageType::Vertex},
-          .size = sizeof(glm::mat4),
+          .size = sizeof(render::Mesh::PushConstant),
       };
       const PipelineLayoutCreateInfo layoutCreateInfo{
           .descriptorSetLayouts = {&renderer_->getPerFrameDescriptorSetLayout()},

@@ -129,7 +129,7 @@ void Application::run() {
         }};
     // Can I make renderable const?
     for (const auto& renderable : renderables)
-      renderable.rMeshHnd->draw(renderable.worldFromObject);
+      renderable.rMeshHnd->draw(renderable.worldFromObject, renderable.rMeshHnd.id);
 
     renderer_.endFrame();
   }
