@@ -1,5 +1,7 @@
 /*
-TODO(vug): Add attributes to fat vertex. (also add meshId too)
+TODO(vug): Fill out newly added vertex attributes while processing mesh via Assimp
+TODO(vug): Also integer mesh id and span id (for picking)
+TODO(vug): add debug visualizations for the attributes
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): render::Material uses the hash of PipelineCreateInfo to load Pipeline if cached on disk

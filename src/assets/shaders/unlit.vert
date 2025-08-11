@@ -2,7 +2,15 @@
 #extension GL_EXT_scalar_block_layout: require
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec4 color;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec3 tangent;
+//layout (location = 0) in vec3 bitangent;
+layout (location = 3) in vec4 color;
+layout (location = 4) in vec2 texCoord0;
+layout (location = 5) in vec2 texCoord1;
+layout (location = 6) in vec2 texCoord2;
+layout (location = 7) in vec3 custom0;
+layout (location = 8) in vec4 custom1;
 
 layout (push_constant) uniform PushConstants {
     mat4 modelFromObject;

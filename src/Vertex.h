@@ -25,32 +25,25 @@ struct VertexInputAttributeDescription {
 
 struct Vertex {
   glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec3 tangent; // xyz = tangent, w = bitangent handedness
+  // glm::vec3 bitangent; // Can be computed in shader from normal + tangent
   glm::vec4 color;
+  glm::vec2 texCoord0; // Material textures
+  glm::vec2 texCoord1; // Lightmaps
+  glm::vec2 texCoord2; // Detail textures, decals, or procedural UVs
+
+  glm::vec4 custom0;
+  glm::vec4 custom1;
+
+  // // Future-proofing additions:
+  // glm::vec4 joints;       // Bone indices for skeletal animation
+  // glm::vec4 weights;      // Bone weights for skeletal animation
+  // glm::vec3 morphTarget0; // Position delta for morph targets
+  // glm::vec3 morphTarget1; // Normal delta for morph targets
 
   static std::array<VertexInputBindingDescription, 1> getVertexInputBindingDescription();
-  static std::array<VertexInputAttributeDescription, 2> getVertexInputAttributeDescription();
-
-  /*
-    static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
-      std::vector<VkVertexInputAttributeAttributeDescription> attributeDescriptions{};
-
-      // Position attribute
-      attributeDescriptions.push_back({});
-      attributeDescriptions[0].binding = 0;
-      attributeDescriptions[0].location = 0; // Corresponds to `layout(location = 0)` in shader
-      attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT; // glm::vec3 is 3 floats
-      attributeDescriptions[0].offset = offsetof(FatVertex, pos); // Offset within the vertex structure
-
-      // Color attribute
-      attributeDescriptions.push_back({});
-      attributeDescriptions[1].binding = 0;
-      attributeDescriptions[1].location = 1; // Corresponds to `layout(location = 1)` in shader
-      attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT; // glm::vec3 is 3 floats
-      attributeDescriptions[1].offset = offsetof(FatVertex, color); // Offset within the vertex structure
-
-      return attributeDescriptions;
-    }
-  */
+  static std::array<VertexInputAttributeDescription, 9> getVertexInputAttributeDescription();
 };
 
 inline std::array<VertexInputBindingDescription, 1> Vertex::getVertexInputBindingDescription() {
@@ -60,7 +53,7 @@ inline std::array<VertexInputBindingDescription, 1> Vertex::getVertexInputBindin
   }};
 }
 
-inline std::array<VertexInputAttributeDescription, 2> Vertex::getVertexInputAttributeDescription() {
+inline std::array<VertexInputAttributeDescription, 9> Vertex::getVertexInputAttributeDescription() {
   return {
       VertexInputAttributeDescription{
           .location = 0,
@@ -71,9 +64,52 @@ inline std::array<VertexInputAttributeDescription, 2> Vertex::getVertexInputAttr
       VertexInputAttributeDescription{
           .location = 1,
           .binding = 0,
+          .format = Format::R32G32B32_SFLOAT,
+          .offset = offsetof(Vertex, normal),
+      },
+      VertexInputAttributeDescription{
+          .location = 2,
+          .binding = 0,
+          .format = Format::R32G32B32_SFLOAT,
+          .offset = offsetof(Vertex, tangent),
+      },
+      VertexInputAttributeDescription{
+          .location = 3,
+          .binding = 0,
           .format = Format::R32G32B32A32_SFLOAT,
           .offset = offsetof(Vertex, color),
       },
+      VertexInputAttributeDescription{
+          .location = 4,
+          .binding = 0,
+          .format = Format::R32G32_SFLOAT,
+          .offset = offsetof(Vertex, texCoord0),
+      },
+      VertexInputAttributeDescription{
+          .location = 5,
+          .binding = 0,
+          .format = Format::R32G32_SFLOAT,
+          .offset = offsetof(Vertex, texCoord1),
+      },
+      VertexInputAttributeDescription{
+          .location = 6,
+          .binding = 0,
+          .format = Format::R32G32_SFLOAT,
+          .offset = offsetof(Vertex, texCoord2),
+      },
+      VertexInputAttributeDescription{
+          .location = 7,
+          .binding = 0,
+          .format = Format::R32G32B32A32_SFLOAT,
+          .offset = offsetof(Vertex, custom0),
+      },
+      VertexInputAttributeDescription{
+          .location = 8,
+          .binding = 0,
+          .format = Format::R32G32B32A32_SFLOAT,
+          .offset = offsetof(Vertex, custom1),
+      },
+
   };
 }
 

@@ -101,6 +101,24 @@ struct to<BEVE, glm::mat4> {
 };
 
 template <>
+struct from<BEVE, glm::vec2> {
+  template <auto Opts>
+  static void op(glm::vec2& vec, auto&&... args) {
+    std::span<float, 2> components(glm::value_ptr(vec), 2);
+    parse<BEVE>::op<Opts>(components, args...);
+  }
+};
+
+template <>
+struct to<BEVE, glm::vec2> {
+  template <auto Opts>
+  static void op(const glm::vec2& vec, auto&&... args) noexcept {
+    std::span components(glm::value_ptr(vec), 2);
+    serialize<BEVE>::op<Opts>(components, args...);
+  }
+};
+
+template <>
 struct from<BEVE, glm::vec3> {
   template <auto Opts>
   static void op(glm::vec3& vec, auto&&... args) {
