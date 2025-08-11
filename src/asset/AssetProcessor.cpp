@@ -427,10 +427,31 @@ std::optional<asset::MeshDefinition> AssetProcessor::processMeshes(const std::fi
             Vertex v{};
             const aiVector3D& pos = m->mVertices[vertIx];
             v.position = {pos.x, pos.y, pos.z};
-            ;
+            if (m->HasNormals()) {
+              const aiVector3D& norm = m->mNormals[vertIx];
+              v.normal = {norm.x, norm.y, norm.z};
+            }
+            if (m->HasTangentsAndBitangents()) {
+              const aiVector3D& tan = m->mTangents[vertIx];
+              const aiVector3D& bitan = m->mBitangents[vertIx];
+              v.tangent = {tan.x, tan.y, tan.z};
+              v.bitangent = {bitan.x, bitan.y, bitan.z};
+            }
             if (m->HasVertexColors(0)) {
               const aiColor4D& col0 = m->mColors[0][vertIx];
               v.color = {col0.r, col0.g, col0.b, col0.a};
+            }
+            if (m->HasTextureCoords(0)) {
+              const aiVector3D& uv = m->mTextureCoords[0][vertIx];
+              v.texCoord0 = {uv.x, uv.y};
+            }
+            if (m->HasTextureCoords(1)) {
+              const aiVector3D& uv = m->mTextureCoords[1][vertIx];
+              v.texCoord1 = {uv.x, uv.y};
+            }
+            if (m->HasTextureCoords(2)) {
+              const aiVector3D& uv = m->mTextureCoords[2][vertIx];
+              v.texCoord2 = {uv.x, uv.y};
             }
             def.vertices.push_back(v);
           }

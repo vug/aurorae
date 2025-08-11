@@ -26,8 +26,8 @@ struct VertexInputAttributeDescription {
 struct Vertex {
   glm::vec3 position;
   glm::vec3 normal;
-  glm::vec3 tangent; // xyz = tangent, w = bitangent handedness
-  // glm::vec3 bitangent; // Can be computed in shader from normal + tangent
+  glm::vec3 tangent;   // xyz = tangent, w = bitangent handedness
+  glm::vec3 bitangent; // Can be computed in shader from normal + tangent
   glm::vec4 color;
   glm::vec2 texCoord0; // Material textures
   glm::vec2 texCoord1; // Lightmaps
@@ -43,7 +43,7 @@ struct Vertex {
   // glm::vec3 morphTarget1; // Normal delta for morph targets
 
   static std::array<VertexInputBindingDescription, 1> getVertexInputBindingDescription();
-  static std::array<VertexInputAttributeDescription, 9> getVertexInputAttributeDescription();
+  static std::array<VertexInputAttributeDescription, 10> getVertexInputAttributeDescription();
 };
 
 inline std::array<VertexInputBindingDescription, 1> Vertex::getVertexInputBindingDescription() {
@@ -53,7 +53,7 @@ inline std::array<VertexInputBindingDescription, 1> Vertex::getVertexInputBindin
   }};
 }
 
-inline std::array<VertexInputAttributeDescription, 9> Vertex::getVertexInputAttributeDescription() {
+inline std::array<VertexInputAttributeDescription, 10> Vertex::getVertexInputAttributeDescription() {
   return {
       VertexInputAttributeDescription{
           .location = 0,
@@ -76,40 +76,45 @@ inline std::array<VertexInputAttributeDescription, 9> Vertex::getVertexInputAttr
       VertexInputAttributeDescription{
           .location = 3,
           .binding = 0,
-          .format = Format::R32G32B32A32_SFLOAT,
-          .offset = offsetof(Vertex, color),
+          .format = Format::R32G32B32_SFLOAT,
+          .offset = offsetof(Vertex, bitangent),
       },
       VertexInputAttributeDescription{
           .location = 4,
           .binding = 0,
-          .format = Format::R32G32_SFLOAT,
-          .offset = offsetof(Vertex, texCoord0),
+          .format = Format::R32G32B32A32_SFLOAT,
+          .offset = offsetof(Vertex, color),
       },
       VertexInputAttributeDescription{
           .location = 5,
           .binding = 0,
           .format = Format::R32G32_SFLOAT,
-          .offset = offsetof(Vertex, texCoord1),
+          .offset = offsetof(Vertex, texCoord0),
       },
       VertexInputAttributeDescription{
           .location = 6,
           .binding = 0,
           .format = Format::R32G32_SFLOAT,
-          .offset = offsetof(Vertex, texCoord2),
+          .offset = offsetof(Vertex, texCoord1),
       },
       VertexInputAttributeDescription{
           .location = 7,
           .binding = 0,
-          .format = Format::R32G32B32A32_SFLOAT,
-          .offset = offsetof(Vertex, custom0),
+          .format = Format::R32G32_SFLOAT,
+          .offset = offsetof(Vertex, texCoord2),
       },
       VertexInputAttributeDescription{
           .location = 8,
           .binding = 0,
           .format = Format::R32G32B32A32_SFLOAT,
+          .offset = offsetof(Vertex, custom0),
+      },
+      VertexInputAttributeDescription{
+          .location = 9,
+          .binding = 0,
+          .format = Format::R32G32B32A32_SFLOAT,
           .offset = offsetof(Vertex, custom1),
       },
-
   };
 }
 
