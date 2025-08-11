@@ -28,6 +28,11 @@ const THandleable& Handle<THandleable>::get() const {
     log().fatal("Invalid asset type.");
     std::unreachable();
   }
+#ifdef _DEBUG
+  debugPtr_ = result;
+  debugTypeName_ = typeid(THandleable).name();
+#endif
+  return *result;
 }
 template const asset::ShaderStage& Handle<asset::ShaderStage>::get() const;
 template const asset::GraphicsProgram& Handle<asset::GraphicsProgram>::get() const;

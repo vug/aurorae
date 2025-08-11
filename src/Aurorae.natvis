@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="aur::Handle&lt;*&gt;">
+        <DisplayString Condition="id == 4294967295">Handle(Invalid)</DisplayString>
+        <DisplayString Condition="debugTypeName_ != 0">Handle&lt;{debugTypeName_,s}&gt;(id={id})</DisplayString>
+        <DisplayString>Handle(id={id})</DisplayString>
+        <Expand>
+            <Item Name="id">id</Item>
+            <Item Name="isValid">id != 4294967295</Item>
+            <Item Name="debugPtr" Condition="debugPtr_ != 0" Optional="true">debugPtr_</Item>
+            <Item Name="object" Condition="debugPtr_ != 0" Optional="true">*debugPtr_</Item>
+            <Item Name="typeName" Condition="debugTypeName_ != 0" Optional="true">debugTypeName_</Item>
+        </Expand>
+    </Type>
+</AutoVisualizer>
