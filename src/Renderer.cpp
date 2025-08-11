@@ -57,7 +57,7 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
   VK(vkAllocateCommandBuffers(getVkDevice(), &allocInfoOneShot, &commandBufferOneShot_));
   log().trace("Renderer main and one-shot command buffers are created/allocated.");
 
-  PipelineCacheCreateInfo pipelineCacheCrateInfo{
+  const PipelineCacheCreateInfo pipelineCacheCrateInfo{
       .initialData = {},
   };
   pipelineCache_ = PipelineCache(getVkDevice(), pipelineCacheCrateInfo);
@@ -88,6 +88,10 @@ Renderer::Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u3
 
   createSwapchainDepthResources(); // Create the depth buffer for depth attachment to swapchain image
   createPerFrameDataResources();
+
+  graphicsPrograms_.reserve(kMaxGraphicsProgramCnt);
+  materials_.reserve(kMaxMaterialCnt);
+  meshes_.reserve(kMaxMeshCnt);
 
   log().trace("Renderer initialized.");
 }
@@ -625,8 +629,10 @@ Handle<render::GraphicsProgram> Renderer::uploadOrGet(Handle<asset::GraphicsProg
       it != shaderAssetToRenderHandleMap_.end())
     return it->second;
 
-  shaders_.emplace_back(*this, shaderHnd);
-  const auto renderHandle = Handle<render::GraphicsProgram>(static_cast<u32>(shaders_.size() - 1));
+  graphicsPrograms_.emplace_back(*this, shaderHnd);
+  const auto renderHandle = Handle<render::GraphicsProgram>(static_cast<u32>(graphicsPrograms_.size() - 1));
+  if (graphicsPrograms_.size() == graphicsPrograms_.capacity())
+    log().fatal("Asset storage capacity exceeded! Consider increasing reverse size.");
   shaderAssetToRenderHandleMap_.emplace(shaderHnd, renderHandle);
   return renderHandle;
 }
@@ -638,6 +644,8 @@ Handle<render::Material> Renderer::uploadOrGet(Handle<asset::Material> materialH
 
   materials_.emplace_back(*this, materialHnd);
   const auto renderHandle = Handle<render::Material>(static_cast<u32>(materials_.size() - 1));
+  if (materials_.size() == materials_.capacity())
+    log().fatal("Asset storage capacity exceeded! Consider increasing reverse size.");
   materialAssetToRenderHandleMap_.emplace(materialHnd, renderHandle);
   return renderHandle;
 }
@@ -648,6 +656,8 @@ Handle<render::Mesh> Renderer::uploadOrGet(Handle<asset::Mesh> meshHnd) {
 
   meshes_.emplace_back(*this, meshHnd);
   const auto renderHandle = Handle<render::Mesh>(static_cast<u32>(meshes_.size() - 1));
+  if (meshes_.size() == meshes_.capacity())
+    log().fatal("Asset storage capacity exceeded! Consider increasing reverse size.");
   meshAssetToRenderHandleMap_.emplace(meshHnd, renderHandle);
   return renderHandle;
 }

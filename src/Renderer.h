@@ -49,6 +49,10 @@ public:
   // This is the maximum value. The actual value can be 1 too.
   static constexpr u32 kMaxImagesInFlight = 2;
 
+  static constexpr size_t kMaxGraphicsProgramCnt = 5'000;
+  static constexpr size_t kMaxMaterialCnt = 10'000;
+  static constexpr size_t kMaxMeshCnt = 10'000;
+
   Renderer(GLFWwindow* window, const char* appName, u32 initialWidth, u32 initialHeight);
   ~Renderer();
 
@@ -97,7 +101,6 @@ public:
                     const PushConstantsInfo* pushConstantInfoOpt) const;
   void drawIndexed(const Pipeline& pipeline, const Buffer& vertexBuffer, const Buffer& indexBuffer,
                    const PushConstantsInfo* pushConstantInfoOpt) const;
-  void drawSpan(const render::DrawSpan drawSpan) const;
 
   void deviceWaitIdle() const;
   // Call this when the window framebuffer size has changed.
@@ -129,7 +132,7 @@ public:
   [[nodiscard]] Handle<render::Mesh> uploadOrGet(Handle<asset::Mesh> meshHnd);
 
   [[nodiscard]] inline const render::GraphicsProgram* get(Handle<render::GraphicsProgram> handle) const {
-    return &shaders_.at(handle);
+    return &graphicsPrograms_.at(handle);
   }
   [[nodiscard]] inline const render::Material* get(Handle<render::Material> handle) const {
     return &materials_.at(handle);
@@ -192,10 +195,11 @@ private:
   VkClearDepthStencilValue clearDepthStencil_{1.0f, 0};
 
   std::unordered_map<PipelineCreateInfo, Pipeline> pipelineCacheMap_;
-  std::vector<render::GraphicsProgram> shaders_;
+  std::vector<render::GraphicsProgram> graphicsPrograms_;
   std::vector<render::Material> materials_;
   std::vector<render::Mesh> meshes_;
-  std::unordered_map<Handle<asset::GraphicsProgram>, Handle<render::GraphicsProgram>> shaderAssetToRenderHandleMap_;
+  std::unordered_map<Handle<asset::GraphicsProgram>, Handle<render::GraphicsProgram>>
+      shaderAssetToRenderHandleMap_;
   std::unordered_map<Handle<asset::Material>, Handle<render::Material>> materialAssetToRenderHandleMap_;
   std::unordered_map<Handle<asset::Mesh>, Handle<render::Mesh>> meshAssetToRenderHandleMap_;
 };

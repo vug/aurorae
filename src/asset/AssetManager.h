@@ -20,6 +20,11 @@ class Mesh;
 
 class AssetManager {
 public:
+  static constexpr size_t kMaxShaderStageCnt = 10'000;
+  static constexpr size_t kMaxGraphicsProgramCnt = 5'000;
+  static constexpr size_t kMaxMaterialCnt = 10'000;
+  static constexpr size_t kMaxMeshCnt = 10'000;
+
   explicit AssetManager(AssetRegistry& registry);
 
   template <AssetConcept TAsset>
@@ -28,11 +33,6 @@ public:
   Handle<TAsset> load(const StableId<TAsset>& stableId);
   template <AssetConcept TAsset>
   Handle<TAsset> loadFromDefinition(typename TAsset::DefinitionType&& def);
-
-  static constexpr size_t kMaxShaderStageCnt = 10'000;
-  static constexpr size_t kMaxGraphicsProgramCnt = 5'000;
-  static constexpr size_t kMaxMaterialCnt = 10'000;
-  static constexpr size_t kMaxMeshCnt = 10'000;
 
   Handle<asset::Mesh> registerExistingMesh(asset::Mesh& mesh);
 
