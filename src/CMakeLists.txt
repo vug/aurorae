@@ -151,6 +151,7 @@ add_executable(Aurorae
         asset/AssimpUtils.h asset/AssimpUtils.cpp
         asset/AssetProcessor.h asset/AssetProcessor.cpp
         asset/AssetManager.h asset/AssetManager.cpp
+        render/RenderConcepts.h
         render/GraphicsProgram.h render/RenderGraphicsProgram.cpp
         render/Material.h render/RenderMaterial.cpp
         render/Mesh.h render/RenderMesh.cpp

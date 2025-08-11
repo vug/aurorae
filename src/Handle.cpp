@@ -17,15 +17,13 @@ class GraphicsProgram;
 class Mesh;
 } // namespace render
 
-template <typename TAsset>
-const TAsset& Handle<TAsset>::get() const {
-  if constexpr (std::is_same_v<TAsset, asset::ShaderStage> ||
-                std::is_same_v<TAsset, asset::GraphicsProgram> || std::is_same_v<TAsset, asset::Material> ||
-                std::is_same_v<TAsset, asset::Mesh>)
-    return *AppContext::getConst<AssetManager>().get(*this);
-  else if constexpr (std::is_same_v<TAsset, asset::ShaderStage> || std::is_same_v<TAsset, render::GraphicsProgram> ||
-                     std::is_same_v<TAsset, render::Material> || std::is_same_v<TAsset, render::Mesh>)
-    return *AppContext::getConst<Renderer>().get(*this);
+template <HandleableConcept THandleable>
+const THandleable& Handle<THandleable>::get() const {
+  const THandleable* result{};
+  if constexpr (AssetConcept<THandleable>)
+    result = AppContext::getConst<AssetManager>().get(*this);
+  else if constexpr (RenderObjectConcept<THandleable>)
+    result = AppContext::getConst<Renderer>().get(*this);
   else {
     log().fatal("Invalid asset type.");
     std::unreachable();
