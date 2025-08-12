@@ -1,6 +1,5 @@
 /*
 TODO(vug): add debug visualizations for each attribute
-TODO(vug): Struct for vertex data from vertex to fragment shader
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): move distant light to scene

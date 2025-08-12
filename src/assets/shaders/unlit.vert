@@ -24,18 +24,56 @@ layout (set = 0, binding = 0, scalar) uniform perFrameData {
     mat4 projectionFromView;
 } perFrame;
 
+struct VertexOutput {
+    vec3 objectPosition;
+    vec3 worldPosition;
+    vec3 objectNormal;
+    vec3 worldNormal;
+    vec4 color;
+    vec2 texCoord0;
+};
 
-layout (location = 0) out vec3 vObjectNormal;
-layout (location = 1) out vec3 vWorldNormal;
-layout (location = 2) out vec4 vColor;
-layout (location = 3) out vec2 vTexCoord0;
+VertexOutput fillVertexOutput(mat4 worldFromObject, mat4 transposeInverseTransform, vec3 position, vec3 normal, vec2 texCoord0,
+                              vec4 color) {
+    VertexOutput v;
+    v.objectPosition = position;
+    v.worldPosition = vec3(worldFromObject * vec4(position, 1));
+    v.objectNormal = normal;
+    v.worldNormal = normalize(vec3(transposeInverseTransform * vec4(normal, 1)));
+    v.texCoord0 = texCoord0;
+    v.color = color;
+    return v;
+}
+
+struct VertexIds {
+    int meshId;
+    int spanId;
+};
+
+VertexIds fillVertexIds(int meshId, int spanId) {
+    VertexIds v;
+    v.meshId = meshId;
+    v.spanId = spanId;
+    return v;
+}
+
+
+layout (location = 0) out VertexOutput vertexOutput;
+layout (location = 6) flat out VertexIds vertexIds;
+
 
 void main() {
-    // TODO(vug): calculate on CPU
-    const mat4 normalMatrix = transpose(inverse(pc.modelFromObject));
-    vObjectNormal = normal;
-    vWorldNormal = normalize(vec3(normalMatrix * vec4(normal, 1)));
-    vColor = color;
-    vTexCoord0 = texCoord0;
+    vertexOutput = fillVertexOutput(
+        pc.modelFromObject,
+        pc.transposeInverseTransform,
+        position,
+        normal,
+        texCoord0,
+        color
+    );
+
+    vertexIds = fillVertexIds(pc.meshId,
+                              pc.spanId);
+
     gl_Position = perFrame.projectionFromView * perFrame.viewFromModel * pc.modelFromObject * vec4(position, 1.0);
 }
