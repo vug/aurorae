@@ -41,7 +41,7 @@ struct BindDescriptorSetInfo {
 struct PerFrameData {
   glm::mat4 viewFromObject{};
   glm::mat4 projectionFromView{};
-  u64 frameIndex{};
+  u64 frameNo{};
 };
 
 class Renderer {

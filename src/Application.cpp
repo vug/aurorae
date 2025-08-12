@@ -91,10 +91,13 @@ void Application::run() {
     }
 
     // perFrame data need to be set before beginFrame().
+    static u64 frameNo{};
     renderer_.perFrameData = {
         .viewFromObject = glm::lookAt(glm::vec3{-1, 2, 5}, glm::vec3{0}, glm::vec3{0, 1, 0}),
         .projectionFromView = glm::perspective(
-            glm::radians(45.0f), static_cast<f32>(window_.getWidth()) / window_.getHeight(), 0.1f, 100.0f)};
+            glm::radians(45.0f), static_cast<f32>(window_.getWidth()) / window_.getHeight(), 0.1f, 100.0f),
+        .frameNo = frameNo++,
+    };
     // GLM assumes RUB coordinate system by default (when `GLM_FORCE_LEFT_HANDED is not used (which assumes
     // RUF). Vulkan's clip-space assumes RDF, i.e., the coordinate system at the end of the vertex shader is
     // RDF, z is in [0, 1] range, and y is downwards.

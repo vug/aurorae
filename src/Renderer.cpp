@@ -211,7 +211,7 @@ void Renderer::createPerFrameDataResources() {
   const std::vector<DescriptorSetLayoutBinding> bindings = {{
       .index = 0,
       .type = DescriptorType::UniformBuffer,
-      .stages = {ShaderStageType::Vertex},
+      .stages = {ShaderStageType::Vertex, ShaderStageType::Fragment},
   }};
   const DescriptorSetLayoutCreateInfo createInfo{.bindings = bindings};
   perFrameDescriptorSetLayout_ =
@@ -223,9 +223,9 @@ void Renderer::createPerFrameDataResources() {
   perFrameDescriptorSet_ = createDescriptorSet(setCreateInfo, "Per-Frame Data Descriptor Set");
 
   // Uniform Buffer
-  BufferCreateInfo perFrameUniformCreateInto{.sizeBytes = sizeof(PerFrameData),
-                                             .usages = {BufferUsage::Uniform},
-                                             .memoryUsage = MemoryUsage::CpuToGpu};
+  const BufferCreateInfo perFrameUniformCreateInto{.sizeBytes = sizeof(PerFrameData),
+                                                   .usages = {BufferUsage::Uniform},
+                                                   .memoryUsage = MemoryUsage::CpuToGpu};
   perFrameUniformBuffer_ = createBuffer(perFrameUniformCreateInto, "Per-Frame Data Uniform Buffer");
 
   // Now, link our buffer to the allocated descriptor set
@@ -234,7 +234,7 @@ void Renderer::createPerFrameDataResources() {
       .offset = 0,
       .range = sizeof(PerFrameData),
   };
-  WriteDescriptorSet write{
+  const WriteDescriptorSet write{
       .dstSet = perFrameDescriptorSet_,
       .binding = 0,
       .descriptorCnt = 1,
@@ -274,9 +274,9 @@ bool Renderer::beginFrame() {
     // fails with out-of-date, we'll handle it below.
   }
 
-  VkResult result = vkAcquireNextImageKHR(getVkDevice(), swapchain_.getSwapchain(), UINT64_MAX,
-                                          imageAvailableSemaphores_[currentInFlightImageIx_], VK_NULL_HANDLE,
-                                          &currentSwapchainImageIx_);
+  const VkResult result = vkAcquireNextImageKHR(getVkDevice(), swapchain_.getSwapchain(), UINT64_MAX,
+                                                imageAvailableSemaphores_[currentInFlightImageIx_],
+                                                VK_NULL_HANDLE, &currentSwapchainImageIx_);
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
     log().debug("Swapchain out of date/suboptimal during acquire. Recreating.");
     swapchainIsStale_ = true;    // Mark it explicitly
