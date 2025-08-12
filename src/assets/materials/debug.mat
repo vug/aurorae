@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "graphicsProgram": "shaders/unlit.shader",
+  "graphicsProgram": "shaders/debug.shader",
   "polygonMode": "Fill",
   "depthTest": true,
   "depthWrite": false,

@@ -467,7 +467,7 @@ std::optional<asset::MeshDefinition> AssetProcessor::processMeshes(const std::fi
             aiMeshIndexCnt += face.mNumIndices;
           }
 
-          const StableId<asset::Material> defaultMat{"materials/unlit.mat"};
+          const StableId<asset::Material> defaultMat{"materials/debug.mat"};
           // TODO(vug): Parse materials from model files and map them to existing materials in the asset
           // library i.e. choose a shader, parse material parameters (constants, textures) and generate a
           // material definition here

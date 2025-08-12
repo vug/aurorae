@@ -16,7 +16,7 @@ MeshDefinition MeshDefinition::makeTriangle() {
     def.indices.push_back(i);
   }
   def.subMeshes = {
-      SubMesh{.material = StableId<asset::Material>{"materials/unlit.mat"}, .offset{0}, .count{3}}};
+      SubMesh{.material = StableId<asset::Material>{"materials/debug.mat"}, .offset{0}, .count{3}}};
   return def;
 }
 
