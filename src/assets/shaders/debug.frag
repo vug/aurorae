@@ -25,11 +25,14 @@ layout (set = 0, binding = 0, scalar) uniform perFrameData {
     uint64_t frameNo;
 } perFrame;
 
+//layout (set = 1, binding = 0, scalar) uniform MaterialParams {
+//    int vizMode;
+//} matParams;
+
 layout (location = 0) out vec4 outColor;
 
 void main() {
-    const int vizMode = 5;
-    switch (vizMode) {
+    switch (matParams.vizMode) {
         case 0: {
                     outColor = vec4(v.objectPosition, 1);
                 } break;

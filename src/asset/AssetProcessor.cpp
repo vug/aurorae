@@ -211,6 +211,39 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
   };
 }
 
+enum class ShaderParameterType {
+  Int,
+  Float,
+  Vec2,
+  Vec3,
+  Vec4,
+  Mat3,
+  Mat4,
+  Texture2D,
+  TextureCube,
+  StorageBuffer
+};
+
+struct ShaderParameter {
+  std::string name;
+  ShaderParameterType type;
+  u32 binding;
+  u32 offset;    // For uniform buffer members
+  u64 size;      // Size in bytes
+  u32 arraySize; // 1 for non-arrays
+};
+
+struct ShaderParameterSchema {
+  std::vector<ShaderParameter> uniformBufferParams; // From MaterialParams block
+  std::vector<ShaderParameter> textureParams;       // From texture bindings
+  std::vector<ShaderParameter> storageBufferParams; // From storage buffers
+
+  u32 uniformBufferSize{0}; // Total size of MaterialParams block
+
+  [[nodiscard]] bool hasParameter(const std::string& name) const;
+  [[nodiscard]] const ShaderParameter* getParameter(const std::string& name) const;
+};
+
 // Try this out again! But my hunch tells me that this is mostly to turn off// optimization in a release
 // build, and not to turn on optimization in a debug build:
 // #pragma optimize("gt", on)
@@ -263,13 +296,52 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
   //   return std::nullopt;
   // }
 
-  // const spirv_cross::Compiler comp(def.spirv);
-  // auto resources = comp.get_shader_resources();
-  // log().debug("Vertex Inputs:");
-  // for (const auto& input : resources.stage_inputs) {
-  //   uint32_t loc = comp.get_decoration(input.id, spv::DecorationLocation);
-  //   log().debug("    Location: {}, Name: {}", loc, input.name);
-  // }
+  const spirv_cross::Compiler reflector(def.spirv);
+  auto resources = reflector.get_shader_resources();
+  log().debug("Vertex Inputs:");
+  for (const auto& input : resources.stage_inputs) {
+    uint32_t loc = reflector.get_decoration(input.id, spv::DecorationLocation);
+    log().debug("    Location: {}, Name: {}", loc, input.name);
+  }
+
+  ShaderParameterSchema schema;
+  for (const spirv_cross::Resource& uniform : resources.uniform_buffers) {
+    const u32 set = reflector.get_decoration(uniform.id, spv::DecorationDescriptorSet);
+    const u32 binding = reflector.get_decoration(uniform.id, spv::DecorationBinding);
+
+    if (set != 1 || binding != 0)
+      continue;
+
+    const std::string_view blockVariableName = uniform.name;
+    const std::string_view structName = reflector.get_name(uniform.type_id);
+
+    const spirv_cross::SPIRType& type = reflector.get_type(uniform.type_id);
+    const u64 bufferSize = reflector.get_declared_struct_size(type);
+
+    for (uint32_t i = 0; i < type.member_types.size(); ++i) {
+      ShaderParameter param;
+
+      param.name = reflector.get_member_name(uniform.type_id, i); // "vizMode"
+      param.offset = reflector.type_struct_member_offset(type, i);
+      param.size = reflector.get_declared_struct_member_size(type, i);
+      param.binding = binding;
+
+      const auto& memberType = reflector.get_type(type.member_types[i]);
+      // param.type = spirvTypeToParameterType(memberType);
+      param.arraySize = memberType.array.empty() ? 1 : memberType.array[0];
+
+      schema.uniformBufferParams.push_back(param);
+    }
+
+    // Log all the names we found
+    log().info("Found uniform block:");
+    log().info("  Variable name: '{}'", blockVariableName); // "matParams"
+    log().info("  Struct name: '{}'", structName);          // "MaterialParams"
+    log().info("  Members:");
+    for (const auto& param : schema.uniformBufferParams) {
+      log().info("    - {}", param.name); // "vizMode"
+    }
+  }
 
   return def;
 }

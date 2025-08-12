@@ -1,4 +1,6 @@
 /*
+TODO(vug): finish reflecting uniform blocks
+TODO(vug): create layout, descriptor set stuff for the parsed uniform schema
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): move distant light to scene
