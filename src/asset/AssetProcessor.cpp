@@ -212,37 +212,146 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
 }
 
 enum class ShaderParameterType {
-  Int,
+  Unknown,
+  // Scalars
   Float,
+  Int,
+  UInt,
+  Bool,
+  // Vectors
   Vec2,
   Vec3,
   Vec4,
+  // Integer Vectors
+  IVec2,
+  IVec3,
+  IVec4,
+  // Matrix
   Mat3,
   Mat4,
-  Texture2D,
-  TextureCube,
-  StorageBuffer
+  // Other
+  Struct,
 };
+
+ShaderParameterType spirvTypeToShaderParameterType(const spirv_cross::SPIRType& type) {
+  switch (type.basetype) {
+  case spirv_cross::SPIRType::Float:
+    if (type.columns > 1) { // It's a matrix
+      if (type.columns == 3 && type.vecsize == 3)
+        return ShaderParameterType::Mat3;
+      if (type.columns == 4 && type.vecsize == 4)
+        return ShaderParameterType::Mat4;
+    } else { // It's a scalar or vector
+      switch (type.vecsize) {
+      case 1:
+        return ShaderParameterType::Float;
+      case 2:
+        return ShaderParameterType::Vec2;
+      case 3:
+        return ShaderParameterType::Vec3;
+      case 4:
+        return ShaderParameterType::Vec4;
+      }
+    }
+    break;
+
+  case spirv_cross::SPIRType::Int:
+    // Assuming no int matrices, only vectors
+    switch (type.vecsize) {
+    case 1:
+      return ShaderParameterType::Int;
+    case 2:
+      return ShaderParameterType::IVec2;
+    case 3:
+      return ShaderParameterType::IVec3;
+    case 4:
+      return ShaderParameterType::IVec4;
+    }
+    break;
+
+  case spirv_cross::SPIRType::Boolean:
+    // Bools are often represented as ints in uniform blocks,
+    // but SPIRV-Cross can identify them.
+    if (type.vecsize == 1)
+      return ShaderParameterType::Bool;
+    // Add bvec2, etc. if needed
+    break;
+
+  case spirv_cross::SPIRType::Struct:
+    return ShaderParameterType::Struct;
+
+  default:
+    return ShaderParameterType::Unknown;
+  }
+  return ShaderParameterType::Unknown;
+}
 
 struct ShaderParameter {
   std::string name;
-  ShaderParameterType type;
-  u32 binding;
-  u32 offset;    // For uniform buffer members
-  u64 size;      // Size in bytes
-  u32 arraySize; // 1 for non-arrays
+  ShaderParameterType type{};
+  u32 binding{};
+  u32 offset{};    // For uniform buffer members
+  u64 sizeBytes{}; // Size in bytes
+  bool isArray{};
+  u32 arraySize{};
 };
 
 struct ShaderParameterSchema {
   std::vector<ShaderParameter> uniformBufferParams; // From MaterialParams block
-  std::vector<ShaderParameter> textureParams;       // From texture bindings
-  std::vector<ShaderParameter> storageBufferParams; // From storage buffers
+  // std::vector<ShaderParameter> textureParams;       // From texture bindings
+  // std::vector<ShaderParameter> storageBufferParams; // From storage buffers
 
   u32 uniformBufferSize{0}; // Total size of MaterialParams block
 
   [[nodiscard]] bool hasParameter(const std::string& name) const;
   [[nodiscard]] const ShaderParameter* getParameter(const std::string& name) const;
 };
+
+const char* spirVBaseTypeToString(const spirv_cross::SPIRType& type) {
+  switch (type.basetype) {
+  case spirv_cross::SPIRType::Unknown:
+    return "Unknown";
+  case spirv_cross::SPIRType::Void:
+    return "Void";
+  case spirv_cross::SPIRType::Boolean:
+    return "Boolean";
+  case spirv_cross::SPIRType::SByte:
+    return "SByte";
+  case spirv_cross::SPIRType::UByte:
+    return "UByte";
+  case spirv_cross::SPIRType::Short:
+    return "Short";
+  case spirv_cross::SPIRType::UShort:
+    return "UShort";
+  case spirv_cross::SPIRType::Int:
+    return "Int";
+  case spirv_cross::SPIRType::UInt:
+    return "UInt";
+  case spirv_cross::SPIRType::Int64:
+    return "Int64";
+  case spirv_cross::SPIRType::UInt64:
+    return "UInt64";
+  case spirv_cross::SPIRType::Half:
+    return "Half";
+  case spirv_cross::SPIRType::Float:
+    return "Float";
+  case spirv_cross::SPIRType::Double:
+    return "Double";
+  case spirv_cross::SPIRType::Struct:
+    return "Struct";
+  case spirv_cross::SPIRType::Image:
+    return "Image";
+  case spirv_cross::SPIRType::SampledImage:
+    return "SampledImage";
+  case spirv_cross::SPIRType::Sampler:
+    return "Sampler";
+  case spirv_cross::SPIRType::AccelerationStructure:
+    return "AccelerationStructure";
+    // Add other types as needed
+  default:
+    return "Unsupported";
+  }
+}
 
 // Try this out again! But my hunch tells me that this is mostly to turn off// optimization in a release
 // build, and not to turn on optimization in a debug build:
@@ -263,7 +372,7 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
   }();
 
   shaderc::CompileOptions options;
-  options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_4);
+  options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
   switch (buildMode) {
   case ShaderBuildMode::Debug:
     options.SetOptimizationLevel(shaderc_optimization_level_zero);
@@ -300,8 +409,31 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
   auto resources = reflector.get_shader_resources();
   log().debug("Vertex Inputs:");
   for (const auto& input : resources.stage_inputs) {
-    uint32_t loc = reflector.get_decoration(input.id, spv::DecorationLocation);
-    log().debug("    Location: {}, Name: {}", loc, input.name);
+    const spirv_cross::SPIRType& type = reflector.get_type(input.base_type_id);
+    const uint32_t location = reflector.get_decoration(input.id, spv::DecorationLocation);
+    log().info("Found input: '{} {}' at location {}", spirVBaseTypeToString(type), input.name.c_str(),
+               location);
+
+    // spv::DecorationComponent for multiple render targets
+    if (reflector.has_decoration(input.id, spv::DecorationFlat)) // NoPerspective, Centroid
+      log().info("  - Has 'flat' interpolation qualifier.");
+
+    if (type.basetype == spirv_cross::SPIRType::Struct) {
+      // For "in VertexOutput v", this gives "VertexOutput"
+      const std::string& structName = reflector.get_name(input.base_type_id);
+      log().info("  - It's a struct of type: '{}'", structName.c_str());
+      log().info("  - Members:");
+
+      // Iterate over the members of the struct
+      for (uint32_t i = 0; i < type.member_types.size(); ++i) {
+        const spirv_cross::TypedID memberTypeId = type.member_types[i];
+        const spirv_cross::SPIRType memberType = reflector.get_type(memberTypeId);
+
+        const std::string& memberName = reflector.get_member_name(input.base_type_id, i);
+        log().info("    - {}[{},{}] {}", spirVBaseTypeToString(memberType), memberType.vecsize,
+                   memberType.columns, memberName.c_str());
+      }
+    }
   }
 
   ShaderParameterSchema schema;
@@ -313,22 +445,30 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
       continue;
 
     const std::string_view blockVariableName = uniform.name;
-    const std::string_view structName = reflector.get_name(uniform.type_id);
+    const std::string_view structName = reflector.get_name(uniform.base_type_id);
 
-    const spirv_cross::SPIRType& type = reflector.get_type(uniform.type_id);
-    const u64 bufferSize = reflector.get_declared_struct_size(type);
+    const spirv_cross::SPIRType& blockType = reflector.get_type(uniform.base_type_id);
+    const u64 bufferSize = reflector.get_declared_struct_size(blockType);
 
-    for (uint32_t i = 0; i < type.member_types.size(); ++i) {
+    for (uint32_t i = 0; i < blockType.member_types.size(); ++i) {
+      const auto& memberTypeId = blockType.member_types[i];
+      const auto& memberType = reflector.get_type(memberTypeId);
+
       ShaderParameter param;
 
       param.name = reflector.get_member_name(uniform.type_id, i); // "vizMode"
-      param.offset = reflector.type_struct_member_offset(type, i);
-      param.size = reflector.get_declared_struct_member_size(type, i);
+      auto foo = reflector.get_member_name(blockType.self, i);
+
+      param.type = spirvTypeToShaderParameterType(reflector.get_type(blockType.member_types[i]));
+      param.offset = reflector.type_struct_member_offset(blockType, i);
+      size_t member_offset = reflector.get_member_decoration(blockType.self, i, spv::DecorationOffset);
+      param.sizeBytes = reflector.get_declared_struct_member_size(blockType, i);
       param.binding = binding;
 
-      const auto& memberType = reflector.get_type(type.member_types[i]);
       // param.type = spirvTypeToParameterType(memberType);
-      param.arraySize = memberType.array.empty() ? 1 : memberType.array[0];
+      param.isArray = !memberType.array.empty();
+      if (param.isArray)
+        param.arraySize = memberType.array[0];
 
       schema.uniformBufferParams.push_back(param);
     }
