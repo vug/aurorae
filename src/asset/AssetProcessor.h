@@ -41,8 +41,6 @@ public:
   template <AssetConcept TAsset>
   static AssetUuid makeUuid(const StableId<TAsset>& stableId);
 
-  static bool validateSpirV(const std::vector<u32>& blob);
-
 private:
   AssetRegistry* registry_;
   std::unique_ptr<shaderc::Compiler> shaderCompiler_;

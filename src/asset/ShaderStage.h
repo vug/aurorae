@@ -7,6 +7,49 @@
 
 namespace aur::asset {
 
+enum class ShaderParameterType {
+  Unknown,
+  // Scalars
+  Float,
+  Int,
+  UInt,
+  Bool,
+  // Vectors
+  Vec2,
+  Vec3,
+  Vec4,
+  // Integer Vectors
+  IVec2,
+  IVec3,
+  IVec4,
+  // Matrix
+  Mat3,
+  Mat4,
+  // Other
+  Struct,
+};
+
+struct ShaderParameter {
+  std::string name;
+  ShaderParameterType type{};
+  u32 binding{};
+  u32 offset{};    // For uniform buffer members
+  u64 sizeBytes{}; // Size in bytes
+  bool isArray{};
+  u32 arraySize{};
+};
+
+struct ShaderParameterSchema {
+  std::vector<ShaderParameter> uniformBufferParams; // From MaterialParams block
+  // std::vector<ShaderParameter> textureParams;       // From texture bindings
+  // std::vector<ShaderParameter> storageBufferParams; // From storage buffers
+
+  u32 uniformBufferSize{0}; // Total size of MaterialParams block
+
+  [[nodiscard]] bool hasParameter(const std::string& name) const;
+  [[nodiscard]] const ShaderParameter* getParameter(const std::string& name) const;
+};
+
 using SpirV = std::vector<u32>;
 
 struct ShaderStageDefinition {
@@ -33,6 +76,9 @@ public:
   [[nodiscard]] const ShaderStageType& getStage() const { return stage_; }
   [[nodiscard]] const SpirV& getSpirVBlob() const { return spirVBlob_; }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
+
+  [[nodiscard]] static ShaderParameterSchema getSchema(const SpirV& spirV);
+  static bool validateSpirV(const std::vector<u32>& blob);
 
 private:
   ShaderStage() = default;

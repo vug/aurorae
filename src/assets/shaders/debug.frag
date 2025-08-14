@@ -32,7 +32,8 @@ layout (set = 0, binding = 0, scalar) uniform perFrameData {
 layout (location = 0) out vec4 outColor;
 
 void main() {
-    switch (matParams.vizMode) {
+    const int vizMode = 5;
+    switch (vizMode) {
         case 0: {
                     outColor = vec4(v.objectPosition, 1);
                 } break;
