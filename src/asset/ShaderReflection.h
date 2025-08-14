@@ -1,8 +1,10 @@
-3#pragma once
-
-#include <optional>
+#pragma once
 
 #include "../Utils.h"
+
+namespace spirv_cross {
+class SPIRType;
+}
 
 namespace aur::asset {
 // clang-format off
@@ -44,46 +46,24 @@ enum class ShaderVariableTypeMnemonic : u8 {
 };
 // clang-format on
 
-// An immutable, always-valid class representing the decomposed properties of a shader type.
-class ShaderVariableTypeInfo {
-public:
+struct ShaderVariableTypeInfo {
   enum class BaseType : u8 { Unknown, Struct, Bool, Int, Float };
   enum class Signedness : u8 { NotApplicable, Unsigned, Signed };
 
-  // creates an invalid object
-  ShaderVariableTypeInfo() = default;
-
-  // Public factory method to ensure only valid instances are created.
-  static std::optional<ShaderVariableTypeInfo> create(BaseType baseType, u8 componentBytes,
-                                                      Signedness signedness, u8 vectorSize, u8 columnCount);
-
-  [[nodiscard]] constexpr BaseType getBaseType() const { return baseType_; }
-  [[nodiscard]] constexpr u8 getComponentBytes() const { return componentBytes_; }
-  [[nodiscard]] constexpr Signedness getSignedness() const { return signedness_; }
-  [[nodiscard]] constexpr u8 getVectorSize() const { return vectorSize_; }
-  [[nodiscard]] constexpr u8 getColumnCount() const { return columnCount_; }
-  [[nodiscard]] constexpr bool isMatrix() const { return columnCount_ > 1; }
+  [[nodiscard]] bool isValid() const;
+  static ShaderVariableTypeInfo fromSpirV(const spirv_cross::SPIRType& type);
 
   bool operator<(const ShaderVariableTypeInfo& other) const;
   bool operator==(const ShaderVariableTypeInfo& other) const;
 
-private:
-  constexpr ShaderVariableTypeInfo(BaseType baseType, u8 componentBytes, Signedness signedness, u8 vectorSize,
-                                   u8 columnCount)
-      : baseType_(baseType)
-      , componentBytes_(componentBytes)
-      , signedness_(signedness)
-      , vectorSize_(vectorSize)
-      , columnCount_(columnCount) {}
-
-  BaseType baseType_{};
-  uint8_t componentBytes_{};
-  Signedness signedness_{};
-  uint8_t vectorSize_{};
-  uint8_t columnCount_{};
+  BaseType baseType{};
+  u8 componentBytes{};
+  Signedness signedness{};
+  u32 vectorSize{};
+  u32 columnCnt{};
 };
 
-constexpr std::optional<ShaderVariableTypeInfo> getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic);
+constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic);
 
 enum class ShaderVariableCategory {
   Unknown,

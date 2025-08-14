@@ -1,14 +1,14 @@
 #include "ShaderReflection.h"
 
+#include <spirv_cross/spirv_reflect.hpp>
+
 #include "../Logger.h"
 
 namespace aur::asset {
-std::optional<ShaderVariableTypeInfo>
-ShaderVariableTypeInfo::create(BaseType baseType, uint8_t componentBytes, Signedness signedness,
-                               uint8_t vectorSize, uint8_t columnCount) {
+bool ShaderVariableTypeInfo::isValid() const {
 
-  if (vectorSize < 1 || vectorSize > 4 || columnCount < 1 || columnCount > 4)
-    return std::nullopt;
+  if (vectorSize < 1 || vectorSize > 4 || columnCnt < 1 || columnCnt > 4)
+    return false;
 
   switch (baseType) {
   case BaseType::Unknown:
@@ -16,40 +16,176 @@ ShaderVariableTypeInfo::create(BaseType baseType, uint8_t componentBytes, Signed
 
   case BaseType::Bool:
     // In shader interface blocks, bools are almost always 32-bit for alignment.
-    if (componentBytes != 4 || columnCount > 1)
-      return std::nullopt;
+    if (componentBytes != 4 || columnCnt > 1)
+      return false;
     if (signedness != Signedness::NotApplicable)
-      return std::nullopt;
-    break;
+      return false;
 
   case BaseType::Int:
     if (signedness == Signedness::NotApplicable)
-      return std::nullopt;
+      return false;
     if (componentBytes != 1 && componentBytes != 2 && componentBytes != 4 && componentBytes != 8)
-      return std::nullopt;
-    break;
-    if (columnCount > 1)
-      return std::nullopt; // No integer matrices in this spec
+      return false;
+    if (columnCnt > 1)
+      return false; // No integer matrices in this spec yet
 
   case BaseType::Float:
     if (signedness != Signedness::Signed) // Floats are always signed
-      return std::nullopt;
+      return false;
     if (componentBytes != 2 && componentBytes != 4 && componentBytes != 8)
-      return std::nullopt;
+      return false;
     break;
 
   case BaseType::Struct:
-    if (vectorSize > 1 || columnCount > 1)
-      return std::nullopt;
+    if (vectorSize > 1 || columnCnt > 1)
+      return false;
   }
 
-  return ShaderVariableTypeInfo(baseType, componentBytes, signedness, vectorSize, columnCount);
+  return true;
+}
+
+namespace {
+ShaderVariableTypeInfo::BaseType spirvTypeToShaderVariableBaseType(const spirv_cross::SPIRType& type) {
+  switch (type.basetype) {
+  case spirv_cross::SPIRType::Boolean:
+    return ShaderVariableTypeInfo::BaseType::Bool;
+  case spirv_cross::SPIRType::SByte:
+  case spirv_cross::SPIRType::Short:
+  case spirv_cross::SPIRType::Int:
+  case spirv_cross::SPIRType::Int64:
+  case spirv_cross::SPIRType::UByte:
+  case spirv_cross::SPIRType::UShort:
+  case spirv_cross::SPIRType::UInt:
+  case spirv_cross::SPIRType::UInt64:
+    return ShaderVariableTypeInfo::BaseType::Int;
+  case spirv_cross::SPIRType::Half:
+  case spirv_cross::SPIRType::Float:
+  case spirv_cross::SPIRType::Double:
+    return ShaderVariableTypeInfo::BaseType::Float;
+  case spirv_cross::SPIRType::Unknown:
+    return ShaderVariableTypeInfo::BaseType::Unknown;
+  case spirv_cross::SPIRType::Struct:
+    return ShaderVariableTypeInfo::BaseType::Struct;
+  default:
+    log().fatal("Unknown SPIRType for ShaderVariableTypeInfo::BaseType.");
+  }
+  std::unreachable();
+}
+
+u8 spirvTypeToShaderVariableComponentBytes(const spirv_cross::SPIRType& type) {
+  switch (type.basetype) {
+  case spirv_cross::SPIRType::SByte:
+  case spirv_cross::SPIRType::UByte:
+    return 1;
+  case spirv_cross::SPIRType::Short:
+  case spirv_cross::SPIRType::UShort:
+  case spirv_cross::SPIRType::Half:
+    return 2;
+  case spirv_cross::SPIRType::Boolean:
+  case spirv_cross::SPIRType::Int:
+  case spirv_cross::SPIRType::UInt:
+  case spirv_cross::SPIRType::Float:
+    return 4;
+  case spirv_cross::SPIRType::Int64:
+  case spirv_cross::SPIRType::UInt64:
+  case spirv_cross::SPIRType::Double:
+    return 8;
+  case spirv_cross::SPIRType::Unknown:
+  case spirv_cross::SPIRType::Struct:
+    return static_cast<u8>(-1);
+  default:
+    log().fatal("Unknown SPIRType for ShaderVariableTypeInfo::ComponentBytes.");
+  }
+  std::unreachable();
+}
+
+ShaderVariableTypeInfo::Signedness spirvTypeToShaderVariableSignedness(const spirv_cross::SPIRType& type) {
+
+  switch (type.basetype) {
+  case spirv_cross::SPIRType::Boolean:
+    return ShaderVariableTypeInfo::Signedness::NotApplicable;
+  case spirv_cross::SPIRType::SByte:
+  case spirv_cross::SPIRType::Short:
+  case spirv_cross::SPIRType::Int:
+  case spirv_cross::SPIRType::Int64:
+  case spirv_cross::SPIRType::Half:
+  case spirv_cross::SPIRType::Float:
+  case spirv_cross::SPIRType::Double:
+    return ShaderVariableTypeInfo::Signedness::Signed;
+  case spirv_cross::SPIRType::UByte:
+  case spirv_cross::SPIRType::UShort:
+  case spirv_cross::SPIRType::UInt:
+  case spirv_cross::SPIRType::UInt64:
+    return ShaderVariableTypeInfo::Signedness::Unsigned;
+  case spirv_cross::SPIRType::Unknown:
+  case spirv_cross::SPIRType::Struct:
+    return ShaderVariableTypeInfo::Signedness::NotApplicable;
+  default:
+    log().fatal("Unknown SPIRType for ShaderVariableTypeInfo::BaseType.");
+  }
+  std::unreachable();
+}
+
+const char* spirVBaseTypeToString(const spirv_cross::SPIRType& type) {
+  switch (type.basetype) {
+  case spirv_cross::SPIRType::Unknown:
+    return "Unknown";
+  case spirv_cross::SPIRType::Void:
+    return "Void";
+  case spirv_cross::SPIRType::Boolean:
+    return "Boolean";
+  case spirv_cross::SPIRType::SByte:
+    return "SByte";
+  case spirv_cross::SPIRType::UByte:
+    return "UByte";
+  case spirv_cross::SPIRType::Short:
+    return "Short";
+  case spirv_cross::SPIRType::UShort:
+    return "UShort";
+  case spirv_cross::SPIRType::Int:
+    return "Int";
+  case spirv_cross::SPIRType::UInt:
+    return "UInt";
+  case spirv_cross::SPIRType::Int64:
+    return "Int64";
+  case spirv_cross::SPIRType::UInt64:
+    return "UInt64";
+  case spirv_cross::SPIRType::Half:
+    return "Half";
+  case spirv_cross::SPIRType::Float:
+    return "Float";
+  case spirv_cross::SPIRType::Double:
+    return "Double";
+  case spirv_cross::SPIRType::Struct:
+    return "Struct";
+  case spirv_cross::SPIRType::Image:
+    return "Image";
+  case spirv_cross::SPIRType::SampledImage:
+    return "SampledImage";
+  case spirv_cross::SPIRType::Sampler:
+    return "Sampler";
+  case spirv_cross::SPIRType::AccelerationStructure:
+    return "AccelerationStructure";
+    // Add other types as needed
+  default:
+    return "Unsupported";
+  }
+}
+
+} // namespace
+
+ShaderVariableTypeInfo ShaderVariableTypeInfo::fromSpirV(const spirv_cross::SPIRType& type) {
+  return {.baseType = spirvTypeToShaderVariableBaseType(type),
+          .componentBytes = spirvTypeToShaderVariableComponentBytes(type),
+          .signedness = spirvTypeToShaderVariableSignedness(type),
+          .vectorSize = type.vecsize,
+          .columnCnt = type.columns};
 }
 
 // clang-format off
 // Constexpr converter from the mnemonic to the factored representation.
-constexpr std::optional<ShaderVariableTypeInfo> getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic) {
-#define FACTOR(base, bytes, sign, vec, col) ShaderVariableTypeInfo::create(ShaderVariableTypeInfo::BaseType::base, bytes, ShaderVariableTypeInfo::Signedness::sign, vec, col)
+constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic) {
+#define FACTOR(base, bytes, sign, vec, col) ShaderVariableTypeInfo{ShaderVariableTypeInfo::BaseType::base, bytes, ShaderVariableTypeInfo::Signedness::sign, vec, col}
   switch (mnemonic) {
   case ShaderVariableTypeMnemonic::Unknown:      return FACTOR(Unknown, 0, NotApplicable, 0, 0);
   case ShaderVariableTypeMnemonic::Struct:       return FACTOR(Struct,  0, NotApplicable, 1, 1);
@@ -157,15 +293,13 @@ constexpr std::optional<ShaderVariableTypeInfo> getFactoredTypeInfo(ShaderVariab
 // clang-format on
 
 bool ShaderVariableTypeInfo::operator==(const ShaderVariableTypeInfo& other) const {
-  return baseType_ == other.baseType_ && componentBytes_ == other.componentBytes_ &&
-         signedness_ == other.signedness_ && vectorSize_ == other.vectorSize_ &&
-         columnCount_ == other.columnCount_;
+  return baseType == other.baseType && componentBytes == other.componentBytes &&
+         signedness == other.signedness && vectorSize == other.vectorSize && columnCnt == other.columnCnt;
 }
 
 bool ShaderVariableTypeInfo::operator<(const ShaderVariableTypeInfo& other) const {
-  return std::tie(baseType_, componentBytes_, signedness_, vectorSize_, columnCount_) <
-         std::tie(other.baseType_, other.componentBytes_, other.signedness_, other.vectorSize_,
-                  other.columnCount_);
+  return std::tie(baseType, componentBytes, signedness, vectorSize, columnCnt) <
+         std::tie(other.baseType, other.componentBytes, other.signedness, other.vectorSize, other.columnCnt);
 }
 
 bool ShaderVariable::operator==(const ShaderVariable& other) const {
