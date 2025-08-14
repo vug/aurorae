@@ -257,12 +257,12 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
       .spirv = std::move(spirv),
   };
 
-  // if (!ShaderStage::validateSpirV(def.spirv)) {
-  //   log().warn("Invalid SPIR-V generated from: {}", srcPath.generic_string());
-  //   return std::nullopt;
-  // }
-
+  if (!asset::ShaderStage::validateSpirV(def.spirv)) {
+    log().warn("Invalid SPIR-V generated from: {}", srcPath.generic_string());
+    return std::nullopt;
+  }
   asset::ShaderParameterSchema schema = asset::ShaderStage::getSchema(def.spirv);
+
   return def;
 }
 // #pragma optimize("", on)

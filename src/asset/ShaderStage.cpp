@@ -13,59 +13,97 @@ ShaderStage ShaderStage::create(ShaderStageDefinition&& def) {
   return stage;
 }
 
-ShaderParameterType spirvTypeToShaderParameterType(const spirv_cross::SPIRType& type) {
+namespace {
+ShaderVariableTypeInfo::BaseType spirvTypeToShaderVariableBaseType(const spirv_cross::SPIRType& type) {
   switch (type.basetype) {
-  case spirv_cross::SPIRType::Float:
-    if (type.columns > 1) { // It's a matrix
-      if (type.columns == 3 && type.vecsize == 3)
-        return ShaderParameterType::Mat3;
-      if (type.columns == 4 && type.vecsize == 4)
-        return ShaderParameterType::Mat4;
-    } else { // It's a scalar or vector
-      switch (type.vecsize) {
-      case 1:
-        return ShaderParameterType::Float;
-      case 2:
-        return ShaderParameterType::Vec2;
-      case 3:
-        return ShaderParameterType::Vec3;
-      case 4:
-        return ShaderParameterType::Vec4;
-      default:
-        log().fatal("Incorrect vecsize");
-      }
-    }
-    break;
-
-  case spirv_cross::SPIRType::Int:
-    // Assuming no int matrices, only vectors
-    switch (type.vecsize) {
-    case 1:
-      return ShaderParameterType::Int;
-    case 2:
-      return ShaderParameterType::IVec2;
-    case 3:
-      return ShaderParameterType::IVec3;
-    case 4:
-      return ShaderParameterType::IVec4;
-    }
-    break;
-
   case spirv_cross::SPIRType::Boolean:
-    // Bools are often represented as ints in uniform blocks,
-    // but SPIRV-Cross can identify them.
-    if (type.vecsize == 1)
-      return ShaderParameterType::Bool;
-    // Add bvec2, etc. if needed
-    break;
-
+    return ShaderVariableTypeInfo::BaseType::Bool;
+  case spirv_cross::SPIRType::SByte:
+  case spirv_cross::SPIRType::Short:
+  case spirv_cross::SPIRType::Int:
+  case spirv_cross::SPIRType::Int64:
+  case spirv_cross::SPIRType::UByte:
+  case spirv_cross::SPIRType::UShort:
+  case spirv_cross::SPIRType::UInt:
+  case spirv_cross::SPIRType::UInt64:
+    return ShaderVariableTypeInfo::BaseType::Int;
+  case spirv_cross::SPIRType::Half:
+  case spirv_cross::SPIRType::Float:
+  case spirv_cross::SPIRType::Double:
+    return ShaderVariableTypeInfo::BaseType::Float;
+  case spirv_cross::SPIRType::Unknown:
+    return ShaderVariableTypeInfo::BaseType::Unknown;
   case spirv_cross::SPIRType::Struct:
-    return ShaderParameterType::Struct;
-
+    return ShaderVariableTypeInfo::BaseType::Struct;
   default:
-    return ShaderParameterType::Unknown;
+    log().fatal("Unknown SPIRType for ShaderVariableTypeInfo::BaseType.");
   }
-  return ShaderParameterType::Unknown;
+  std::unreachable();
+}
+
+u8 spirvTypeToShaderVariableComponentBytes(const spirv_cross::SPIRType& type) {
+  switch (type.basetype) {
+  case spirv_cross::SPIRType::SByte:
+  case spirv_cross::SPIRType::UByte:
+    return 1;
+  case spirv_cross::SPIRType::Short:
+  case spirv_cross::SPIRType::UShort:
+  case spirv_cross::SPIRType::Half:
+    return 2;
+  case spirv_cross::SPIRType::Boolean:
+  case spirv_cross::SPIRType::Int:
+  case spirv_cross::SPIRType::UInt:
+  case spirv_cross::SPIRType::Float:
+    return 4;
+  case spirv_cross::SPIRType::Int64:
+  case spirv_cross::SPIRType::UInt64:
+  case spirv_cross::SPIRType::Double:
+    return 8;
+  case spirv_cross::SPIRType::Unknown:
+  case spirv_cross::SPIRType::Struct:
+    return static_cast<u8>(-1);
+  default:
+    log().fatal("Unknown SPIRType for ShaderVariableTypeInfo::ComponentBytes.");
+  }
+  std::unreachable();
+}
+
+ShaderVariableTypeInfo::Signedness spirvTypeToShaderVariableSignedness(const spirv_cross::SPIRType& type) {
+
+  ShaderVariableTypeInfo::Signedness signedness{};
+  switch (type.basetype) {
+  case spirv_cross::SPIRType::Boolean:
+    return ShaderVariableTypeInfo::Signedness::NotApplicable;
+  case spirv_cross::SPIRType::SByte:
+  case spirv_cross::SPIRType::Short:
+  case spirv_cross::SPIRType::Int:
+  case spirv_cross::SPIRType::Int64:
+  case spirv_cross::SPIRType::Half:
+  case spirv_cross::SPIRType::Float:
+  case spirv_cross::SPIRType::Double:
+    return ShaderVariableTypeInfo::Signedness::Signed;
+  case spirv_cross::SPIRType::UByte:
+  case spirv_cross::SPIRType::UShort:
+  case spirv_cross::SPIRType::UInt:
+  case spirv_cross::SPIRType::UInt64:
+    return ShaderVariableTypeInfo::Signedness::Unsigned;
+  case spirv_cross::SPIRType::Unknown:
+  case spirv_cross::SPIRType::Struct:
+    return ShaderVariableTypeInfo::Signedness::NotApplicable;
+  default:
+    log().fatal("Unknown SPIRType for ShaderVariableTypeInfo::BaseType.");
+  }
+  std::unreachable();
+}
+
+ShaderVariableTypeInfo spirvTypeToShaderVariableTypeInfo(const spirv_cross::SPIRType& type) {
+  const ShaderVariableTypeInfo::BaseType baseType = spirvTypeToShaderVariableBaseType(type);
+  const u8 componentBytes = spirvTypeToShaderVariableComponentBytes(type);
+  const ShaderVariableTypeInfo::Signedness signedness = spirvTypeToShaderVariableSignedness(type);
+  const u8 vectorSize = type.vecsize;
+  const u8 columnCnt = type.columns;
+
+  return ShaderVariableTypeInfo::create(baseType, componentBytes, signedness, vectorSize, columnCnt).value();
 }
 
 const char* spirVBaseTypeToString(const spirv_cross::SPIRType& type) {
@@ -113,68 +151,104 @@ const char* spirVBaseTypeToString(const spirv_cross::SPIRType& type) {
     return "Unsupported";
   }
 }
+} // namespace
 
-// A structure to hold the relevant information about a single variable
-// in the interface between shader stages (e.g., a `vec3` at `location = 0`).
-struct ShaderInterfaceVariable {
-  uint32_t location; // layout(location = N)
-  spirv_cross::SPIRType::BaseType type;
-  uint32_t vecsize;
-  uint32_t columns;
-  std::string name;
+ShaderParameterSchema ShaderStage::getSchema(const SpirV& spirV) {
+  const spirv_cross::Compiler reflector(spirV);
+  auto resources = reflector.get_shader_resources();
+  log().debug("Vertex Inputs:");
+  for (const auto& input : resources.stage_inputs) {
+    ShaderVariable var;
 
-  // We primarily sort by location to ensure a consistent order for comparison.
-  bool operator<(const ShaderInterfaceVariable& other) const { return location < other.location; }
+    const spirv_cross::SPIRType& inputType = reflector.get_type(input.base_type_id);
+    var.typeInfo = spirvTypeToShaderVariableTypeInfo(inputType);
+    var.location = reflector.get_decoration(input.id, spv::DecorationLocation);
+    log().info("Found input: '{} {}' at location {}", spirVBaseTypeToString(inputType), input.name.c_str(),
+               var.location);
 
-  // For validation, we require location, type, and dimensions to be identical.
-  // The name is not used for comparison as it can be optimized away or differ,
-  // but it's useful for logging and debugging.
-  bool operator==(const ShaderInterfaceVariable& other) const {
-    return location == other.location && type == other.type && vecsize == other.vecsize &&
-           columns == other.columns;
+    // spv::DecorationComponent for multiple render targets
+    if (reflector.has_decoration(input.id, spv::DecorationFlat)) // NoPerspective, Centroid
+      log().info("  - Has 'flat' interpolation qualifier.");
+
+    if (inputType.basetype == spirv_cross::SPIRType::Struct) {
+      // For "in VertexOutput v", this gives "VertexOutput"
+      const std::string& structName = reflector.get_name(input.base_type_id);
+      log().info("  - It's a struct of type: '{}'", structName.c_str());
+      log().info("  - Members:");
+
+      // Iterate over the members of the struct
+      for (uint32_t i = 0; i < inputType.member_types.size(); ++i) {
+        const spirv_cross::TypedID memberTypeId = inputType.member_types[i];
+        const spirv_cross::SPIRType memberType = reflector.get_type(memberTypeId);
+
+        const std::string& memberName = reflector.get_member_name(input.base_type_id, i);
+        log().info("    - {}[{},{}] {}", spirVBaseTypeToString(memberType), memberType.vecsize,
+                   memberType.columns, memberName.c_str());
+      }
+    }
   }
-};
 
-std::string basetype_to_string(spirv_cross::SPIRType::BaseType type) {
-  using BaseType = spirv_cross::SPIRType::BaseType;
-  switch (type) {
-  case BaseType::Unknown:
-    return "Unknown";
-  case BaseType::Void:
-    return "Void";
-  case BaseType::Boolean:
-    return "Boolean";
-  case BaseType::Char:
-    return "Char";
-  case BaseType::Int:
-    return "Int";
-  case BaseType::UInt:
-    return "UInt";
-  case BaseType::Int64:
-    return "Int64";
-  case BaseType::UInt64:
-    return "UInt64";
-  case BaseType::Half:
-    return "Half";
-  case BaseType::Float:
-    return "Float";
-  case BaseType::Double:
-    return "Double";
-  case BaseType::Struct:
-    return "Struct";
-  case BaseType::Image:
-    return "Image";
-  case BaseType::SampledImage:
-    return "SampledImage";
-  case BaseType::Sampler:
-    return "Sampler";
-  case BaseType::AccelerationStructure:
-    return "AccelerationStructure";
-  default:
-    return "Other";
+  ShaderParameterSchema schema;
+  for (const spirv_cross::Resource& uniform : resources.uniform_buffers) {
+    const u32 set = reflector.get_decoration(uniform.id, spv::DecorationDescriptorSet);
+    const u32 binding = reflector.get_decoration(uniform.id, spv::DecorationBinding);
+
+    if (set != 1 || binding != 0)
+      continue;
+
+    const std::string_view blockVariableName = uniform.name;
+    const std::string_view structName = reflector.get_name(uniform.base_type_id);
+
+    const spirv_cross::SPIRType& blockType = reflector.get_type(uniform.base_type_id);
+    const u64 bufferSize = reflector.get_declared_struct_size(blockType);
+
+    for (uint32_t i = 0; i < blockType.member_types.size(); ++i) {
+      const auto& memberTypeId = blockType.member_types[i];
+      const auto& memberType = reflector.get_type(memberTypeId);
+
+      ShaderVariable var;
+
+      var.name = reflector.get_member_name(uniform.type_id, i); // "vizMode"
+      // var.name = reflector.get_member_name(blockType.self, i);
+      var.category = ShaderVariableCategory::UniformBufferMember;
+      const ShaderVariableTypeInfo::BaseType baseType = spirvTypeToShaderVariableBaseType(memberType);
+      const u8 componentBytes = spirvTypeToShaderVariableComponentBytes(memberType);
+      const ShaderVariableTypeInfo::Signedness signedness = spirvTypeToShaderVariableSignedness(memberType);
+      const u8 vectorSize = memberType.vecsize;
+      const u8 columnCnt = memberType.columns;
+      auto opt = ShaderVariableTypeInfo::create(baseType, componentBytes, signedness, vectorSize, columnCnt);
+      if (!opt)
+        log().fatal("Failed to create ShaderVariableTypeInfo for member '{}'", var.name);
+      var.typeInfo = opt.value();
+      var.location = static_cast<u32>(-1);
+      var.set = set;
+      var.binding = binding;
+      var.offset = reflector.type_struct_member_offset(blockType, i);
+      // var.offset = reflector.get_member_decoration(blockType.self, i, spv::DecorationOffset);
+      var.sizeBytes = reflector.get_declared_struct_member_size(blockType, i);
+      var.isArray = !memberType.array.empty();
+      if (var.isArray)
+        var.arraySize = memberType.array[0];
+
+      schema.uniformBufferParams.push_back(var);
+    }
+
+    // Log all the names we found
+    log().info("Found uniform block:");
+    log().info("  Variable name: '{}'", blockVariableName); // "matParams"
+    log().info("  Struct name: '{}'", structName);          // "MaterialParams"
+    log().info("  Members:");
+    for (const auto& param : schema.uniformBufferParams) {
+      log().info("    - {}", param.name); // "vizMode"
+    }
   }
+
+  return schema;
 }
 
+// VERTEX SHADER <-> FRAGMENT SHADER COMPATIBILITY -> MODE TO GRAPHICS PROGRAM
+
+/*
 static std::vector<ShaderInterfaceVariable>
 extractInterfaceVariables(const spirv_cross::Compiler& compiler,
                           const spirv_cross::SmallVector<spirv_cross::Resource>& resources) {
@@ -207,7 +281,7 @@ extractInterfaceVariables(const spirv_cross::Compiler& compiler,
 // A helper function to print the details of an interface variable.
 static void printVariable(const ShaderInterfaceVariable& var) {
   log().info("  - Location: {}, Type: {}, , VecSize: {}, Columns: {}, Name: {}", var.location,
-             basetype_to_string(var.type), var.vecsize, var.columns, var.name);
+             spirVBaseTypeToString(var.type), var.vecsize, var.columns, var.name);
 }
 
 bool validate_shader_linkage(const std::vector<uint32_t>& vertex_spirv,
@@ -251,6 +325,10 @@ bool validate_shader_linkage(const std::vector<uint32_t>& vertex_spirv,
   }
 }
 
+*/
+
+// VALIDATION
+
 constexpr u32 kSpirVMagic = 0x07230203; // SPIR-V magic number
 std::string getSpirvVersionString(u32 version) {
   const u32 major = (version >> 16) & 0xFFFF; // Upper 16 bits
@@ -279,88 +357,6 @@ std::string getSpirvGeneratorString(uint32_t generator) {
   }
   // clang-format on
   return vendorName + " (Version " + std::to_string(toolVersion) + ")";
-}
-
-ShaderParameterSchema ShaderStage::getSchema(const SpirV& spirV) {
-  const spirv_cross::Compiler reflector(spirV);
-  auto resources = reflector.get_shader_resources();
-  log().debug("Vertex Inputs:");
-  for (const auto& input : resources.stage_inputs) {
-    const spirv_cross::SPIRType& type = reflector.get_type(input.base_type_id);
-    const uint32_t location = reflector.get_decoration(input.id, spv::DecorationLocation);
-    log().info("Found input: '{} {}' at location {}", spirVBaseTypeToString(type), input.name.c_str(),
-               location);
-
-    // spv::DecorationComponent for multiple render targets
-    if (reflector.has_decoration(input.id, spv::DecorationFlat)) // NoPerspective, Centroid
-      log().info("  - Has 'flat' interpolation qualifier.");
-
-    if (type.basetype == spirv_cross::SPIRType::Struct) {
-      // For "in VertexOutput v", this gives "VertexOutput"
-      const std::string& structName = reflector.get_name(input.base_type_id);
-      log().info("  - It's a struct of type: '{}'", structName.c_str());
-      log().info("  - Members:");
-
-      // Iterate over the members of the struct
-      for (uint32_t i = 0; i < type.member_types.size(); ++i) {
-        const spirv_cross::TypedID memberTypeId = type.member_types[i];
-        const spirv_cross::SPIRType memberType = reflector.get_type(memberTypeId);
-
-        const std::string& memberName = reflector.get_member_name(input.base_type_id, i);
-        log().info("    - {}[{},{}] {}", spirVBaseTypeToString(memberType), memberType.vecsize,
-                   memberType.columns, memberName.c_str());
-      }
-    }
-  }
-
-  ShaderParameterSchema schema;
-  for (const spirv_cross::Resource& uniform : resources.uniform_buffers) {
-    const u32 set = reflector.get_decoration(uniform.id, spv::DecorationDescriptorSet);
-    const u32 binding = reflector.get_decoration(uniform.id, spv::DecorationBinding);
-
-    if (set != 1 || binding != 0)
-      continue;
-
-    const std::string_view blockVariableName = uniform.name;
-    const std::string_view structName = reflector.get_name(uniform.base_type_id);
-
-    const spirv_cross::SPIRType& blockType = reflector.get_type(uniform.base_type_id);
-    const u64 bufferSize = reflector.get_declared_struct_size(blockType);
-
-    for (uint32_t i = 0; i < blockType.member_types.size(); ++i) {
-      const auto& memberTypeId = blockType.member_types[i];
-      const auto& memberType = reflector.get_type(memberTypeId);
-
-      ShaderParameter param;
-
-      param.name = reflector.get_member_name(uniform.type_id, i); // "vizMode"
-      auto foo = reflector.get_member_name(blockType.self, i);
-
-      param.type = spirvTypeToShaderParameterType(reflector.get_type(blockType.member_types[i]));
-      param.offset = reflector.type_struct_member_offset(blockType, i);
-      size_t member_offset = reflector.get_member_decoration(blockType.self, i, spv::DecorationOffset);
-      param.sizeBytes = reflector.get_declared_struct_member_size(blockType, i);
-      param.binding = binding;
-
-      // param.type = spirvTypeToParameterType(memberType);
-      param.isArray = !memberType.array.empty();
-      if (param.isArray)
-        param.arraySize = memberType.array[0];
-
-      schema.uniformBufferParams.push_back(param);
-    }
-
-    // Log all the names we found
-    log().info("Found uniform block:");
-    log().info("  Variable name: '{}'", blockVariableName); // "matParams"
-    log().info("  Struct name: '{}'", structName);          // "MaterialParams"
-    log().info("  Members:");
-    for (const auto& param : schema.uniformBufferParams) {
-      log().info("    - {}", param.name); // "vizMode"
-    }
-  }
-
-  return schema;
 }
 
 bool ShaderStage::validateSpirV(const std::vector<u32>& blob) {

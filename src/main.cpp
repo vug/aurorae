@@ -1,6 +1,15 @@
 /*
-TODO(vug): finish reflecting uniform blocks
-TODO(vug): create layout, descriptor set stuff for the parsed uniform schema
+TODO(vug): finish reflecting uniform blocks (finish unification)
+TODO(vug): store schema with ShaderStageDefinition (make it serialiazable if necessary)
+TODO(vug): GraphicsProgram compares the outputs of vert shader with the inputs of the frag shader
+TODO(vug): asset::Material takes the schemas and compare them with its parameters. (give ignored parameters
+           default values)
+TODO(vug): asset::Material gives parameters to render::Material, and the latter creates an uniform buffer.
+           (See Gemini)
+TODO(vug): Either GraphicsProgram or Material will create layout, descriptor set... stuff for the parsed
+           uniform schema (See Gemini)
+TODO(vug): bring integer matrices to ShaderReflection
+.
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): move distant light to scene

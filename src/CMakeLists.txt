@@ -143,6 +143,7 @@ add_executable(Aurorae
         asset/AssetConcepts.h
         asset/AssetIds.h
         asset/AssetTraits.h
+        asset/ShaderReflection.h asset/ShaderReflection.cpp
         asset/ShaderStage.h asset/ShaderStage.cpp
         asset/GraphicsProgram.h asset/AssetGraphicsProgram.cpp
         asset/Material.h asset/AssetMaterial.cpp

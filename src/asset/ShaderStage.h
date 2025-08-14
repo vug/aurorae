@@ -3,51 +3,20 @@
 #include "../Utils.h"
 #include "../VulkanWrappers.h"
 #include "AssetTraits.h"
+#include "ShaderReflection.h"
 #include <vector>
 
 namespace aur::asset {
 
-enum class ShaderParameterType {
-  Unknown,
-  // Scalars
-  Float,
-  Int,
-  UInt,
-  Bool,
-  // Vectors
-  Vec2,
-  Vec3,
-  Vec4,
-  // Integer Vectors
-  IVec2,
-  IVec3,
-  IVec4,
-  // Matrix
-  Mat3,
-  Mat4,
-  // Other
-  Struct,
-};
-
-struct ShaderParameter {
-  std::string name;
-  ShaderParameterType type{};
-  u32 binding{};
-  u32 offset{};    // For uniform buffer members
-  u64 sizeBytes{}; // Size in bytes
-  bool isArray{};
-  u32 arraySize{};
-};
-
 struct ShaderParameterSchema {
-  std::vector<ShaderParameter> uniformBufferParams; // From MaterialParams block
+  std::vector<ShaderVariable> uniformBufferParams; // From MaterialParams block
   // std::vector<ShaderParameter> textureParams;       // From texture bindings
   // std::vector<ShaderParameter> storageBufferParams; // From storage buffers
 
   u32 uniformBufferSize{0}; // Total size of MaterialParams block
 
   [[nodiscard]] bool hasParameter(const std::string& name) const;
-  [[nodiscard]] const ShaderParameter* getParameter(const std::string& name) const;
+  [[nodiscard]] const ShaderVariable* getVariable(const std::string& name) const;
 };
 
 using SpirV = std::vector<u32>;
