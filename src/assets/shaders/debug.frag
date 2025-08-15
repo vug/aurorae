@@ -25,9 +25,9 @@ layout (set = 0, binding = 0, scalar) uniform perFrameData {
     uint64_t frameNo;
 } perFrame;
 
-//layout (set = 1, binding = 0, scalar) uniform MaterialParams {
-//    int vizMode;
-//} matParams;
+layout (set = 1, binding = 0, scalar) uniform MaterialParams {
+    int vizMode;
+} matParams;
 
 layout (location = 0) out vec4 outColor;
 

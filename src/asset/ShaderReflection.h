@@ -61,8 +61,22 @@ struct ShaderVariableTypeInfo {
   Signedness signedness{};
   u32 vectorSize{};
   u32 columnCnt{};
+
+  [[nodiscard]] std::string toString() const;
+};
+} // namespace aur::asset
+template <>
+struct glz::meta<aur::asset::ShaderVariableTypeInfo::BaseType> {
+  using enum aur::asset::ShaderVariableTypeInfo::BaseType;
+  static constexpr auto value = glz::enumerate(Unknown, Struct, Bool, Int, Float);
+};
+template <>
+struct glz::meta<aur::asset::ShaderVariableTypeInfo::Signedness> {
+  using enum aur::asset::ShaderVariableTypeInfo::Signedness;
+  static constexpr auto value = glz::enumerate(NotApplicable, Unsigned, Signed);
 };
 
+namespace aur::asset {
 constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic);
 
 enum class ShaderVariableCategory {

@@ -14,9 +14,6 @@ struct ShaderParameterSchema {
   // std::vector<ShaderParameter> storageBufferParams; // From storage buffers
 
   u32 uniformBufferSize{0}; // Total size of MaterialParams block
-
-  [[nodiscard]] bool hasParameter(const std::string& name) const;
-  [[nodiscard]] const ShaderVariable* getVariable(const std::string& name) const;
 };
 
 using SpirV = std::vector<u32>;

@@ -51,22 +51,21 @@ ShaderParameterSchema ShaderStage::getSchema(const SpirV& spirV) {
     const u32 set = reflector.get_decoration(uniform.id, spv::DecorationDescriptorSet);
     const u32 binding = reflector.get_decoration(uniform.id, spv::DecorationBinding);
 
-    if (set != 1 || binding != 0)
-      continue;
+    // if (set != 1 || binding != 0)
+    //   continue;
 
     const std::string_view blockVariableName = uniform.name;
-    const std::string_view structName = reflector.get_name(uniform.base_type_id);
+    // const std::string_view structName = reflector.get_name(uniform.base_type_id);
 
     const spirv_cross::SPIRType& blockType = reflector.get_type(uniform.base_type_id);
-    const u64 bufferSize = reflector.get_declared_struct_size(block Type);
+    const u64 bufferSize = reflector.get_declared_struct_size(blockType);
 
     for (uint32_t i = 0; i < blockType.member_types.size(); ++i) {
       const auto& memberTypeId = blockType.member_types[i];
       const auto& memberType = reflector.get_type(memberTypeId);
 
-      ShaderVariable var{
-          // .name = reflector.get_member_name(blockType.self, i),
-          .name = reflector.get_member_name(uniform.type_id, i), // "vizMode,
+      const ShaderVariable var{
+          .name = reflector.get_member_name(blockType.self, i),
           .category = ShaderVariableCategory::UniformBufferMember,
           .typeInfo = ShaderVariableTypeInfo::fromSpirV(memberType),
           .location = static_cast<u32>(-1),
@@ -83,15 +82,13 @@ ShaderParameterSchema ShaderStage::getSchema(const SpirV& spirV) {
     }
 
     // Log all the names we found
-    log().info("Found uniform block:");
-    log().info("  Variable name: '{}'", blockVariableName); // "matParams"
-    log().info("  Struct name: '{}'", structName);          // "MaterialParams"
-    log().info("  Members:");
-    for (const auto& param : schema.uniformBufferParams) {
-      log().info("    - {}", param.name); // "vizMode"
-    }
+    // "matParams", "MaterialParams"
+    std::string paramsStr;
+    for (const auto& param : schema.uniformBufferParams)
+      paramsStr += std::format("    {} {};\n", param.typeInfo.toString(), param.name); // "vizMode"
+    log().info("Found uniform block:\n  struct {} {{\n{}  }}\n  of size {} bytes", blockVariableName,
+               paramsStr, bufferSize);
   }
-
   return schema;
 }
 

@@ -1,4 +1,7 @@
 /*
+TODO(vug): ShaderVariable::toString().
+TODO(vug): for now ShaderSchema only has uniform buffers. They are stored in a map from {set, binding} to UboSchema
+TODO(vug): serialize ShaderSchama with ShaderStageDefinition and bring that info to the Material.
 TODO(vug): finish reflecting uniform blocks (finish unification)
 TODO(vug): store schema with ShaderStageDefinition (make it serialiazable if necessary)
 TODO(vug): GraphicsProgram compares the outputs of vert shader with the inputs of the frag shader
