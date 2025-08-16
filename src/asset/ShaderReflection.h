@@ -53,8 +53,7 @@ struct ShaderVariableTypeInfo {
   [[nodiscard]] bool isValid() const;
   static ShaderVariableTypeInfo fromSpirV(const spirv_cross::SPIRType& type);
 
-  bool operator<(const ShaderVariableTypeInfo& other) const;
-  bool operator==(const ShaderVariableTypeInfo& other) const;
+  auto operator<=>(const ShaderVariableTypeInfo&) const = default;
 
   BaseType baseType{};
   u8 componentBytes{};
@@ -79,7 +78,7 @@ struct glz::meta<aur::asset::ShaderVariableTypeInfo::Signedness> {
 namespace aur::asset {
 constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic);
 
-enum class ShaderVariableCategory {
+enum class ShaderVariableCategory : u8 {
   Unknown,
   UniformBufferMember,
   StageInput,
@@ -118,6 +117,34 @@ struct ShaderVariable {
   // We sort by category, then resource identifiers (set, binding), then I/O location,
   // then offset within a block, and finally by name for stability.
   bool operator<(const ShaderVariable& other) const;
+};
+
+// ---
+
+struct DescriptorKey {
+  u32 set;
+  u32 binding;
+
+  auto operator<=>(const DescriptorKey&) const = default;
+};
+
+struct UniformBufferSchema {
+  std::string name;
+  std::vector<ShaderVariable> variables;
+  u64 sizeBytes{};
+};
+
+struct DescriptorSchemas {
+  std::map<DescriptorKey, UniformBufferSchema> uniformsBuffers;
+  // std::map<DescriptorKey, StorageBufferSchema> storageBuffers;
+  // std::map<DescriptorKey, SampledImage> samplesImages;
+  // std::map<DescriptorKey, StorageImage> storageImages;
+  // std::map<DescriptorKey, Sampler> samplers;
+  // std::map<DescriptorKey, AccelerationStructure> accelerationStructures;
+};
+
+struct ShaderSchema {
+  DescriptorSchemas descriptors;
 };
 
 } // namespace aur::asset

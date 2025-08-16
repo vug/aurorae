@@ -13,7 +13,9 @@ ShaderStage ShaderStage::create(ShaderStageDefinition&& def) {
   return stage;
 }
 
-ShaderParameterSchema ShaderStage::getSchema(const SpirV& spirV) {
+ShaderSchema ShaderStage::getSchema(const SpirV& spirV) {
+  ShaderSchema schema;
+
   const spirv_cross::Compiler reflector(spirV);
   auto resources = reflector.get_shader_resources();
   log().debug("Vertex Inputs:");
@@ -46,48 +48,47 @@ ShaderParameterSchema ShaderStage::getSchema(const SpirV& spirV) {
     }
   }
 
-  ShaderParameterSchema schema;
   for (const spirv_cross::Resource& uniform : resources.uniform_buffers) {
     const u32 set = reflector.get_decoration(uniform.id, spv::DecorationDescriptorSet);
     const u32 binding = reflector.get_decoration(uniform.id, spv::DecorationBinding);
 
-    // if (set != 1 || binding != 0)
-    //   continue;
-
-    const std::string_view blockVariableName = uniform.name;
-    // const std::string_view structName = reflector.get_name(uniform.base_type_id);
+    const DescriptorKey key{set, binding};
+    UniformBufferSchema& uboSchema = schema.descriptors.uniformsBuffers[key];
+    uboSchema.name = uniform.name;
+    // uboSchema.name = reflector.get_name(uniform.base_type_id);
 
     const spirv_cross::SPIRType& blockType = reflector.get_type(uniform.base_type_id);
-    const u64 bufferSize = reflector.get_declared_struct_size(blockType);
+    uboSchema.sizeBytes = reflector.get_declared_struct_size(blockType);
 
-    for (uint32_t i = 0; i < blockType.member_types.size(); ++i) {
-      const auto& memberTypeId = blockType.member_types[i];
+    const u64 memberCnt = blockType.member_types.size();
+    uboSchema.variables.reserve(memberCnt);
+    for (uint32_t memberIx = 0; memberIx < memberCnt; ++memberIx) {
+      const auto& memberTypeId = blockType.member_types[memberIx];
       const auto& memberType = reflector.get_type(memberTypeId);
 
       const ShaderVariable var{
-          .name = reflector.get_member_name(blockType.self, i),
+          .name = reflector.get_member_name(blockType.self, memberIx),
           .category = ShaderVariableCategory::UniformBufferMember,
           .typeInfo = ShaderVariableTypeInfo::fromSpirV(memberType),
           .location = static_cast<u32>(-1),
           .set = set,
           .binding = binding,
           // .offset = reflector.get_member_decoration(blockType.self, i, spv::DecorationOffset),
-          .offset = reflector.type_struct_member_offset(blockType, i),
-          .sizeBytes = reflector.get_declared_struct_member_size(blockType, i),
+          .offset = reflector.type_struct_member_offset(blockType, memberIx),
+          .sizeBytes = reflector.get_declared_struct_member_size(blockType, memberIx),
           .isArray = !memberType.array.empty(),
           .arraySize = memberType.array.empty() ? 1 : memberType.array[0],
       };
-
-      schema.uniformBufferParams.push_back(var);
+      uboSchema.variables.push_back(var);
     }
 
-    // Log all the names we found
-    // "matParams", "MaterialParams"
-    std::string paramsStr;
-    for (const auto& param : schema.uniformBufferParams)
-      paramsStr += std::format("    {} {};\n", param.typeInfo.toString(), param.name); // "vizMode"
-    log().info("Found uniform block:\n  struct {} {{\n{}  }}\n  of size {} bytes", blockVariableName,
-               paramsStr, bufferSize);
+    // // Log all the names we found
+    // // "matParams", "MaterialParams"
+    // std::string paramsStr;
+    // for (const auto& param : schema.descriptors.uniformsBuffers[key].variables)
+    //   paramsStr += std::format("    {} {};\n", param.typeInfo.toString(), param.name); // "vizMode"
+    // log().info("Found uniform block:\n  struct {} {{\n{}  }}\n  of size {} bytes", blockVariableName,
+    //            paramsStr, bufferSize);
   }
   return schema;
 }

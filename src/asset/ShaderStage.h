@@ -8,14 +8,6 @@
 
 namespace aur::asset {
 
-struct ShaderParameterSchema {
-  std::vector<ShaderVariable> uniformBufferParams; // From MaterialParams block
-  // std::vector<ShaderParameter> textureParams;       // From texture bindings
-  // std::vector<ShaderParameter> storageBufferParams; // From storage buffers
-
-  u32 uniformBufferSize{0}; // Total size of MaterialParams block
-};
-
 using SpirV = std::vector<u32>;
 
 struct ShaderStageDefinition {
@@ -43,7 +35,7 @@ public:
   [[nodiscard]] const SpirV& getSpirVBlob() const { return spirVBlob_; }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
-  [[nodiscard]] static ShaderParameterSchema getSchema(const SpirV& spirV);
+  [[nodiscard]] static ShaderSchema getSchema(const SpirV& spirV);
   static bool validateSpirV(const std::vector<u32>& blob);
 
 private:

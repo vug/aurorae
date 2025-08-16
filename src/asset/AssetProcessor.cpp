@@ -261,7 +261,7 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
     log().warn("Invalid SPIR-V generated from: {}", srcPath.generic_string());
     return std::nullopt;
   }
-  asset::ShaderParameterSchema schema = asset::ShaderStage::getSchema(def.spirv);
+  asset::ShaderSchema schema = asset::ShaderStage::getSchema(def.spirv);
 
   return def;
 }

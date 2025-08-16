@@ -292,21 +292,12 @@ constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic 
 }
 // clang-format on
 
-bool ShaderVariableTypeInfo::operator==(const ShaderVariableTypeInfo& other) const {
-  return baseType == other.baseType && componentBytes == other.componentBytes &&
-         signedness == other.signedness && vectorSize == other.vectorSize && columnCnt == other.columnCnt;
-}
 std::string ShaderVariableTypeInfo::toString() const {
   const std::string signPrefix = (signedness == ShaderVariableTypeInfo::Signedness::Unsigned) ? "U" : "";
   const std::string typeName = glz::write<glz::opts{.raw = true}>(baseType).value_or("unknown");
   const u8 bitCount = componentBytes * 8;
   const std::string matrixSuffix = columnCnt > 1 ? std::format("x{}", columnCnt) : "";
   return std::format("{}{}{}_t{}{}", signPrefix, typeName, bitCount, vectorSize, matrixSuffix);
-}
-
-bool ShaderVariableTypeInfo::operator<(const ShaderVariableTypeInfo& other) const {
-  return std::tie(baseType, componentBytes, signedness, vectorSize, columnCnt) <
-         std::tie(other.baseType, other.componentBytes, other.signedness, other.vectorSize, other.columnCnt);
 }
 
 bool ShaderVariable::operator==(const ShaderVariable& other) const {
