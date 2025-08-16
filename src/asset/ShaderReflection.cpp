@@ -295,7 +295,7 @@ constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic 
 
 std::string ShaderVariableTypeInfo::toString() const {
   const std::string signPrefix = (signedness == ShaderVariableTypeInfo::Signedness::Unsigned) ? "U" : "";
-  const std::string typeName = glz::write<glz::opts{.raw = true}>(baseType).value_or("unknown");
+  const std::string typeName = glz::write<glz::opts{.raw = true}>(baseType).value_or("ERROR");
   const u8 bitCount = componentBytes * 8;
   const std::string matrixSuffix = columnCnt > 1 ? std::format("x{}", columnCnt) : "";
   return std::format("{}{}{}_t{}{}", signPrefix, typeName, bitCount, vectorSize, matrixSuffix);
@@ -306,33 +306,33 @@ ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
 
   const spirv_cross::Compiler reflector(spirV);
   auto resources = reflector.get_shader_resources();
-  log().debug("Vertex Inputs:");
   for (const auto& input : resources.stage_inputs) {
     ShaderVariable var;
 
     const spirv_cross::SPIRType& inputType = reflector.get_type(input.base_type_id);
     var.typeInfo = ShaderVariableTypeInfo::fromSpirV(inputType);
     var.location = reflector.get_decoration(input.id, spv::DecorationLocation);
-    log().info("Found input: '?? {}' at location {}", input.name.c_str(), var.location);
-
     // spv::DecorationComponent for multiple render targets
-    if (reflector.has_decoration(input.id, spv::DecorationFlat)) // NoPerspective, Centroid
-      log().info("  - Has 'flat' interpolation qualifier.");
+    // NoPerspective, Centroid
+    var.isFlat = reflector.has_decoration(input.id, spv::DecorationFlat);
 
     if (inputType.basetype == spirv_cross::SPIRType::Struct) {
       // For "in VertexOutput v", this gives "VertexOutput"
       const std::string& structName = reflector.get_name(input.base_type_id);
-      log().info("  - It's a struct of type: '{}'", structName.c_str());
-      log().info("  - Members:");
 
-      // Iterate over the members of the struct
-      for (uint32_t i = 0; i < inputType.member_types.size(); ++i) {
-        const spirv_cross::TypedID memberTypeId = inputType.member_types[i];
+      std::vector<ShaderVariable> members;
+      std::string membersStr;
+      for (uint32_t memberIx = 0; memberIx < inputType.member_types.size(); ++memberIx) {
+        ShaderVariable& member = members.emplace_back();
+        const spirv_cross::TypedID memberTypeId = inputType.member_types[memberIx];
         const spirv_cross::SPIRType memberType = reflector.get_type(memberTypeId);
+        member.typeInfo = ShaderVariableTypeInfo::fromSpirV(memberType);
+        member.name = reflector.get_member_name(input.base_type_id, memberIx);
+        member.location = var.location + memberIx;
 
-        const std::string& memberName = reflector.get_member_name(input.base_type_id, i);
-        log().info("    - ??[{},{}] {}", memberType.vecsize, memberType.columns, memberName.c_str());
+        membersStr += std::format("{} {} @{}; ", member.typeInfo.toString(), member.name, member.location);
       }
+      // log().info("struct {} NAME {{ {} }}", structName, membersStr);
     }
   }
 
@@ -368,14 +368,6 @@ ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
       };
       uboSchema.variables.push_back(var);
     }
-
-    // // Log all the names we found
-    // // "matParams", "MaterialParams"
-    // std::string paramsStr;
-    // for (const auto& param : schema.descriptors.uniformsBuffers[key].variables)
-    //   paramsStr += std::format("    {} {};\n", param.typeInfo.toString(), param.name); // "vizMode"
-    // log().info("Found uniform block:\n  struct {} {{\n{}  }}\n  of size {} bytes", blockVariableName,
-    //            paramsStr, bufferSize);
   }
   return schema;
 }

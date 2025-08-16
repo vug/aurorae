@@ -15,7 +15,7 @@ namespace aur {
 Application::Initializer::Initializer() {
   // We are initializing spdlog and glfw here to reduce the complexity of the Logger and Window classes
   // and to decouple glfw init/termination from the Window class.
-  logInitialize(aur::LogLevel::Trace);
+  logInitialize(aur::LogLevel::Debug);
   GlfwUtils::initGLFW();
 }
 

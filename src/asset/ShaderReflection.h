@@ -86,6 +86,7 @@ struct ShaderVariable {
 
   // For stage I/O variables: layout(location = N)
   u32 location{static_cast<u32>(-1)};
+  bool isFlat{};
 
   // For resources like uniform buffers, samplers: layout(set = N, binding = N)
   u32 set{static_cast<u32>(-1)};

@@ -144,7 +144,7 @@ bool ShaderStage::validateSpirV(const std::vector<u32>& blob) {
     log().warn("SPIR-V schema has to be 0, but is {}.", schema);
     return false;
   }
-  log().debug("SPIR-V version: {}, generator: {}, bound: {}", getSpirvVersionString(version),
+  log().trace("SPIR-V version: {}, generator: {}, bound: {}", getSpirvVersionString(version),
               getSpirvGeneratorString(generator), bound);
 
   return true;
