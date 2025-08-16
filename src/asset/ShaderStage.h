@@ -3,7 +3,6 @@
 #include "../Utils.h"
 #include "../VulkanWrappers.h"
 #include "AssetTraits.h"
-#include "ShaderReflection.h"
 #include <vector>
 
 namespace aur::asset {
@@ -35,7 +34,6 @@ public:
   [[nodiscard]] const SpirV& getSpirVBlob() const { return spirVBlob_; }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
-  [[nodiscard]] static ShaderSchema getSchema(const SpirV& spirV);
   static bool validateSpirV(const std::vector<u32>& blob);
 
 private:

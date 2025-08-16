@@ -18,6 +18,7 @@
 #include "GraphicsProgram.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "ShaderReflection.h"
 #include "ShaderStage.h"
 
 namespace aur {
@@ -261,7 +262,7 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
     log().warn("Invalid SPIR-V generated from: {}", srcPath.generic_string());
     return std::nullopt;
   }
-  asset::ShaderSchema schema = asset::ShaderStage::getSchema(def.spirv);
+  asset::ShaderStageSchema schema = asset::reflectShaderStageSchema(def.spirv);
 
   return def;
 }

@@ -1,12 +1,14 @@
 #pragma once
 
 #include "../Utils.h"
+#include "ShaderStage.h"
 
 namespace spirv_cross {
 class SPIRType;
 }
 
 namespace aur::asset {
+
 // clang-format off
 enum class ShaderVariableTypeMnemonic : u8 {
   Unknown,
@@ -143,8 +145,10 @@ struct DescriptorSchemas {
   // std::map<DescriptorKey, AccelerationStructure> accelerationStructures;
 };
 
-struct ShaderSchema {
+struct ShaderStageSchema {
   DescriptorSchemas descriptors;
 };
+
+[[nodiscard]] ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV);
 
 } // namespace aur::asset
