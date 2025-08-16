@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Utils.h"
-#include "ShaderStage.h"
 
 namespace spirv_cross {
 class SPIRType;
@@ -80,30 +79,17 @@ struct glz::meta<aur::asset::ShaderVariableTypeInfo::Signedness> {
 namespace aur::asset {
 constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic);
 
-enum class ShaderVariableCategory : u8 {
-  Unknown,
-  UniformBufferMember,
-  StageInput,
-  StageOutput,
-  // PushConstant,
-  // Texture
-  // Sampler,
-  // StorageBuffer,
-  // ...
-};
-
 // A unified structure for all shader variables
 struct ShaderVariable {
   std::string name;
-  ShaderVariableCategory category{};
   ShaderVariableTypeInfo typeInfo{};
 
   // For stage I/O variables: layout(location = N)
-  u32 location{};
+  u32 location{static_cast<u32>(-1)};
 
   // For resources like uniform buffers, samplers: layout(set = N, binding = N)
-  u32 set{};
-  u32 binding{};
+  u32 set{static_cast<u32>(-1)};
+  u32 binding{static_cast<u32>(-1)};
 
   // For members of blocks like uniform buffers
   u32 offset{};
@@ -112,23 +98,20 @@ struct ShaderVariable {
   // Array properties
   bool isArray{};
   u32 arraySize{};
-
-  // For validation and equality checks. The logic depends on the category.
-  bool operator==(const ShaderVariable& other) const;
-  // For sorting to establish a canonical order.
-  // We sort by category, then resource identifiers (set, binding), then I/O location,
-  // then offset within a block, and finally by name for stability.
-  bool operator<(const ShaderVariable& other) const;
 };
-
-// ---
 
 struct DescriptorKey {
   u32 set;
   u32 binding;
 
   auto operator<=>(const DescriptorKey&) const = default;
+
+  // adding this implicit conversion to string so that DescriptorKey can be used as the key in
+  // `std::map<DescriptorKeyStr, ResourceType>` maps. The struct itself is a composite type and glaze
+  // is having difficulty in serializing it as a map key.
+  operator std::string() const { return std::format("{}_{}", set, binding); }
 };
+using DescriptorKeyStr = std::string;
 
 struct UniformBufferSchema {
   std::string name;
@@ -137,7 +120,7 @@ struct UniformBufferSchema {
 };
 
 struct DescriptorSchemas {
-  std::map<DescriptorKey, UniformBufferSchema> uniformsBuffers;
+  std::map<DescriptorKeyStr, UniformBufferSchema> uniformsBuffers;
   // std::map<DescriptorKey, StorageBufferSchema> storageBuffers;
   // std::map<DescriptorKey, SampledImage> samplesImages;
   // std::map<DescriptorKey, StorageImage> storageImages;
@@ -149,6 +132,7 @@ struct ShaderStageSchema {
   DescriptorSchemas descriptors;
 };
 
+using SpirV = std::vector<u32>;
 [[nodiscard]] ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV);
 
 } // namespace aur::asset

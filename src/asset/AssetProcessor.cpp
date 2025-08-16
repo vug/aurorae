@@ -253,16 +253,16 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
   }
 
   std::vector<u32> spirv(result.cbegin(), result.cend());
-  asset::ShaderStageDefinition def{
-      .stage = stage,
-      .spirv = std::move(spirv),
-  };
-
-  if (!asset::ShaderStage::validateSpirV(def.spirv)) {
+  if (!asset::ShaderStage::validateSpirV(spirv)) {
     log().warn("Invalid SPIR-V generated from: {}", srcPath.generic_string());
     return std::nullopt;
   }
-  asset::ShaderStageSchema schema = asset::reflectShaderStageSchema(def.spirv);
+
+  asset::ShaderStageDefinition def{
+      .stage = stage,
+      .spirv = std::move(spirv),
+      .schema = asset::reflectShaderStageSchema(def.spirv),
+  };
 
   return def;
 }

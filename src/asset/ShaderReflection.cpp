@@ -301,35 +301,6 @@ std::string ShaderVariableTypeInfo::toString() const {
   return std::format("{}{}{}_t{}{}", signPrefix, typeName, bitCount, vectorSize, matrixSuffix);
 }
 
-bool ShaderVariable::operator==(const ShaderVariable& other) const {
-
-  if (category != other.category) {
-    return false;
-  }
-
-  switch (category) {
-  case ShaderVariableCategory::StageInput:
-  case ShaderVariableCategory::StageOutput:
-    // For stage I/O validation, we compare location, type, and array properties.
-    // Name is ignored as it can differ between stages or be compiled away.
-    return location == other.location && typeInfo == other.typeInfo && isArray == other.isArray &&
-           arraySize == other.arraySize;
-
-  case ShaderVariableCategory::UniformBufferMember:
-    // For uniform members, all properties should ideally match.
-    return name == other.name && typeInfo == other.typeInfo && set == other.set && binding == other.binding &&
-           offset == other.offset && sizeBytes == other.sizeBytes && isArray == other.isArray &&
-           arraySize == other.arraySize;
-
-  default:
-    log().fatal("comparison not implemented for category: {}", static_cast<u32>(category));
-  }
-}
-
-bool ShaderVariable::operator<(const ShaderVariable& other) const {
-  return std::tie(category, set, binding, location, offset, name) <
-         std::tie(other.category, other.set, other.binding, other.location, other.offset, other.name);
-}
 ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
   ShaderStageSchema schema;
 
@@ -385,7 +356,6 @@ ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
 
       const ShaderVariable var{
           .name = reflector.get_member_name(blockType.self, memberIx),
-          .category = ShaderVariableCategory::UniformBufferMember,
           .typeInfo = ShaderVariableTypeInfo::fromSpirV(memberType),
           .location = static_cast<u32>(-1),
           .set = set,

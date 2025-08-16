@@ -65,6 +65,9 @@ void Application::run() {
     writeBinaryFile(kAssetsFolder / "materials/material.schema.json", glz::prettify_json(schema.value()));
 
   // "Asset Library"
+  const Handle<asset::ShaderStage> myStage =
+      assetManager_.load(StableId<asset::ShaderStage>{"shaders/debug.frag"});
+  log().info(glz::prettify_json(glz::write_json(myStage->getSchema()).value_or("error")));
   const StableId<asset::Mesh> kBoxMeshId{
       "models/glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf"};
   const Handle<asset::Mesh> aBoxMesh = assetManager_.load(kBoxMeshId);

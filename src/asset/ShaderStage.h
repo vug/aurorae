@@ -3,7 +3,7 @@
 #include "../Utils.h"
 #include "../VulkanWrappers.h"
 #include "AssetTraits.h"
-#include <vector>
+#include "ShaderReflection.h"
 
 namespace aur::asset {
 
@@ -16,6 +16,7 @@ struct ShaderStageDefinition {
 
   ShaderStageType stage;
   SpirV spirv;
+  ShaderStageSchema schema;
 };
 
 class ShaderStage : public AssetTypeMixin<ShaderStage, ShaderStageDefinition, AssetType::ShaderStage,
@@ -32,6 +33,7 @@ public:
 
   [[nodiscard]] const ShaderStageType& getStage() const { return stage_; }
   [[nodiscard]] const SpirV& getSpirVBlob() const { return spirVBlob_; }
+  [[nodiscard]] const ShaderStageSchema& getSchema() const { return schema_; }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
   static bool validateSpirV(const std::vector<u32>& blob);
@@ -42,5 +44,6 @@ private:
 
   ShaderStageType stage_{};
   SpirV spirVBlob_;
+  ShaderStageSchema schema_{};
 };
 } // namespace aur::asset

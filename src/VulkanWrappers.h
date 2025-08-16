@@ -40,7 +40,14 @@ enum class ShaderStageType : u32 {
   Vertex = 0x00000001,
   Fragment = 0x00000010,
 };
+} // namespace aur
+template <>
+struct glz::meta<aur::ShaderStageType> {
+  using enum aur::ShaderStageType;
+  static constexpr auto value = glz::enumerate(Vertex, Fragment);
+};
 
+namespace aur {
 // sync with VkVertexInputRate
 enum class VertexInputRate : u32 {
   Vertex = 0,
