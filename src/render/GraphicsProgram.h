@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Handle.h"
+#include "../Resources/DescriptorSetLayout.h"
 #include "../Resources/ShaderModule.h"
 #include "../asset/GraphicsProgram.h"
 
@@ -23,6 +24,9 @@ public:
   [[nodiscard]] const Handle<asset::GraphicsProgram>& getAssetHandle() const { return assetHandle_; }
   [[nodiscard]] const ShaderModule& getVertexShaderModule() const { return vertModule_; }
   [[nodiscard]] const ShaderModule& getFragmentShaderModule() const { return fragModule_; }
+  [[nodiscard]] const std::vector<DescriptorSetLayout>& getDescriptorSetLayouts() const {
+    return descriptorSetLayouts_;
+  }
 
 private:
   const Renderer* renderer_{};
@@ -30,5 +34,6 @@ private:
 
   ShaderModule vertModule_;
   ShaderModule fragModule_;
+  std::vector<DescriptorSetLayout> descriptorSetLayouts_;
 };
 } // namespace aur::render

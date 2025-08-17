@@ -30,7 +30,9 @@ public:
   GraphicsProgram& operator=(GraphicsProgram&& other) noexcept = default;
 
   [[nodiscard]] const SpirV& getVertexBlob() const { return vert_->getSpirVBlob(); }
+  [[nodiscard]] const ShaderStageSchema& getVertexSchema() const { return vert_->getSchema(); }
   [[nodiscard]] const SpirV& getFragmentBlob() const { return frag_->getSpirVBlob(); }
+  [[nodiscard]] const ShaderStageSchema& getFragmentSchema() const { return frag_->getSchema(); }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
 private:

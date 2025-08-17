@@ -11,6 +11,7 @@ struct DescriptorSetLayoutBinding {
   DescriptorType type;
   u32 descriptorCount{1};
   std::vector<ShaderStageType> stages;
+  std::string debugName;
 
   bool operator==(const DescriptorSetLayoutBinding& other_binding) const = default;
 };

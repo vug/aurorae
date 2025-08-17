@@ -54,8 +54,6 @@ struct ShaderVariableTypeInfo {
   [[nodiscard]] bool isValid() const;
   static ShaderVariableTypeInfo fromSpirV(const spirv_cross::SPIRType& type);
 
-  auto operator<=>(const ShaderVariableTypeInfo&) const = default;
-
   BaseType baseType{};
   u8 componentBytes{};
   Signedness signedness{};
@@ -63,6 +61,8 @@ struct ShaderVariableTypeInfo {
   u32 columnCnt{};
 
   [[nodiscard]] std::string toString() const;
+
+  auto operator<=>(const ShaderVariableTypeInfo&) const = default;
 };
 } // namespace aur::asset
 template <>
@@ -99,12 +99,16 @@ struct ShaderVariable {
   // Array properties
   bool isArray{};
   u32 arraySize{};
+
+  auto operator<=>(const ShaderVariable&) const = default;
 };
 
 struct UniformBufferSchema {
   std::string name;
   std::vector<ShaderVariable> variables;
   u64 sizeBytes{};
+
+  auto operator<=>(const UniformBufferSchema&) const = default;
 };
 
 using SetNo = u32;

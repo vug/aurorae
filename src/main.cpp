@@ -1,5 +1,6 @@
 /*
-TODO(vug): render::GraphicsProgram creates layout
+TODO(vug): when creating graphics pipeline, use descriptor set layouts from the graphics program for the
+           uniform buffers in the pipeline layout
 TODO(vug): asset::Material takes the schemas and compare them with its parameters.
            (give ignored parameters default values)
 TODO(vug): asset::Material gives parameters to render::Material
@@ -9,6 +10,9 @@ TODO(vug): Schema generation only works in Debug mode :-(
 TODO(vug): Bring inputs (and outputs) to the ShaderStageSchema
 TODO(vug): Handle recursive structs (can skip this for now and only allow a single level for structs)
 TODO(vug): GraphicsProgram compares the outputs of vert shader with the inputs of the frag shader
+TODO(vug): GraphicsProgram compares all (set, binding) pairs of every shader stage, and ensure that for
+           common pairs, resource type, resource name are the same. for buffers: sizes, member variables
+           are the same (name, offset, type etc)
 TODO(vug): bring integer matrices to ShaderReflection
 .
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
