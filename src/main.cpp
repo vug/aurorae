@@ -1,8 +1,10 @@
 /*
+TODO(vug): render::GraphicsProgram creates layout
 TODO(vug): asset::Material takes the schemas and compare them with its parameters.
            (give ignored parameters default values)
 TODO(vug): asset::Material gives parameters to render::Material
-TODO(vug): render::GraphicsProgram creates layout and render::Material creates descriptor set (See Gemini)...
+TODO(vug): render::Material creates descriptor set (See Gemini)...
+TODO(vug): Schema generation only works in Debug mode :-(
 .
 TODO(vug): Bring inputs (and outputs) to the ShaderStageSchema
 TODO(vug): Handle recursive structs (can skip this for now and only allow a single level for structs)

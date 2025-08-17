@@ -337,11 +337,11 @@ ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
   }
 
   for (const spirv_cross::Resource& uniform : resources.uniform_buffers) {
-    const u32 set = reflector.get_decoration(uniform.id, spv::DecorationDescriptorSet);
-    const u32 binding = reflector.get_decoration(uniform.id, spv::DecorationBinding);
+    const u32 setNo = reflector.get_decoration(uniform.id, spv::DecorationDescriptorSet);
+    const u32 bindingNo = reflector.get_decoration(uniform.id, spv::DecorationBinding);
 
-    const DescriptorKey key{set, binding};
-    UniformBufferSchema& uboSchema = schema.descriptors.uniformsBuffers[key];
+    auto& bindingSchemas = schema.descriptors.uniformsBuffers[setNo];
+    UniformBufferSchema& uboSchema = bindingSchemas[bindingNo];
     uboSchema.name = uniform.name;
     // uboSchema.name = reflector.get_name(uniform.base_type_id);
 
@@ -358,8 +358,8 @@ ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
           .name = reflector.get_member_name(blockType.self, memberIx),
           .typeInfo = ShaderVariableTypeInfo::fromSpirV(memberType),
           .location = static_cast<u32>(-1),
-          .set = set,
-          .binding = binding,
+          .set = setNo,
+          .binding = bindingNo,
           // .offset = reflector.get_member_decoration(blockType.self, i, spv::DecorationOffset),
           .offset = reflector.type_struct_member_offset(blockType, memberIx),
           .sizeBytes = reflector.get_declared_struct_member_size(blockType, memberIx),

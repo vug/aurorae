@@ -101,27 +101,16 @@ struct ShaderVariable {
   u32 arraySize{};
 };
 
-struct DescriptorKey {
-  u32 set;
-  u32 binding;
-
-  auto operator<=>(const DescriptorKey&) const = default;
-
-  // adding this implicit conversion to string so that DescriptorKey can be used as the key in
-  // `std::map<DescriptorKeyStr, ResourceType>` maps. The struct itself is a composite type and glaze
-  // is having difficulty in serializing it as a map key.
-  operator std::string() const { return std::format("{}_{}", set, binding); }
-};
-using DescriptorKeyStr = std::string;
-
 struct UniformBufferSchema {
   std::string name;
   std::vector<ShaderVariable> variables;
   u64 sizeBytes{};
 };
 
+using SetNo = u32;
+using BindingNo = u32;
 struct DescriptorSchemas {
-  std::map<DescriptorKeyStr, UniformBufferSchema> uniformsBuffers;
+  std::map<SetNo, std::map<BindingNo, UniformBufferSchema>> uniformsBuffers;
   // std::map<DescriptorKey, StorageBufferSchema> storageBuffers;
   // std::map<DescriptorKey, SampledImage> samplesImages;
   // std::map<DescriptorKey, StorageImage> storageImages;
