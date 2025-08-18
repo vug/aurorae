@@ -3,6 +3,9 @@
 #include "../Logger.h"
 #include <volk/volk.h>
 
+#include <algorithm>
+#include <set>
+
 namespace aur {
 
 DescriptorSetLayout::DescriptorSetLayout(VkDevice device, const DescriptorSetLayoutCreateInfo& createInfo)
@@ -42,17 +45,33 @@ void DescriptorSetLayout::destroyImpl() const {
 }
 
 bool DescriptorSetLayout::isCompatible(const DescriptorSetLayout& other) const {
-  const auto& bindings1 = getCreateInfo().bindings;
-  const auto& bindings2 = other.getCreateInfo().bindings;
+  namespace rng = std::ranges;
+  namespace vws = std::ranges::views;
 
-  if (bindings1.size() != bindings2.size()) {
+  const auto thisBindingMap =
+      getCreateInfo().bindings |
+      vws::transform([](const auto& binding) { return std::make_pair(binding.index, &binding); }) |
+      rng::to<std::unordered_map>();
+  const auto otherBindingMap =
+      other.getCreateInfo().bindings |
+      vws::transform([](const auto& binding) { return std::make_pair(binding.index, &binding); }) |
+      rng::to<std::unordered_map>();
+
+  // if other is not superset not compatible
+  if (!rng::includes(otherBindingMap | vws::keys | rng::to<std::set>(),
+                     thisBindingMap | vws::keys | rng::to<std::set>()))
     return false;
-  }
 
-  for (size_t i = 0; i < bindings1.size(); ++i) {
-    if (bindings1[i] != bindings2[i]) {
+  for (const auto& [bindingIndex, thisBinding] : thisBindingMap) {
+    const auto* otherBinding = otherBindingMap.at(bindingIndex);
+    // Check core compatibility: type and count must match exactly
+    if (thisBinding->type != otherBinding->type ||
+        thisBinding->descriptorCount != otherBinding->descriptorCount)
       return false;
-    }
+
+    // Stage flags can be still compatible even if different as long as other bindings stages is a superset
+    if (!rng::includes(otherBinding->stages, thisBinding->stages))
+      return false;
   }
 
   return true;

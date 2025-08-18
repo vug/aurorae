@@ -481,10 +481,10 @@ void Renderer::endDebugLabel() const {
 }
 
 void Renderer::bindDescriptorSet(const BindDescriptorSetInfo& bindInfo) const {
-  const DescriptorSetLayout& layout1 =
+  const DescriptorSetLayout& pipelineLayout =
       *bindInfo.pipelineLayout->getCreateInfo().descriptorSetLayouts[bindInfo.setNo];
-  const DescriptorSetLayout& layout2 = *bindInfo.descriptorSet->getCreateInfo().layout;
-  if (!layout1.isEqual(layout2) || !layout1.isCompatible(layout2))
+  const DescriptorSetLayout& descSetLayout = *bindInfo.descriptorSet->getCreateInfo().layout;
+  if (!descSetLayout.isEqual(pipelineLayout) && !descSetLayout.isCompatible(pipelineLayout))
     log().fatal("Incompatible pipeline layout and descriptor set's layout are not compatible.");
 
   vkCmdBindDescriptorSets(commandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS,

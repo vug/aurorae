@@ -8,6 +8,7 @@
 #include "render/Mesh.h"
 
 namespace aur {
+namespace {
 VkVertexInputBindingDescription toVkVertexInputBindingDescription(const VertexInputBindingDescription& desc) {
   const VkVertexInputBindingDescription vkBindingDescription{
       .binding = desc.binding, // The index of the binding in the array of bindings
@@ -29,6 +30,7 @@ toVkVertexInputAttributeDescription(const VertexInputAttributeDescription& desc)
   };
   return vkAttributeDescription;
 }
+} // namespace
 
 Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
     : createInfo_{createInfo}
@@ -39,8 +41,9 @@ Pipeline::Pipeline(Renderer& renderer, const PipelineCreateInfo& createInfo)
           .stages = {ShaderStageType::Vertex},
           .size = sizeof(render::Mesh::PushConstant),
       };
+
       const PipelineLayoutCreateInfo layoutCreateInfo{
-          .descriptorSetLayouts = {&renderer_->getPerFrameDescriptorSetLayout()},
+          .descriptorSetLayouts = createInfo_.graphicsProgram->getDescriptorSetLayoutRefs(),
           .pushConstants = {pushConstant},
       };
 

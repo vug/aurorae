@@ -27,6 +27,12 @@ public:
   [[nodiscard]] const std::vector<DescriptorSetLayout>& getDescriptorSetLayouts() const {
     return descriptorSetLayouts_;
   }
+  [[nodiscard]] const std::vector<const DescriptorSetLayout*> getDescriptorSetLayoutRefs() const {
+    std::vector<const DescriptorSetLayout*> layoutRefs;
+    for (const auto& layout : descriptorSetLayouts_)
+      layoutRefs.push_back(&layout);
+    return layoutRefs;
+  }
 
 private:
   const Renderer* renderer_{};
