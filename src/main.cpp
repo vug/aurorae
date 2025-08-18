@@ -1,6 +1,7 @@
 /*
-TODO(vug): when creating graphics pipeline, use descriptor set layouts from the graphics program for the
-           uniform buffers in the pipeline layout
+TODO(vug): manually create a DescriptorSet for vizMode and bind it from Application (see in RenderDoc)
+TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
+           arrays are expanded, substructs are flattened...
 TODO(vug): asset::Material takes the schemas and compare them with its parameters.
            (give ignored parameters default values)
 TODO(vug): asset::Material gives parameters to render::Material
