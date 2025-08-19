@@ -1,7 +1,5 @@
 #include "ShaderReflection.h"
 
-#include <spirv_cross/spirv_reflect.hpp>
-
 #include "../Logger.h"
 #include "ShaderStage.h"
 
@@ -16,7 +14,7 @@ bool ShaderVariableTypeInfo::isValid() const {
     log().fatal("Unknown base type in shader parameter type info.");
 
   case BaseType::Bool:
-    // In shader interface blocks, bools are almost always 32-bit for alignment.
+    // In shader interface blocks, booleans are almost always 32-bit for alignment.
     if (componentBytes != 4 || columnCnt > 1)
       return false;
     if (signedness != Signedness::NotApplicable)
@@ -97,52 +95,6 @@ ShaderVariableTypeInfo::Signedness spirvTypeToShaderVariableSignedness(const spi
     log().fatal("Unknown SPIRType for ShaderVariableTypeInfo::BaseType.");
   }
   std::unreachable();
-}
-
-const char* spirVBaseTypeToString(const spirv_cross::SPIRType& type) {
-  switch (type.basetype) {
-  case spirv_cross::SPIRType::Unknown:
-    return "Unknown";
-  case spirv_cross::SPIRType::Void:
-    return "Void";
-  case spirv_cross::SPIRType::Boolean:
-    return "Boolean";
-  case spirv_cross::SPIRType::SByte:
-    return "SByte";
-  case spirv_cross::SPIRType::UByte:
-    return "UByte";
-  case spirv_cross::SPIRType::Short:
-    return "Short";
-  case spirv_cross::SPIRType::UShort:
-    return "UShort";
-  case spirv_cross::SPIRType::Int:
-    return "Int";
-  case spirv_cross::SPIRType::UInt:
-    return "UInt";
-  case spirv_cross::SPIRType::Int64:
-    return "Int64";
-  case spirv_cross::SPIRType::UInt64:
-    return "UInt64";
-  case spirv_cross::SPIRType::Half:
-    return "Half";
-  case spirv_cross::SPIRType::Float:
-    return "Float";
-  case spirv_cross::SPIRType::Double:
-    return "Double";
-  case spirv_cross::SPIRType::Struct:
-    return "Struct";
-  case spirv_cross::SPIRType::Image:
-    return "Image";
-  case spirv_cross::SPIRType::SampledImage:
-    return "SampledImage";
-  case spirv_cross::SPIRType::Sampler:
-    return "Sampler";
-  case spirv_cross::SPIRType::AccelerationStructure:
-    return "AccelerationStructure";
-    // Add other types as needed
-  default:
-    return "Unsupported";
-  }
 }
 
 } // namespace
@@ -273,29 +225,38 @@ std::string ShaderVariableTypeInfo::toString() const {
   return std::format("{}{}{}_t{}{}", signPrefix, typeName, bitCount, vectorSize, matrixSuffix);
 }
 
-ShaderBlockMember parseStructMember(const spirv_cross::Compiler& reflector,
-                                    const spirv_cross::SPIRType& parentStructType, u32 memberIx) {
-  ShaderBlockMember member;
+CommonMemberProps getCommonMemberProps(const spirv_cross::Compiler& reflector,
+                                       const spirv_cross::SPIRType& parentStructType, const u32 memberIx) {
   const spirv_cross::TypeID memberTypeId = parentStructType.member_types[memberIx];
   const spirv_cross::SPIRType& memberType = reflector.get_type(memberTypeId);
-  member.name = reflector.get_member_name(parentStructType.self, memberIx);
-  member.offset = reflector.get_member_decoration(parentStructType.self, memberIx, spv::DecorationOffset);
-
-  member.isArray = !memberType.array.empty();
-  // We only support one-dimensional arrays at the moment
-  member.arraySize = member.isArray ? memberType.array[0] : 0;
-
-  member.sizeBytes = reflector.get_declared_struct_member_size(parentStructType, memberIx);
-
+  const bool isArray = !memberType.array.empty();
   // The "base type" for an array is the type of its elements. For non-arrays, it's just the member_type.
-  const auto& baseType = member.isArray ? reflector.get_type(memberType.parent_type) : memberType;
-  member.typeInfo = ShaderVariableTypeInfo::fromSpirV(baseType);
-  if (member.typeInfo.baseType == ShaderVariableTypeInfo::BaseType::Struct) {
-    for (u32 subMemberIx = 0; subMemberIx < memberType.member_types.size(); ++subMemberIx) {
-      const auto& subMember = parseStructMember(reflector, baseType, subMemberIx);
-      member.members.push_back(subMember);
-    }
-  }
+  const auto& memberBaseType = isArray ? reflector.get_type(memberType.parent_type) : memberType;
+
+  return {
+      .memberTypeId = memberTypeId,
+      .memberType = memberType,
+      .memberBaseType = memberBaseType,
+      .typeInfo = ShaderVariableTypeInfo::fromSpirV(memberBaseType),
+      .name = reflector.get_member_name(parentStructType.self, memberIx),
+      .isArray = isArray,
+      // We only support one-dimensional arrays at the moment, i.e., don't use array[1+]
+      .arraySize = isArray ? memberType.array[0] : 0,
+  };
+}
+
+ShaderBlockMember parseStructMember(const spirv_cross::Compiler& reflector,
+                                    const spirv_cross::SPIRType& parentStructType, const u32 memberIx) {
+  const CommonMemberProps props = getCommonMemberProps(reflector, parentStructType, memberIx);
+  ShaderBlockMember member{
+      .typeInfo{props.typeInfo}, .name{props.name}, .isArray = props.isArray, .arraySize = props.arraySize};
+
+  if (member.typeInfo.baseType == ShaderVariableTypeInfo::BaseType::Struct)
+    for (u32 subMemberIx = 0; subMemberIx < props.memberType.member_types.size(); ++subMemberIx)
+      member.members.push_back(parseStructMember(reflector, props.memberBaseType, subMemberIx));
+
+  member.offset = reflector.get_member_decoration(parentStructType.self, memberIx, spv::DecorationOffset);
+  member.sizeBytes = reflector.get_declared_struct_member_size(parentStructType, memberIx);
 
   return member;
 }
@@ -325,22 +286,17 @@ std::map<SetNo, std::map<BindingNo, ShaderResource>> reflectUniformBuffers(const
 
 ShaderInterfaceVariable parseIoBlockMember(const spirv_cross::Compiler& reflector,
                                            const spirv_cross::SPIRType& parentStructType, u32 memberIx) {
-  ShaderInterfaceVariable member;
-  const auto& memberType = reflector.get_type(parentStructType.member_types[memberIx]);
+  const CommonMemberProps props = getCommonMemberProps(reflector, parentStructType, memberIx);
+  ShaderInterfaceVariable var{
+      .typeInfo{props.typeInfo}, .name{props.name}, .isArray = props.isArray, .arraySize = props.arraySize};
 
-  member.name = reflector.get_member_name(parentStructType.self, memberIx);
-  member.location = reflector.get_member_decoration(parentStructType.self, memberIx, spv::DecorationLocation);
-  member.isArray = !memberType.array.empty();
-  member.arraySize = member.isArray ? memberType.array[0] : 0;
+  if (var.typeInfo.baseType == ShaderVariableTypeInfo::BaseType::Struct)
+    for (uint32_t i = 0; i < props.memberBaseType.member_types.size(); ++i)
+      var.members.push_back(parseIoBlockMember(reflector, props.memberBaseType, i));
 
-  const auto& memberBaseType = member.isArray ? reflector.get_type(memberType.parent_type) : memberType;
-  member.typeInfo = ShaderVariableTypeInfo::fromSpirV(memberBaseType);
+  var.location = reflector.get_member_decoration(parentStructType.self, memberIx, spv::DecorationLocation);
 
-  if (member.typeInfo.baseType == ShaderVariableTypeInfo::BaseType::Struct)
-    for (uint32_t i = 0; i < memberBaseType.member_types.size(); ++i)
-      member.members.push_back(parseIoBlockMember(reflector, memberBaseType, i));
-
-  return member;
+  return var;
 }
 
 // Main function to reflect all stage inputs

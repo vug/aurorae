@@ -1,10 +1,8 @@
 #pragma once
 
-#include "../Utils.h"
+#include <spirv_cross/spirv_reflect.hpp>
 
-namespace spirv_cross {
-class SPIRType;
-}
+#include "../Utils.h"
 
 namespace aur::asset {
 
@@ -79,6 +77,17 @@ struct glz::meta<aur::asset::ShaderVariableTypeInfo::Signedness> {
 namespace aur::asset {
 constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic);
 
+struct CommonMemberProps {
+  spirv_cross::TypeID memberTypeId;
+  spirv_cross::SPIRType memberType{spv::Op::OpNop};
+  spirv_cross::SPIRType memberBaseType{spv::Op::OpNop};
+  //
+  ShaderVariableTypeInfo typeInfo{};
+  std::string name;
+  bool isArray{};
+  u32 arraySize{};
+};
+
 // A unified structure for all resource block variables
 struct ShaderBlockMember {
   ShaderVariableTypeInfo typeInfo{};
@@ -121,7 +130,7 @@ struct ShaderInterfaceVariable {
   ShaderVariableTypeInfo typeInfo{};
   std::string name;
 
-  // For stage I/O variables: layout(location = N)
+  // For shader stage I/O variables: layout(location = N)
   u32 location{static_cast<u32>(-1)};
   bool isFlat{};
 
@@ -130,6 +139,13 @@ struct ShaderInterfaceVariable {
 
   // Struct properties (the recursive part)
   std::vector<ShaderInterfaceVariable> members;
+
+  // ShaderInterfaceVariable() = default;
+  // ShaderInterfaceVariable(const CommonMemberProps& props)
+  //     : typeInfo{props.typeInfo}
+  //     , name{props.name}
+  //     , isArray{props.isArray}
+  //     , arraySize{props.arraySize} {}
 
   std::strong_ordering operator<=>(const ShaderInterfaceVariable& other) const {
     // clang-format off
