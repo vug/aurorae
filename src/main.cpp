@@ -1,6 +1,5 @@
 /*
-TODO(vug): figure out how to do the array -> hmm, actually for the schema there is nothing to figure out.
-           See how arrays work for ShaderValue
+TODO(vug): See how arrays work for ShaderValue
 TODO(vug): manually create a DescriptorSet for vizMode and bind it from Application (see in RenderDoc)
 TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
            arrays are expanded, substructs are flattened...
@@ -10,8 +9,6 @@ TODO(vug): asset::Material gives parameters to render::Material
 TODO(vug): render::Material creates descriptor set (See Gemini)...
 TODO(vug): Schema generation only works in Debug mode :-(
 .
-TODO(vug): Bring inputs (and outputs) to the ShaderStageSchema
-TODO(vug): Handle recursive structs (can skip this for now and only allow a single level for structs)
 TODO(vug): GraphicsProgram compares the outputs of vert shader with the inputs of the frag shader
 TODO(vug): GraphicsProgram compares all (set, binding) pairs of every shader stage, and ensure that for
            common pairs, resource type, resource name are the same. for buffers: sizes, member variables

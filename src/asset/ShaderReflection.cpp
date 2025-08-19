@@ -323,43 +323,64 @@ std::map<SetNo, std::map<BindingNo, ShaderResource>> reflectUniformBuffers(const
   return uniformBuffers;
 }
 
+ShaderInterfaceVariable parseIoBlockMember(const spirv_cross::Compiler& reflector,
+                                           const spirv_cross::SPIRType& parentStructType, u32 memberIx) {
+  ShaderInterfaceVariable member;
+  const auto& memberType = reflector.get_type(parentStructType.member_types[memberIx]);
+
+  member.name = reflector.get_member_name(parentStructType.self, memberIx);
+  member.location = reflector.get_member_decoration(parentStructType.self, memberIx, spv::DecorationLocation);
+  member.isArray = !memberType.array.empty();
+  member.arraySize = member.isArray ? memberType.array[0] : 0;
+
+  const auto& memberBaseType = member.isArray ? reflector.get_type(memberType.parent_type) : memberType;
+  member.typeInfo = ShaderVariableTypeInfo::fromSpirV(memberBaseType);
+
+  if (member.typeInfo.baseType == ShaderVariableTypeInfo::BaseType::Struct)
+    for (uint32_t i = 0; i < memberBaseType.member_types.size(); ++i)
+      member.members.push_back(parseIoBlockMember(reflector, memberBaseType, i));
+
+  return member;
+}
+
+// Main function to reflect all stage inputs
+std::map<LocationNo, ShaderInterfaceVariable>
+reflectStageIO(const spirv_cross::Compiler& reflector,
+               const spirv_cross::SmallVector<spirv_cross::Resource>& inputsOrOutputs) {
+  std::map<LocationNo, ShaderInterfaceVariable> inputs;
+  for (const auto& resource : inputsOrOutputs) {
+    ShaderInterfaceVariable var;
+    const auto& type = reflector.get_type(resource.base_type_id);
+
+    var.name = resource.name;
+    var.location = reflector.get_decoration(resource.id, spv::DecorationLocation);
+
+    var.isArray = !type.array.empty();
+    var.arraySize = var.isArray ? type.array[0] : 0;
+
+    const auto& baseType = var.isArray ? reflector.get_type(type.parent_type) : type;
+    var.typeInfo = ShaderVariableTypeInfo::fromSpirV(baseType);
+
+    // If the top-level input is a struct (an "interface block"), parse its members
+    if (baseType.basetype == spirv_cross::SPIRType::Struct)
+      for (uint32_t i = 0; i < baseType.member_types.size(); ++i)
+        var.members.push_back(parseIoBlockMember(reflector, baseType, i));
+
+    inputs[var.location] = var;
+  }
+
+  return inputs;
+}
+
 ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
   ShaderStageSchema schema;
 
   const spirv_cross::Compiler reflector(spirV);
   auto resources = reflector.get_shader_resources();
-  for (const auto& input : resources.stage_inputs) {
-    ShaderBlockMember var;
 
-    const spirv_cross::SPIRType& inputType = reflector.get_type(input.base_type_id);
-    var.typeInfo = ShaderVariableTypeInfo::fromSpirV(inputType);
-    // var.location = reflector.get_decoration(input.id, spv::DecorationLocation);
-    // spv::DecorationComponent for multiple render targets
-    // NoPerspective, Centroid
-    // var.isFlat = reflector.has_decoration(input.id, spv::DecorationFlat);
-
-    if (inputType.basetype == spirv_cross::SPIRType::Struct) {
-      // For "in VertexOutput v", this gives "VertexOutput"
-      const std::string& structName = reflector.get_name(input.base_type_id);
-
-      std::vector<ShaderBlockMember> members;
-      std::string membersStr;
-      for (uint32_t memberIx = 0; memberIx < inputType.member_types.size(); ++memberIx) {
-        ShaderBlockMember& member = members.emplace_back();
-        const spirv_cross::TypedID memberTypeId = inputType.member_types[memberIx];
-        const spirv_cross::SPIRType memberType = reflector.get_type(memberTypeId);
-        member.typeInfo = ShaderVariableTypeInfo::fromSpirV(memberType);
-        member.name = reflector.get_member_name(input.base_type_id, memberIx);
-        // member.location = var.location + memberIx;
-
-        // membersStr += std::format("{} {} @{}; ", member.typeInfo.toString(), member.name, member.location);
-        membersStr += std::format("{} {}; ", member.typeInfo.toString(), member.name);
-      }
-      // log().info("struct {} NAME {{ {} }}", structName, membersStr);
-    }
-  }
-
+  schema.inputs = reflectStageIO(reflector, resources.stage_inputs);
   schema.uniformsBuffers = reflectUniformBuffers(spirV);
+  schema.outputs = reflectStageIO(reflector, resources.stage_outputs);
   return schema;
 }
 
