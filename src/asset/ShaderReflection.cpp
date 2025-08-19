@@ -73,35 +73,7 @@ ShaderVariableTypeInfo::BaseType spirvTypeToShaderVariableBaseType(const spirv_c
   std::unreachable();
 }
 
-u8 spirvTypeToShaderVariableComponentBytes(const spirv_cross::SPIRType& type) {
-  switch (type.basetype) {
-  case spirv_cross::SPIRType::SByte:
-  case spirv_cross::SPIRType::UByte:
-    return 1;
-  case spirv_cross::SPIRType::Short:
-  case spirv_cross::SPIRType::UShort:
-  case spirv_cross::SPIRType::Half:
-    return 2;
-  case spirv_cross::SPIRType::Boolean:
-  case spirv_cross::SPIRType::Int:
-  case spirv_cross::SPIRType::UInt:
-  case spirv_cross::SPIRType::Float:
-    return 4;
-  case spirv_cross::SPIRType::Int64:
-  case spirv_cross::SPIRType::UInt64:
-  case spirv_cross::SPIRType::Double:
-    return 8;
-  case spirv_cross::SPIRType::Unknown:
-  case spirv_cross::SPIRType::Struct:
-    return static_cast<u8>(-1);
-  default:
-    log().fatal("Unknown SPIRType for ShaderVariableTypeInfo::ComponentBytes.");
-  }
-  std::unreachable();
-}
-
 ShaderVariableTypeInfo::Signedness spirvTypeToShaderVariableSignedness(const spirv_cross::SPIRType& type) {
-
   switch (type.basetype) {
   case spirv_cross::SPIRType::Boolean:
     return ShaderVariableTypeInfo::Signedness::NotApplicable;
@@ -177,7 +149,7 @@ const char* spirVBaseTypeToString(const spirv_cross::SPIRType& type) {
 
 ShaderVariableTypeInfo ShaderVariableTypeInfo::fromSpirV(const spirv_cross::SPIRType& type) {
   return {.baseType = spirvTypeToShaderVariableBaseType(type),
-          .componentBytes = spirvTypeToShaderVariableComponentBytes(type),
+          .componentBytes = static_cast<u8>(type.width / 8),
           .signedness = spirvTypeToShaderVariableSignedness(type),
           .vectorSize = type.vecsize,
           .columnCnt = type.columns};
