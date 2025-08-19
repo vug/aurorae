@@ -20,7 +20,7 @@ GraphicsProgram::GraphicsProgram(const Renderer& renderer, Handle<asset::Graphic
       std::map<asset::SetNo, std::map<asset::BindingNo, DescriptorSetLayoutBinding>> layoutBindings;
 
       const asset::ShaderStageSchema& vertSchema = assetHandle_->getVertexSchema();
-      for (const auto& [setNo, bindingMaps] : vertSchema.descriptors.uniformsBuffers) {
+      for (const auto& [setNo, bindingMaps] : vertSchema.uniformsBuffers) {
         for (const auto& [bindingNo, uboSchema] : bindingMaps) {
           layoutBindings[setNo][bindingNo] = {
               .index = bindingNo,
@@ -33,12 +33,11 @@ GraphicsProgram::GraphicsProgram(const Renderer& renderer, Handle<asset::Graphic
       }
 
       const asset::ShaderStageSchema& fragSchema = assetHandle_->getFragmentSchema();
-      for (const auto& [setNo, bindingMaps] : fragSchema.descriptors.uniformsBuffers) {
+      for (const auto& [setNo, bindingMaps] : fragSchema.uniformsBuffers) {
         for (const auto& [bindingNo, uboSchema] : bindingMaps) {
-          if (vertSchema.descriptors.uniformsBuffers.contains(setNo) &&
-              vertSchema.descriptors.uniformsBuffers.at(setNo).contains(bindingNo)) {
-            const asset::UniformBufferSchema vertUboSchema =
-                vertSchema.descriptors.uniformsBuffers.at(setNo).at(bindingNo);
+          if (vertSchema.uniformsBuffers.contains(setNo) &&
+              vertSchema.uniformsBuffers.at(setNo).contains(bindingNo)) {
+            const asset::ShaderResource vertUboSchema = vertSchema.uniformsBuffers.at(setNo).at(bindingNo);
             if (vertUboSchema == uboSchema) {
               layoutBindings[setNo][bindingNo].stages.push_back(ShaderStageType::Fragment);
               continue;

@@ -79,46 +79,33 @@ struct glz::meta<aur::asset::ShaderVariableTypeInfo::Signedness> {
 namespace aur::asset {
 constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic);
 
-// A unified structure for all shader variables
-struct ShaderVariable {
+// A unified structure for all resource block variables
+struct ShaderBlockMember {
   ShaderVariableTypeInfo typeInfo{};
   std::string name;
 
-  // For stage I/O variables: layout(location = N)
-  u32 location{static_cast<u32>(-1)};
-  bool isFlat{};
-
-  // For resources like uniform buffers, samplers: layout(set = N, binding = N)
-  u32 set{static_cast<u32>(-1)};
-  u32 binding{static_cast<u32>(-1)};
-
-  // For members of blocks like uniform buffers
   u32 offset{};
   u64 sizeBytes{};
 
-  // Array properties
   bool isArray{};
   u32 arraySize{};
 
   // Struct properties
-  std::vector<ShaderVariable> members;
+  std::vector<ShaderBlockMember> members;
 
   // ShaderVariable definition is recursive, which implicitly deletes the default <=> operator, because
   // by the time the compiler attempts to synthesize <=> ShaderDefinition is not fully defined, therefore,
   // we have to define it explicitly and compare members of the vector one-by-one.
-  std::strong_ordering operator<=>(const ShaderVariable& other) const {
+  std::strong_ordering operator<=>(const ShaderBlockMember& other) const {
     // clang-format off
 #define COMPARE_MEMBER(member) if (const auto cmp = member <=> other.member; cmp != std::strong_ordering::equal) return cmp;
     COMPARE_MEMBER(typeInfo);
     COMPARE_MEMBER(name);
-    COMPARE_MEMBER(location);
-    COMPARE_MEMBER(isFlat);
-    COMPARE_MEMBER(set);
-    COMPARE_MEMBER(binding);
     COMPARE_MEMBER(offset);
     COMPARE_MEMBER(sizeBytes);
     COMPARE_MEMBER(isArray);
     COMPARE_MEMBER(arraySize);
+#undef COMPARE_MEMBER
     if (const auto cmp = members.size() <=> other.members.size(); cmp != 0) return cmp;
     for (size_t i = 0; i < members.size(); ++i)
       if (const auto cmp = members[i] <=> other.members[i]; cmp != 0) return cmp;
@@ -127,30 +114,68 @@ struct ShaderVariable {
     return std::strong_ordering::equal;
   }
 
-  bool operator==(const ShaderVariable& other) const { return (*this <=> other) == 0; }
+  bool operator==(const ShaderBlockMember& other) const { return (*this <=> other) == 0; }
 };
 
-struct UniformBufferSchema {
+struct ShaderInterfaceVariable {
+  ShaderVariableTypeInfo typeInfo{};
   std::string name;
-  std::vector<ShaderVariable> variables;
+
+  // For stage I/O variables: layout(location = N)
+  u32 location{static_cast<u32>(-1)};
+  bool isFlat{};
+
+  bool isArray{};
+  u32 arraySize{};
+
+  // Struct properties (the recursive part)
+  std::vector<ShaderInterfaceVariable> members;
+
+  std::strong_ordering operator<=>(const ShaderInterfaceVariable& other) const {
+    // clang-format off
+#define COMPARE_MEMBER(member) if (const auto cmp = member <=> other.member; cmp != std::strong_ordering::equal) return cmp;
+    COMPARE_MEMBER(typeInfo);
+    COMPARE_MEMBER(name);
+    COMPARE_MEMBER(location);
+    COMPARE_MEMBER(isFlat);
+    COMPARE_MEMBER(isArray);
+    COMPARE_MEMBER(arraySize);
+#undef COMPARE_MEMBER
+    if (const auto cmp = members.size() <=> other.members.size(); cmp != 0) return cmp;
+    for (size_t i = 0; i < members.size(); ++i)
+      if (const auto cmp = members[i] <=> other.members[i]; cmp != 0) return cmp;
+    // clang-format on
+
+    return std::strong_ordering::equal;
+  }
+
+  bool operator==(const ShaderInterfaceVariable& other) const { return (*this <=> other) == 0; }
+};
+
+struct ShaderResource {
+  u32 set{static_cast<u32>(-1)};
+  u32 binding{static_cast<u32>(-1)};
+  std::string name;
   u64 sizeBytes{};
 
-  auto operator<=>(const UniformBufferSchema&) const = default;
+  //
+  std::vector<ShaderBlockMember> variables;
+
+  auto operator<=>(const ShaderResource&) const = default;
 };
 
 using SetNo = u32;
 using BindingNo = u32;
-struct DescriptorSchemas {
-  std::map<SetNo, std::map<BindingNo, UniformBufferSchema>> uniformsBuffers;
+using LocationNo = u32;
+struct ShaderStageSchema {
+  std::map<LocationNo, ShaderInterfaceVariable> inputs;
+  std::map<SetNo, std::map<BindingNo, ShaderResource>> uniformsBuffers;
   // std::map<DescriptorKey, StorageBufferSchema> storageBuffers;
   // std::map<DescriptorKey, SampledImage> samplesImages;
   // std::map<DescriptorKey, StorageImage> storageImages;
   // std::map<DescriptorKey, Sampler> samplers;
   // std::map<DescriptorKey, AccelerationStructure> accelerationStructures;
-};
-
-struct ShaderStageSchema {
-  DescriptorSchemas descriptors;
+  std::map<LocationNo, ShaderInterfaceVariable> outputs;
 };
 
 using SpirV = std::vector<u32>;
