@@ -273,6 +273,56 @@ std::string ShaderVariableTypeInfo::toString() const {
   return std::format("{}{}{}_t{}{}", signPrefix, typeName, bitCount, vectorSize, matrixSuffix);
 }
 
+ShaderBlockMember parseStructMember(const spirv_cross::Compiler& reflector,
+                                    const spirv_cross::SPIRType& parentStructType, u32 memberIx) {
+  ShaderBlockMember member;
+  const spirv_cross::TypeID memberTypeId = parentStructType.member_types[memberIx];
+  const spirv_cross::SPIRType& memberType = reflector.get_type(memberTypeId);
+  member.name = reflector.get_member_name(parentStructType.self, memberIx);
+  member.offset = reflector.get_member_decoration(parentStructType.self, memberIx, spv::DecorationOffset);
+
+  member.isArray = !memberType.array.empty();
+  // We only support one-dimensional arrays at the moment
+  member.arraySize = member.isArray ? memberType.array[0] : 0;
+
+  member.sizeBytes = reflector.get_declared_struct_member_size(parentStructType, memberIx);
+
+  // The "base type" for an array is the type of its elements. For non-arrays, it's just the member_type.
+  const auto& baseType = member.isArray ? reflector.get_type(memberType.parent_type) : memberType;
+  member.typeInfo = ShaderVariableTypeInfo::fromSpirV(baseType);
+  if (member.typeInfo.baseType == ShaderVariableTypeInfo::BaseType::Struct) {
+    for (u32 subMemberIx = 0; subMemberIx < memberType.member_types.size(); ++subMemberIx) {
+      const auto& subMember = parseStructMember(reflector, baseType, subMemberIx);
+      member.members.push_back(subMember);
+    }
+  }
+
+  return member;
+}
+
+std::map<SetNo, std::map<BindingNo, ShaderResource>> reflectUniformBuffers(const SpirV& spirV) {
+  spirv_cross::Compiler reflector(spirV);
+  spirv_cross::ShaderResources resources = reflector.get_shader_resources();
+
+  std::map<SetNo, std::map<BindingNo, ShaderResource>> uniformBuffers;
+  for (const auto& resource : resources.uniform_buffers) {
+    ShaderResource ubo;
+    ubo.name = resource.name;
+    ubo.set = reflector.get_decoration(resource.id, spv::DecorationDescriptorSet);
+    ubo.binding = reflector.get_decoration(resource.id, spv::DecorationBinding);
+
+    const auto& type = reflector.get_type(resource.base_type_id);
+    ubo.sizeBytes = reflector.get_declared_struct_size(type);
+
+    for (u32 memberIx = 0; memberIx < type.member_types.size(); ++memberIx)
+      ubo.members.push_back(parseStructMember(reflector, type, memberIx));
+
+    uniformBuffers[ubo.set][ubo.binding] = ubo;
+  }
+
+  return uniformBuffers;
+}
+
 ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
   ShaderStageSchema schema;
 
@@ -309,36 +359,7 @@ ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
     }
   }
 
-  for (const spirv_cross::Resource& uniform : resources.uniform_buffers) {
-    const u32 setNo = reflector.get_decoration(uniform.id, spv::DecorationDescriptorSet);
-    const u32 bindingNo = reflector.get_decoration(uniform.id, spv::DecorationBinding);
-
-    auto& bindingSchemas = schema.uniformsBuffers[setNo];
-    ShaderResource& uboSchema = bindingSchemas[bindingNo];
-    uboSchema.name = uniform.name;
-    // uboSchema.name = reflector.get_name(uniform.base_type_id);
-
-    const spirv_cross::SPIRType& blockType = reflector.get_type(uniform.base_type_id);
-    uboSchema.sizeBytes = reflector.get_declared_struct_size(blockType);
-
-    const u64 memberCnt = blockType.member_types.size();
-    uboSchema.variables.reserve(memberCnt);
-    for (uint32_t memberIx = 0; memberIx < memberCnt; ++memberIx) {
-      const auto& memberTypeId = blockType.member_types[memberIx];
-      const auto& memberType = reflector.get_type(memberTypeId);
-
-      const ShaderBlockMember var{
-          .typeInfo = ShaderVariableTypeInfo::fromSpirV(memberType),
-          .name = reflector.get_member_name(blockType.self, memberIx),
-          // .offset = reflector.get_member_decoration(blockType.self, i, spv::DecorationOffset),
-          .offset = reflector.type_struct_member_offset(blockType, memberIx),
-          .sizeBytes = reflector.get_declared_struct_member_size(blockType, memberIx),
-          .isArray = !memberType.array.empty(),
-          .arraySize = memberType.array.empty() ? 1 : memberType.array[0],
-      };
-      uboSchema.variables.push_back(var);
-    }
-  }
+  schema.uniformsBuffers = reflectUniformBuffers(spirV);
   return schema;
 }
 

@@ -73,26 +73,6 @@ struct ShaderType {
 };
 
 void Application::run() {
-  ShaderType block{
-      .type = BaseType::Struct,
-      .name = "MaterialParams",
-      .offset = 0,
-      .size = 4,
-      .set = 0,
-      .binding = 0,
-      .members =
-          {
-              {
-                  .type = BaseType::Float,
-                  .name = "metallic",
-                  .offset = 0,
-                  .size = 4,
-              },
-          },
-  };
-  std::string blockStr = glz::write_json(block).value_or("failed");
-  log().info(glz::prettify_json(blockStr));
-
   const bool shouldClear = true;
   if (shouldClear) {
     assetRegistry_.clear();

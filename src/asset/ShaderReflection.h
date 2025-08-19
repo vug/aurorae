@@ -159,7 +159,7 @@ struct ShaderResource {
   u64 sizeBytes{};
 
   //
-  std::vector<ShaderBlockMember> variables;
+  std::vector<ShaderBlockMember> members;
 
   auto operator<=>(const ShaderResource&) const = default;
 };
