@@ -81,8 +81,8 @@ constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic 
 
 // A unified structure for all shader variables
 struct ShaderVariable {
-  std::string name;
   ShaderVariableTypeInfo typeInfo{};
+  std::string name;
 
   // For stage I/O variables: layout(location = N)
   u32 location{static_cast<u32>(-1)};
@@ -100,7 +100,34 @@ struct ShaderVariable {
   bool isArray{};
   u32 arraySize{};
 
-  auto operator<=>(const ShaderVariable&) const = default;
+  // Struct properties
+  std::vector<ShaderVariable> members;
+
+  // ShaderVariable definition is recursive, which implicitly deletes the default <=> operator, because
+  // by the time the compiler attempts to synthesize <=> ShaderDefinition is not fully defined, therefore,
+  // we have to define it explicitly and compare members of the vector one-by-one.
+  std::strong_ordering operator<=>(const ShaderVariable& other) const {
+    // clang-format off
+#define COMPARE_MEMBER(member) if (const auto cmp = member <=> other.member; cmp != std::strong_ordering::equal) return cmp;
+    COMPARE_MEMBER(typeInfo);
+    COMPARE_MEMBER(name);
+    COMPARE_MEMBER(location);
+    COMPARE_MEMBER(isFlat);
+    COMPARE_MEMBER(set);
+    COMPARE_MEMBER(binding);
+    COMPARE_MEMBER(offset);
+    COMPARE_MEMBER(sizeBytes);
+    COMPARE_MEMBER(isArray);
+    COMPARE_MEMBER(arraySize);
+    if (const auto cmp = members.size() <=> other.members.size(); cmp != 0) return cmp;
+    for (size_t i = 0; i < members.size(); ++i)
+      if (const auto cmp = members[i] <=> other.members[i]; cmp != 0) return cmp;
+    // clang-format on
+
+    return std::strong_ordering::equal;
+  }
+
+  bool operator==(const ShaderVariable& other) const { return (*this <=> other) == 0; }
 };
 
 struct UniformBufferSchema {

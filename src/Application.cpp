@@ -10,6 +10,8 @@
 #include "asset/AssetManager.h"
 #include "asset/Mesh.h"
 
+#include <glaze/glaze/glaze.hpp>
+
 namespace aur {
 
 Application::Initializer::Initializer() {
@@ -48,7 +50,49 @@ Application::~Application() {
   log().trace("Application shut down.");
 }
 
+enum class BaseType {
+  Float,
+  Vec2,
+  Vec3,
+  Vec4,
+  Mat4,
+  Struct,
+  Array,
+};
+
+struct ShaderType {
+  BaseType type;
+  std::string name;
+  size_t offset;
+  size_t size;
+  uint32_t set;
+  uint32_t binding;
+  // This is the recursive part!
+  std::vector<ShaderType> members;
+  size_t array_count;
+};
+
 void Application::run() {
+  ShaderType block{
+      .type = BaseType::Struct,
+      .name = "MaterialParams",
+      .offset = 0,
+      .size = 4,
+      .set = 0,
+      .binding = 0,
+      .members =
+          {
+              {
+                  .type = BaseType::Float,
+                  .name = "metallic",
+                  .offset = 0,
+                  .size = 4,
+              },
+          },
+  };
+  std::string blockStr = glz::write_json(block).value_or("failed");
+  log().info(glz::prettify_json(blockStr));
+
   const bool shouldClear = true;
   if (shouldClear) {
     assetRegistry_.clear();

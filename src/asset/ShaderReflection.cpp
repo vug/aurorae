@@ -355,8 +355,8 @@ ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
       const auto& memberType = reflector.get_type(memberTypeId);
 
       const ShaderVariable var{
-          .name = reflector.get_member_name(blockType.self, memberIx),
           .typeInfo = ShaderVariableTypeInfo::fromSpirV(memberType),
+          .name = reflector.get_member_name(blockType.self, memberIx),
           .location = static_cast<u32>(-1),
           .set = setNo,
           .binding = bindingNo,

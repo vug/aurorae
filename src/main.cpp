@@ -1,4 +1,6 @@
 /*
+TODO(vug): figure out how to do the array -> hmm, actually for the schema there is nothing to figure out.
+           See how arrays work for ShaderValue
 TODO(vug): manually create a DescriptorSet for vizMode and bind it from Application (see in RenderDoc)
 TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
            arrays are expanded, substructs are flattened...
