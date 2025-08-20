@@ -5,9 +5,8 @@
 #include "../Utils.h"
 
 namespace aur::asset {
-
 // clang-format off
-enum class ShaderVariableTypeMnemonic : u8 {
+enum class ShaderVariableType : u8 {
   Unknown,
   Struct,
 
@@ -43,8 +42,49 @@ enum class ShaderVariableTypeMnemonic : u8 {
   float64_t3x2, float64_t3x3, float64_t3x4,
   float64_t4x2, float64_t4x3, float64_t4x4,
 };
+}
+template <>
+struct glz::meta<aur::asset::ShaderVariableType> {
+  using enum aur::asset::ShaderVariableType;
+  static constexpr auto value = glz::enumerate(
+    Unknown,
+    Struct,
+
+    // Boolean Scalar & Vector Types
+    bool1, bool2, bool3, bool4,
+
+    // Integer Scalar & Vector Types
+    int8_t1, int8_t2, int8_t3, int8_t4,
+    uint8_t1, uint8_t2, uint8_t3, uint8_t4,
+    int16_t1, int16_t2, int16_t3, int16_t4,
+    uint16_t1, uint16_t2, uint16_t3, uint16_t4,
+    int32_t1, int32_t2, int32_t3, int32_t4,
+    uint32_t1, uint32_t2, uint32_t3, uint32_t4,
+    int64_t1, int64_t2, int64_t3, int64_t4,
+    uint64_t1, uint64_t2, uint64_t3, uint64_t4,
+
+    // Floating-Point Scalar & Vector types
+    float16_t1, float16_t2, float16_t3, float16_t4,
+    float32_t1, float32_t2, float32_t3, float32_t4,
+    float64_t1, float64_t2, float64_t3, float64_t4,
+
+    // Floating-Point Matrix Types
+    float16_t2x2, float16_t2x3, float16_t2x4,
+    float16_t3x2, float16_t3x3, float16_t3x4,
+    float16_t4x2, float16_t4x3, float16_t4x4,
+
+    float32_t2x2, float32_t2x3, float32_t2x4,
+    float32_t3x2, float32_t3x3, float32_t3x4,
+    float32_t4x2, float32_t4x3, float32_t4x4,
+
+    float64_t2x2, float64_t2x3, float64_t2x4,
+    float64_t3x2, float64_t3x3, float64_t3x4,
+    float64_t4x2, float64_t4x3, float64_t4x4
+  );
+};
 // clang-format on
 
+namespace aur::asset {
 struct ShaderVariableTypeInfo {
   enum class BaseType : u8 { Unknown, Struct, Bool, Int, Float };
   enum class Signedness : u8 { NotApplicable, Unsigned, Signed };
@@ -59,6 +99,7 @@ struct ShaderVariableTypeInfo {
   u32 columnCnt{};
 
   [[nodiscard]] std::string toString() const;
+  [[nodiscard]] std::string toMnemonicString() const;
 
   auto operator<=>(const ShaderVariableTypeInfo&) const = default;
 };
@@ -75,7 +116,7 @@ struct glz::meta<aur::asset::ShaderVariableTypeInfo::Signedness> {
 };
 
 namespace aur::asset {
-constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic);
+constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableType mnemonic);
 
 struct CommonMemberProps {
   spirv_cross::TypeID memberTypeId;

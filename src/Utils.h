@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 
 namespace aur {
 
@@ -57,5 +58,8 @@ const char* vkResultToString(i32 result);
       log().fatal("Vulkan call `{}` failed! {}", #vk_call, vkResultToString(PASTE(result_, __LINE__)));      \
     }                                                                                                        \
   } while (0)
+
+inline auto toLowerCase =
+    std::views::transform([](char c) { return std::tolower(c); }) | std::ranges::to<std::string>();
 
 } // namespace aur

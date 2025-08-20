@@ -109,108 +109,108 @@ ShaderVariableTypeInfo ShaderVariableTypeInfo::fromSpirV(const spirv_cross::SPIR
 
 // clang-format off
 // Constexpr converter from the mnemonic to the factored representation.
-constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic mnemonic) {
+constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableType mnemonic) {
 #define FACTOR(base, bytes, sign, vec, col) ShaderVariableTypeInfo{ShaderVariableTypeInfo::BaseType::base, bytes, ShaderVariableTypeInfo::Signedness::sign, vec, col}
   switch (mnemonic) {
-  case ShaderVariableTypeMnemonic::Unknown:      return FACTOR(Unknown, 0, NotApplicable, 0, 0);
-  case ShaderVariableTypeMnemonic::Struct:       return FACTOR(Struct,  0, NotApplicable, 1, 1);
+  case ShaderVariableType::Unknown:      return FACTOR(Unknown, 0, NotApplicable, 0, 0);
+  case ShaderVariableType::Struct:       return FACTOR(Struct,  0, NotApplicable, 1, 1);
 
   // Bools are logically 1-bit, but physically 32-bit in interface blocks.
-  case ShaderVariableTypeMnemonic::bool1:        return FACTOR(Bool,    4, NotApplicable, 1, 1);
-  case ShaderVariableTypeMnemonic::bool2:        return FACTOR(Bool,    4, NotApplicable, 2, 1);
-  case ShaderVariableTypeMnemonic::bool3:        return FACTOR(Bool,    4, NotApplicable, 3, 1);
-  case ShaderVariableTypeMnemonic::bool4:        return FACTOR(Bool,    4, NotApplicable, 4, 1);
+  case ShaderVariableType::bool1:        return FACTOR(Bool,    4, NotApplicable, 1, 1);
+  case ShaderVariableType::bool2:        return FACTOR(Bool,    4, NotApplicable, 2, 1);
+  case ShaderVariableType::bool3:        return FACTOR(Bool,    4, NotApplicable, 3, 1);
+  case ShaderVariableType::bool4:        return FACTOR(Bool,    4, NotApplicable, 4, 1);
 
   // 8-bit Integers
-  case ShaderVariableTypeMnemonic::int8_t1:      return FACTOR(Int,     1, Signed,        1, 1);
-  case ShaderVariableTypeMnemonic::int8_t2:      return FACTOR(Int,     1, Signed,        2, 1);
-  case ShaderVariableTypeMnemonic::int8_t3:      return FACTOR(Int,     1, Signed,        3, 1);
-  case ShaderVariableTypeMnemonic::int8_t4:      return FACTOR(Int,     1, Signed,        4, 1);
-  case ShaderVariableTypeMnemonic::uint8_t1:     return FACTOR(Int,     1, Unsigned,      1, 1);
-  case ShaderVariableTypeMnemonic::uint8_t2:     return FACTOR(Int,     1, Unsigned,      2, 1);
-  case ShaderVariableTypeMnemonic::uint8_t3:     return FACTOR(Int,     1, Unsigned,      3, 1);
-  case ShaderVariableTypeMnemonic::uint8_t4:     return FACTOR(Int,     1, Unsigned,      4, 1);
+  case ShaderVariableType::int8_t1:      return FACTOR(Int,     1, Signed,        1, 1);
+  case ShaderVariableType::int8_t2:      return FACTOR(Int,     1, Signed,        2, 1);
+  case ShaderVariableType::int8_t3:      return FACTOR(Int,     1, Signed,        3, 1);
+  case ShaderVariableType::int8_t4:      return FACTOR(Int,     1, Signed,        4, 1);
+  case ShaderVariableType::uint8_t1:     return FACTOR(Int,     1, Unsigned,      1, 1);
+  case ShaderVariableType::uint8_t2:     return FACTOR(Int,     1, Unsigned,      2, 1);
+  case ShaderVariableType::uint8_t3:     return FACTOR(Int,     1, Unsigned,      3, 1);
+  case ShaderVariableType::uint8_t4:     return FACTOR(Int,     1, Unsigned,      4, 1);
 
   // 16-bit Integers
-  case ShaderVariableTypeMnemonic::int16_t1:     return FACTOR(Int,     2, Signed,        1, 1);
-  case ShaderVariableTypeMnemonic::int16_t2:     return FACTOR(Int,     2, Signed,        2, 1);
-  case ShaderVariableTypeMnemonic::int16_t3:     return FACTOR(Int,     2, Signed,        3, 1);
-  case ShaderVariableTypeMnemonic::int16_t4:     return FACTOR(Int,     2, Signed,        4, 1);
-  case ShaderVariableTypeMnemonic::uint16_t1:    return FACTOR(Int,     2, Unsigned,      1, 1);
-  case ShaderVariableTypeMnemonic::uint16_t2:    return FACTOR(Int,     2, Unsigned,      2, 1);
-  case ShaderVariableTypeMnemonic::uint16_t3:    return FACTOR(Int,     2, Unsigned,      3, 1);
-  case ShaderVariableTypeMnemonic::uint16_t4:    return FACTOR(Int,     2, Unsigned,      4, 1);
+  case ShaderVariableType::int16_t1:     return FACTOR(Int,     2, Signed,        1, 1);
+  case ShaderVariableType::int16_t2:     return FACTOR(Int,     2, Signed,        2, 1);
+  case ShaderVariableType::int16_t3:     return FACTOR(Int,     2, Signed,        3, 1);
+  case ShaderVariableType::int16_t4:     return FACTOR(Int,     2, Signed,        4, 1);
+  case ShaderVariableType::uint16_t1:    return FACTOR(Int,     2, Unsigned,      1, 1);
+  case ShaderVariableType::uint16_t2:    return FACTOR(Int,     2, Unsigned,      2, 1);
+  case ShaderVariableType::uint16_t3:    return FACTOR(Int,     2, Unsigned,      3, 1);
+  case ShaderVariableType::uint16_t4:    return FACTOR(Int,     2, Unsigned,      4, 1);
 
   // 32-bit Integers
-  case ShaderVariableTypeMnemonic::int32_t1:     return FACTOR(Int,     4, Signed,        1, 1);
-  case ShaderVariableTypeMnemonic::int32_t2:     return FACTOR(Int,     4, Signed,        2, 1);
-  case ShaderVariableTypeMnemonic::int32_t3:     return FACTOR(Int,     4, Signed,        3, 1);
-  case ShaderVariableTypeMnemonic::int32_t4:     return FACTOR(Int,     4, Signed,        4, 1);
-  case ShaderVariableTypeMnemonic::uint32_t1:    return FACTOR(Int,     4, Unsigned,      1, 1);
-  case ShaderVariableTypeMnemonic::uint32_t2:    return FACTOR(Int,     4, Unsigned,      2, 1);
-  case ShaderVariableTypeMnemonic::uint32_t3:    return FACTOR(Int,     4, Unsigned,      3, 1);
-  case ShaderVariableTypeMnemonic::uint32_t4:    return FACTOR(Int,     4, Unsigned,      4, 1);
+  case ShaderVariableType::int32_t1:     return FACTOR(Int,     4, Signed,        1, 1);
+  case ShaderVariableType::int32_t2:     return FACTOR(Int,     4, Signed,        2, 1);
+  case ShaderVariableType::int32_t3:     return FACTOR(Int,     4, Signed,        3, 1);
+  case ShaderVariableType::int32_t4:     return FACTOR(Int,     4, Signed,        4, 1);
+  case ShaderVariableType::uint32_t1:    return FACTOR(Int,     4, Unsigned,      1, 1);
+  case ShaderVariableType::uint32_t2:    return FACTOR(Int,     4, Unsigned,      2, 1);
+  case ShaderVariableType::uint32_t3:    return FACTOR(Int,     4, Unsigned,      3, 1);
+  case ShaderVariableType::uint32_t4:    return FACTOR(Int,     4, Unsigned,      4, 1);
 
   // 64-bit Integers
-  case ShaderVariableTypeMnemonic::int64_t1:     return FACTOR(Int,     8, Signed,        1, 1);
-  case ShaderVariableTypeMnemonic::int64_t2:     return FACTOR(Int,     8, Signed,        2, 1);
-  case ShaderVariableTypeMnemonic::int64_t3:     return FACTOR(Int,     8, Signed,        3, 1);
-  case ShaderVariableTypeMnemonic::int64_t4:     return FACTOR(Int,     8, Signed,        4, 1);
-  case ShaderVariableTypeMnemonic::uint64_t1:    return FACTOR(Int,     8, Unsigned,      1, 1);
-  case ShaderVariableTypeMnemonic::uint64_t2:    return FACTOR(Int,     8, Unsigned,      2, 1);
-  case ShaderVariableTypeMnemonic::uint64_t3:    return FACTOR(Int,     8, Unsigned,      3, 1);
-  case ShaderVariableTypeMnemonic::uint64_t4:    return FACTOR(Int,     8, Unsigned,      4, 1);
+  case ShaderVariableType::int64_t1:     return FACTOR(Int,     8, Signed,        1, 1);
+  case ShaderVariableType::int64_t2:     return FACTOR(Int,     8, Signed,        2, 1);
+  case ShaderVariableType::int64_t3:     return FACTOR(Int,     8, Signed,        3, 1);
+  case ShaderVariableType::int64_t4:     return FACTOR(Int,     8, Signed,        4, 1);
+  case ShaderVariableType::uint64_t1:    return FACTOR(Int,     8, Unsigned,      1, 1);
+  case ShaderVariableType::uint64_t2:    return FACTOR(Int,     8, Unsigned,      2, 1);
+  case ShaderVariableType::uint64_t3:    return FACTOR(Int,     8, Unsigned,      3, 1);
+  case ShaderVariableType::uint64_t4:    return FACTOR(Int,     8, Unsigned,      4, 1);
 
   // 16-bit Floats (Half)
-  case ShaderVariableTypeMnemonic::float16_t1:   return FACTOR(Float,   2, Signed,        1, 1);
-  case ShaderVariableTypeMnemonic::float16_t2:   return FACTOR(Float,   2, Signed,        2, 1);
-  case ShaderVariableTypeMnemonic::float16_t3:   return FACTOR(Float,   2, Signed,        3, 1);
-  case ShaderVariableTypeMnemonic::float16_t4:   return FACTOR(Float,   2, Signed,        4, 1);
+  case ShaderVariableType::float16_t1:   return FACTOR(Float,   2, Signed,        1, 1);
+  case ShaderVariableType::float16_t2:   return FACTOR(Float,   2, Signed,        2, 1);
+  case ShaderVariableType::float16_t3:   return FACTOR(Float,   2, Signed,        3, 1);
+  case ShaderVariableType::float16_t4:   return FACTOR(Float,   2, Signed,        4, 1);
 
   // 32-bit Floats (Float)
-  case ShaderVariableTypeMnemonic::float32_t1:   return FACTOR(Float,   4, Signed,        1, 1);
-  case ShaderVariableTypeMnemonic::float32_t2:   return FACTOR(Float,   4, Signed,        2, 1);
-  case ShaderVariableTypeMnemonic::float32_t3:   return FACTOR(Float,   4, Signed,        3, 1);
-  case ShaderVariableTypeMnemonic::float32_t4:   return FACTOR(Float,   4, Signed,        4, 1);
+  case ShaderVariableType::float32_t1:   return FACTOR(Float,   4, Signed,        1, 1);
+  case ShaderVariableType::float32_t2:   return FACTOR(Float,   4, Signed,        2, 1);
+  case ShaderVariableType::float32_t3:   return FACTOR(Float,   4, Signed,        3, 1);
+  case ShaderVariableType::float32_t4:   return FACTOR(Float,   4, Signed,        4, 1);
 
   // 64-bit Floats (Double)
-  case ShaderVariableTypeMnemonic::float64_t1:   return FACTOR(Float,   8, Signed,        1, 1);
-  case ShaderVariableTypeMnemonic::float64_t2:   return FACTOR(Float,   8, Signed,        2, 1);
-  case ShaderVariableTypeMnemonic::float64_t3:   return FACTOR(Float,   8, Signed,        3, 1);
-  case ShaderVariableTypeMnemonic::float64_t4:   return FACTOR(Float,   8, Signed,        4, 1);
+  case ShaderVariableType::float64_t1:   return FACTOR(Float,   8, Signed,        1, 1);
+  case ShaderVariableType::float64_t2:   return FACTOR(Float,   8, Signed,        2, 1);
+  case ShaderVariableType::float64_t3:   return FACTOR(Float,   8, Signed,        3, 1);
+  case ShaderVariableType::float64_t4:   return FACTOR(Float,   8, Signed,        4, 1);
 
   // 16-bit Matrices
-  case ShaderVariableTypeMnemonic::float16_t2x2: return FACTOR(Float,   2, Signed,        2, 2);
-  case ShaderVariableTypeMnemonic::float16_t2x3: return FACTOR(Float,   2, Signed,        3, 2);
-  case ShaderVariableTypeMnemonic::float16_t2x4: return FACTOR(Float,   2, Signed,        4, 2);
-  case ShaderVariableTypeMnemonic::float16_t3x2: return FACTOR(Float,   2, Signed,        2, 3);
-  case ShaderVariableTypeMnemonic::float16_t3x3: return FACTOR(Float,   2, Signed,        3, 3);
-  case ShaderVariableTypeMnemonic::float16_t3x4: return FACTOR(Float,   2, Signed,        4, 3);
-  case ShaderVariableTypeMnemonic::float16_t4x2: return FACTOR(Float,   2, Signed,        2, 4);
-  case ShaderVariableTypeMnemonic::float16_t4x3: return FACTOR(Float,   2, Signed,        3, 4);
-  case ShaderVariableTypeMnemonic::float16_t4x4: return FACTOR(Float,   2, Signed,        4, 4);
+  case ShaderVariableType::float16_t2x2: return FACTOR(Float,   2, Signed,        2, 2);
+  case ShaderVariableType::float16_t2x3: return FACTOR(Float,   2, Signed,        3, 2);
+  case ShaderVariableType::float16_t2x4: return FACTOR(Float,   2, Signed,        4, 2);
+  case ShaderVariableType::float16_t3x2: return FACTOR(Float,   2, Signed,        2, 3);
+  case ShaderVariableType::float16_t3x3: return FACTOR(Float,   2, Signed,        3, 3);
+  case ShaderVariableType::float16_t3x4: return FACTOR(Float,   2, Signed,        4, 3);
+  case ShaderVariableType::float16_t4x2: return FACTOR(Float,   2, Signed,        2, 4);
+  case ShaderVariableType::float16_t4x3: return FACTOR(Float,   2, Signed,        3, 4);
+  case ShaderVariableType::float16_t4x4: return FACTOR(Float,   2, Signed,        4, 4);
 
   // 32-bit Matrices
-  case ShaderVariableTypeMnemonic::float32_t2x2: return FACTOR(Float,   4, Signed,        2, 2);
-  case ShaderVariableTypeMnemonic::float32_t2x3: return FACTOR(Float,   4, Signed,        3, 2);
-  case ShaderVariableTypeMnemonic::float32_t2x4: return FACTOR(Float,   4, Signed,        4, 2);
-  case ShaderVariableTypeMnemonic::float32_t3x2: return FACTOR(Float,   4, Signed,        2, 3);
-  case ShaderVariableTypeMnemonic::float32_t3x3: return FACTOR(Float,   4, Signed,        3, 3);
-  case ShaderVariableTypeMnemonic::float32_t3x4: return FACTOR(Float,   4, Signed,        4, 3);
-  case ShaderVariableTypeMnemonic::float32_t4x2: return FACTOR(Float,   4, Signed,        2, 4);
-  case ShaderVariableTypeMnemonic::float32_t4x3: return FACTOR(Float,   4, Signed,        3, 4);
-  case ShaderVariableTypeMnemonic::float32_t4x4: return FACTOR(Float,   4, Signed,        4, 4);
+  case ShaderVariableType::float32_t2x2: return FACTOR(Float,   4, Signed,        2, 2);
+  case ShaderVariableType::float32_t2x3: return FACTOR(Float,   4, Signed,        3, 2);
+  case ShaderVariableType::float32_t2x4: return FACTOR(Float,   4, Signed,        4, 2);
+  case ShaderVariableType::float32_t3x2: return FACTOR(Float,   4, Signed,        2, 3);
+  case ShaderVariableType::float32_t3x3: return FACTOR(Float,   4, Signed,        3, 3);
+  case ShaderVariableType::float32_t3x4: return FACTOR(Float,   4, Signed,        4, 3);
+  case ShaderVariableType::float32_t4x2: return FACTOR(Float,   4, Signed,        2, 4);
+  case ShaderVariableType::float32_t4x3: return FACTOR(Float,   4, Signed,        3, 4);
+  case ShaderVariableType::float32_t4x4: return FACTOR(Float,   4, Signed,        4, 4);
 
   // 64-bit Matrices
-  case ShaderVariableTypeMnemonic::float64_t2x2: return FACTOR(Float,   4, Signed,        2, 2);
-  case ShaderVariableTypeMnemonic::float64_t2x3: return FACTOR(Float,   4, Signed,        3, 2);
-  case ShaderVariableTypeMnemonic::float64_t2x4: return FACTOR(Float,   4, Signed,        4, 2);
-  case ShaderVariableTypeMnemonic::float64_t3x2: return FACTOR(Float,   4, Signed,        2, 3);
-  case ShaderVariableTypeMnemonic::float64_t3x3: return FACTOR(Float,   4, Signed,        3, 3);
-  case ShaderVariableTypeMnemonic::float64_t3x4: return FACTOR(Float,   4, Signed,        4, 3);
-  case ShaderVariableTypeMnemonic::float64_t4x2: return FACTOR(Float,   4, Signed,        2, 4);
-  case ShaderVariableTypeMnemonic::float64_t4x3: return FACTOR(Float,   4, Signed,        3, 4);
-  case ShaderVariableTypeMnemonic::float64_t4x4: return FACTOR(Float,   4, Signed,        4, 4);
+  case ShaderVariableType::float64_t2x2: return FACTOR(Float,   4, Signed,        2, 2);
+  case ShaderVariableType::float64_t2x3: return FACTOR(Float,   4, Signed,        3, 2);
+  case ShaderVariableType::float64_t2x4: return FACTOR(Float,   4, Signed,        4, 2);
+  case ShaderVariableType::float64_t3x2: return FACTOR(Float,   4, Signed,        2, 3);
+  case ShaderVariableType::float64_t3x3: return FACTOR(Float,   4, Signed,        3, 3);
+  case ShaderVariableType::float64_t3x4: return FACTOR(Float,   4, Signed,        4, 3);
+  case ShaderVariableType::float64_t4x2: return FACTOR(Float,   4, Signed,        2, 4);
+  case ShaderVariableType::float64_t4x3: return FACTOR(Float,   4, Signed,        3, 4);
+  case ShaderVariableType::float64_t4x4: return FACTOR(Float,   4, Signed,        4, 4);
   }
   std::unreachable();
 #undef FACTOR
@@ -218,11 +218,47 @@ constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableTypeMnemonic 
 // clang-format on
 
 std::string ShaderVariableTypeInfo::toString() const {
-  const std::string signPrefix = (signedness == ShaderVariableTypeInfo::Signedness::Unsigned) ? "U" : "";
-  const std::string typeName = glz::write<glz::opts{.raw = true}>(baseType).value_or("ERROR");
+  const std::string signPrefix = (signedness == ShaderVariableTypeInfo::Signedness::Unsigned) ? "u" : "";
+  const std::string typeName = glz::write<glz::opts{.raw = true}>(baseType).value_or("ERROR") | toLowerCase;
   const u8 bitCount = componentBytes * 8;
   const std::string matrixSuffix = columnCnt > 1 ? std::format("x{}", columnCnt) : "";
   return std::format("{}{}{}_t{}{}", signPrefix, typeName, bitCount, vectorSize, matrixSuffix);
+}
+std::string ShaderVariableTypeInfo::toMnemonicString() const {
+  if (baseType == BaseType::Struct)
+    return "struct";
+  if (baseType == BaseType::Unknown)
+    return "unknown";
+  if (baseType == BaseType::Bool) {
+    if (vectorSize == 1)
+      return "bool";
+    return "bvec" + std::to_string(vectorSize);
+  }
+  if (vectorSize == 1) {
+    if (baseType == BaseType::Int)
+      return std::string((signedness == Signedness::Unsigned ? "uint" : "int")) +
+             (componentBytes == 8 ? "64_t" : "");
+    if (baseType == BaseType::Float)
+      return componentBytes == 8 ? "double" : "float";
+  }
+
+  if (baseType == BaseType::Float && columnCnt > 1) {
+    std::string matType = componentBytes == 8 ? "dmat" : "mat";
+
+    // Square matrices: mat2, mat3, mat4, dmat2, etc.
+    if (vectorSize == columnCnt)
+      return matType + std::to_string(vectorSize);
+    // Non-square matrices: mat2x3, mat3x4, etc.
+    else
+      return matType + std::to_string(columnCnt) + "x" + std::to_string(vectorSize);
+  }
+
+  std::string result;
+  if (baseType == BaseType::Int)
+    result = (signedness == Signedness::Unsigned) ? "uvec" : "ivec";
+  else if (baseType == BaseType::Float)
+    result = (componentBytes == 8) ? "dvec" : "vec";
+  return result + std::to_string(vectorSize);
 }
 
 CommonMemberProps getCommonMemberProps(const spirv_cross::Compiler& reflector,
