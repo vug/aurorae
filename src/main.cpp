@@ -1,7 +1,6 @@
 /*
-TODO(vug): TypeInfo -> Mnemonic -> Alias enums and their string serialization
 TODO(vug): manually create a DescriptorSet for vizMode and bind it from Application (see in RenderDoc)
-TODO(vug): See how arrays work for ShaderValue
+TODO(vug): See how arrays work for ShaderValue https://gemini.google.com/app/89f21c98b1f8813a
 TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
            arrays are expanded, substructs are flattened...
 TODO(vug): asset::Material takes the schemas and compare them with its parameters.
