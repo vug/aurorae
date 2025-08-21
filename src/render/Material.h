@@ -2,7 +2,10 @@
 
 #include "../Handle.h"
 #include "../Pipeline.h"
+#include "../Resources/Buffer.h"
+#include "../asset/GraphicsProgram.h"
 #include "../asset/Material.h"
+#include "../asset/ShaderReflection.h"
 
 namespace aur {
 class Renderer;
@@ -25,6 +28,9 @@ public:
   [[nodiscard]] inline Handle<render::GraphicsProgram> getGraphicsProgramHandle() const {
     return graphicsProgramHandle_;
   }
+  [[nodiscard]] inline const asset::ShaderStageSchema& getGraphicsProgramSchema() const {
+    return assetHandle_->getGraphicsProgramHandle()->getCombinedSchema();
+  }
   [[nodiscard]] inline const PipelineCreateInfo& getPipelineCreateInfo() const { return pipelineCreateInfo_; }
 
 private:
@@ -33,6 +39,7 @@ private:
   Handle<render::GraphicsProgram> graphicsProgramHandle_;
   PipelineCreateInfo pipelineCreateInfo_;
   const Pipeline* pipeline_{};
+  Buffer matParamsUbo_;
 
   static PipelineColorBlendStateCreateInfo colorBlendStateFromPreset(BlendingPreset preset);
 };

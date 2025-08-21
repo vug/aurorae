@@ -28,7 +28,25 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
                                   },
                               .colorBlendState = colorBlendStateFromPreset(matDef.blendPreset)};
       return info;
-    }()} {}
+    }()} {
+  const std::map<asset::SetNo, std::map<asset::BindingNo, asset::ShaderResource>>& ubos =
+      assetHandle_->getGraphicsProgramHandle()->getCombinedSchema().uniformsBuffers;
+  constexpr u32 kMatParamSet = 0;
+  constexpr u32 kMatParamBinding = 0;
+  const auto itSet = ubos.find(kMatParamSet);
+  if (itSet == ubos.end())
+    return;
+  const auto& bindings = itSet->second;
+  const auto itBinding = bindings.find(kMatParamBinding);
+  if (itBinding == bindings.end())
+    return;
+  const asset::ShaderResource& matParamUboSchema = itBinding->second;
+
+  const BufferCreateInfo createInfo{.sizeBytes = matParamUboSchema.sizeBytes,
+                                    .usages = {BufferUsage::Uniform},
+                                    .memoryUsage = MemoryUsage::CpuToGpu};
+  matParamsUbo_ = renderer_->createBuffer(createInfo, "MatParam Uniform Buffer");
+}
 
 PipelineColorBlendStateCreateInfo Material::colorBlendStateFromPreset(BlendingPreset preset) {
   switch (preset) {
