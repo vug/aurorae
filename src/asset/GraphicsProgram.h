@@ -33,6 +33,7 @@ public:
   [[nodiscard]] const ShaderStageSchema& getVertexSchema() const { return vert_->getSchema(); }
   [[nodiscard]] const SpirV& getFragmentBlob() const { return frag_->getSpirVBlob(); }
   [[nodiscard]] const ShaderStageSchema& getFragmentSchema() const { return frag_->getSchema(); }
+  [[nodiscard]] const ShaderStageSchema& getCombinedSchema() const { return combinedSchema_; }
   [[nodiscard]] const std::string& getDebugName() const { return debugName_; }
 
 private:
@@ -41,6 +42,7 @@ private:
 
   Handle<ShaderStage> vert_;
   Handle<ShaderStage> frag_;
+  ShaderStageSchema combinedSchema_;
 };
 
 using GraphicsProgramUpdateCallback = std::function<void(Handle<asset::GraphicsProgram>)>;

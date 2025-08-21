@@ -150,7 +150,7 @@ struct ShaderBlockMember {
     // clang-format off
 #define COMPARE_MEMBER(member) if (const auto cmp = member <=> other.member; cmp != std::strong_ordering::equal) return cmp;
     COMPARE_MEMBER(typeInfo);
-    COMPARE_MEMBER(name);
+    // COMPARE_MEMBER(name);
     COMPARE_MEMBER(offset);
     COMPARE_MEMBER(sizeBytes);
     COMPARE_MEMBER(isArray);
@@ -192,7 +192,7 @@ struct ShaderInterfaceVariable {
     // clang-format off
 #define COMPARE_MEMBER(member) if (const auto cmp = member <=> other.member; cmp != std::strong_ordering::equal) return cmp;
     COMPARE_MEMBER(typeInfo);
-    COMPARE_MEMBER(name);
+    // COMPARE_MEMBER(name);
     COMPARE_MEMBER(location);
     COMPARE_MEMBER(isFlat);
     COMPARE_MEMBER(isArray);

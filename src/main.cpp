@@ -9,10 +9,8 @@ TODO(vug): asset::Material gives parameters to render::Material
 TODO(vug): render::Material creates descriptor set (See Gemini)...
 TODO(vug): Schema generation only works in Debug mode :-(
 .
-TODO(vug): GraphicsProgram compares the outputs of vert shader with the inputs of the frag shader
 TODO(vug): GraphicsProgram compares all (set, binding) pairs of every shader stage, and ensure that for
-           common pairs, resource type, resource name are the same. for buffers: sizes, member variables
-           are the same (name, offset, type etc)
+           common pairs resources match
 TODO(vug): bring integer matrices to ShaderReflection
 .
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
