@@ -54,6 +54,13 @@ void Mesh::drawSpan(u32 spanIx, const PushConstant& pc) const {
       .sizeBytes = sizeof(pc),
       .data = &pc,
   };
+  const BindDescriptorSetInfo matParamsBindDescriptorInfo{
+      .pipelineLayout = &pipeline->getPipelineLayout(),
+      .descriptorSet = &dSpan.material->getMatParamsDescriptorSet(),
+      .setNo = 1,
+      .stages = {ShaderStageType::Vertex, ShaderStageType::Fragment},
+  };
+  renderer_->bindDescriptorSet(matParamsBindDescriptorInfo);
   renderer_->drawIndexed(*pipeline, vertexBuffer_, indexBuffer_, &pcInfo);
 }
 } // namespace aur::render

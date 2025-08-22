@@ -230,12 +230,12 @@ void Renderer::createPerFrameDataResources() {
 
   // Now, link our buffer to the allocated descriptor set
   DescriptorBufferInfo bufferInfo{
-      .buffer = perFrameUniformBuffer_,
+      .buffer = &perFrameUniformBuffer_,
       .offset = 0,
       .range = sizeof(PerFrameData),
   };
   const WriteDescriptorSet write{
-      .dstSet = perFrameDescriptorSet_,
+      .dstSet = &perFrameDescriptorSet_,
       .binding = 0,
       .descriptorCnt = 1,
       .descriptorType = DescriptorType::UniformBuffer,

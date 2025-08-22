@@ -10,7 +10,7 @@ class DescriptorSet;
 class Buffer;
 
 struct DescriptorBufferInfo {
-  Buffer& buffer;
+  const Buffer* buffer{};
   u64 offset;
   u64 range;
 };
@@ -22,7 +22,7 @@ struct DescriptorBufferInfo {
 // } VkDescriptorImageInfo;
 
 struct WriteDescriptorSet {
-  DescriptorSet& dstSet;
+  const DescriptorSet* dstSet{};
   u32 binding{};
   u32 descriptorCnt{};
   DescriptorType descriptorType{};

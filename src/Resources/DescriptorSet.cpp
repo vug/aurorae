@@ -45,10 +45,10 @@ void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) const 
   for (const auto& write : writes) {
     const DescriptorBufferInfo& bufferInfo = *write.bufferInfo;
     vkBufferInfos.push_back(
-        {.buffer = bufferInfo.buffer.getHandle(), .offset = bufferInfo.offset, .range = bufferInfo.range});
+        {.buffer = bufferInfo.buffer->getHandle(), .offset = bufferInfo.offset, .range = bufferInfo.range});
     vkWrites.push_back({
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = write.dstSet.getHandle(),
+        .dstSet = write.dstSet->getHandle(),
         .dstBinding = write.binding,
         .descriptorCount = write.descriptorCnt,
         .descriptorType = static_cast<VkDescriptorType>(write.descriptorType),

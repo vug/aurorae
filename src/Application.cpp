@@ -156,7 +156,7 @@ void Application::run() {
       Handle<render::Mesh> rMeshHnd;
     };
 
-    const std::vector<Renderable> renderables = {
+    std::vector<Renderable> renderables = {
         {
             .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f)),
             .rMeshHnd = rDuckMesh,
@@ -165,6 +165,12 @@ void Application::run() {
             .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
             .rMeshHnd = rBoxMesh,
         }};
+    for (const render::DrawSpan& span : rDuckMesh->getDrawSpans()) {
+      i32 vizMode{2};
+      std::span<int> spn = std::span(&vizMode, 1);
+      std::span<const std::byte> bytes = std::as_bytes(spn);
+      span.material->setParam("vizMode", bytes);
+    }
     // Can I make renderable const?
     for (const auto& renderable : renderables)
       renderable.rMeshHnd->draw(renderable.worldFromObject, renderable.rMeshHnd.id);

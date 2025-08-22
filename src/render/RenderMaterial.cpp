@@ -1,5 +1,6 @@
 #include "Material.h"
 
+#include "../Logger.h"
 #include "../Pipeline.h"
 #include "../Renderer.h"
 
@@ -31,7 +32,7 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
     }()} {
   const std::map<asset::SetNo, std::map<asset::BindingNo, asset::ShaderResource>>& ubos =
       assetHandle_->getGraphicsProgramHandle()->getCombinedSchema().uniformsBuffers;
-  constexpr u32 kMatParamSet = 0;
+  constexpr u32 kMatParamSet = 1;
   constexpr u32 kMatParamBinding = 0;
   const auto itSet = ubos.find(kMatParamSet);
   if (itSet == ubos.end())
@@ -40,18 +41,57 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
   const auto itBinding = bindings.find(kMatParamBinding);
   if (itBinding == bindings.end())
     return;
-  const asset::ShaderResource& matParamUboSchema = itBinding->second;
+  matParamUboSchema_ = itBinding->second;
 
-  const BufferCreateInfo createInfo{.sizeBytes = matParamUboSchema.sizeBytes,
-                                    .usages = {BufferUsage::Uniform},
-                                    .memoryUsage = MemoryUsage::CpuToGpu};
-  matParamsUbo_ = renderer_->createBuffer(createInfo, "MatParam Uniform Buffer");
+  {
+    const BufferCreateInfo createInfo{.sizeBytes = matParamUboSchema_.sizeBytes,
+                                      .usages = {BufferUsage::Uniform},
+                                      .memoryUsage = MemoryUsage::CpuToGpu};
+    matParamsUbo_ = renderer_->createBuffer(createInfo, "MatParam Uniform Buffer");
+  }
+
+  {
+    const DescriptorSetCreateInfo createInfo{.layout =
+                                                 graphicsProgramHandle_->getDescriptorSetLayoutRefs()[1]};
+    matParamsDescriptorSet_ = renderer_->createDescriptorSet(createInfo, "MatParam DescriptorSet");
+  }
+}
+void Material::setParam(std::string_view name, std::span<const std::byte> data) const {
+  for (const asset::ShaderBlockMember& member : matParamUboSchema_.members) {
+    if (member.name == name) {
+      if (data.size_bytes() != member.sizeBytes)
+        log().fatal("incorrect size of data for material parameter '{}'", name);
+
+      std::byte* dst = (std::byte*)matParamsUbo_.map();
+      memcpy(dst + member.offset, data.data(), data.size_bytes());
+      matParamsUbo_.unmap();
+
+      // TODO(vug): iterate over members, create a map from param name to BufferInfo
+      DescriptorBufferInfo bufferInfo{
+          .buffer = &matParamsUbo_,
+          .offset = member.offset,
+          .range = member.sizeBytes,
+      };
+
+      const WriteDescriptorSet write{
+          .dstSet = &matParamsDescriptorSet_,
+          .binding = 0,
+          .descriptorCnt = 1,
+          .descriptorType = DescriptorType::UniformBuffer,
+          .bufferInfo = &bufferInfo,
+      };
+      matParamsDescriptorSet_.update({write});
+
+      return;
+    }
+  }
+  log().fatal("material parameter '{}' does not found", name);
 }
 
 PipelineColorBlendStateCreateInfo Material::colorBlendStateFromPreset(BlendingPreset preset) {
   switch (preset) {
   case BlendingPreset::NoBlend: {
-    PipelineColorBlendAttachmentState attachment{
+    const PipelineColorBlendAttachmentState attachment{
         .enable = false,
     };
     PipelineColorBlendStateCreateInfo info;
@@ -59,7 +99,7 @@ PipelineColorBlendStateCreateInfo Material::colorBlendStateFromPreset(BlendingPr
     return info;
   }
   case BlendingPreset::AlphaBlend: {
-    PipelineColorBlendAttachmentState attachment{
+    const PipelineColorBlendAttachmentState attachment{
         .enable = true,
         .srcColorFactor = BlendFactor::SrcAlpha,
         .dstColorFactor = BlendFactor::OneMinusSrcAlpha,
@@ -71,7 +111,7 @@ PipelineColorBlendStateCreateInfo Material::colorBlendStateFromPreset(BlendingPr
     return info;
   }
   case BlendingPreset::Additive: {
-    PipelineColorBlendAttachmentState attachment{
+    const PipelineColorBlendAttachmentState attachment{
         .enable = true,
         .srcColorFactor = BlendFactor::One,
         .dstColorFactor = BlendFactor::One,

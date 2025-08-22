@@ -1,6 +1,6 @@
 /*
-TODO(vug): getItResourceSchema (?) or hashable SetBinding struct
-TODO(vug): manually create a DescriptorSet for vizMode and bind it from Application (see in RenderDoc)
+TODO(vug): DescriptorSet::update -> to static or something. it does not use "this"
+TODO(vug): getItResourceSchema
 TODO(vug): See how arrays work for ShaderValue https://gemini.google.com/app/89f21c98b1f8813a
 TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
            arrays are expanded, substructs are flattened...
