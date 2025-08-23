@@ -19,7 +19,7 @@ class Material {
 public:
   Material() = default;
   Material(Renderer& renderer, Handle<asset::Material> asset);
-  ~Material() = default;
+  ~Material();
 
   Material(const Material& other) = delete;
   Material(Material&& other) noexcept = default;
@@ -49,6 +49,7 @@ private:
   const Pipeline* pipeline_{};
   asset::ShaderResource matParamUboSchema_;
   Buffer matParamsUbo_;
+  std::byte* matParamsUboData_{};
   DescriptorSet matParamsDescriptorSet_;
 
   static PipelineColorBlendStateCreateInfo colorBlendStateFromPreset(BlendingPreset preset);

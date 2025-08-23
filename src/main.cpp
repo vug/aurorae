@@ -1,13 +1,15 @@
 /*
-TODO(vug): DescriptorSet::update -> to static or something. it does not use "this"
+TODO(vug): DescriptorSet::updateResource(s) -> to static or something. it does not use "this"
 TODO(vug): getItResourceSchema
+TODO(vug): Do buffer uploads (full or partial) when changing material "constant" parameters (uniform
+           buffers...)
+TODO(vug): bind DescriptorSets only when necessary -> if material has not changed, don't bind its material
+           params desc set again. (consider this with other frequencies too)
 TODO(vug): See how arrays work for ShaderValue https://gemini.google.com/app/89f21c98b1f8813a
 TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
            arrays are expanded, substructs are flattened...
 TODO(vug): asset::Material takes the schemas and compare them with its parameters.
            (give ignored parameters default values)
-TODO(vug): asset::Material gives parameters to render::Material
-TODO(vug): render::Material creates descriptor set (See Gemini)...
 TODO(vug): Schema generation only works in Debug mode :-(
 .
 TODO(vug): GraphicsProgram compares all (set, binding) pairs of every shader stage, and ensure that for
@@ -19,6 +21,7 @@ TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): move distant light to scene
 TODO(vug): Introduce more resource abstractions (Image, ImageView, Sampler... Concrete Buffer types?)
 TODO(vug): asset::Texture, render::Texture
+TODO(vug): Do descriptor set update/write when swapping textures
 TODO(vug): bring a Khronos sample asset with textures
 TODO(vug): bring a texture (stb or oiio)
 TODO(vug): Material processing: 1) infer: "material[{}]{}", m->mMaterialIndex,
@@ -72,6 +75,7 @@ TODO(vug): Material Editor, Asset Viewer
 TODO(vug): normal maps
 TODO(vug): Indirect rendering (various brush shapes for painterly render), 2D/3D gaussian splats,
            order independent transparency, differential rendering, bring Mitsuba, PBRT etc
+TODO(vug): Bindless rendering
 TODO(vug): do screen-space GI Global Illumination for Poor People | TurboGI Devlog - YouTube
            https://www.youtube.com/watch?v=dmdyqzelBIY
 TODO(vug): Consider using https://en.cppreference.com/w/cpp/execution.html,

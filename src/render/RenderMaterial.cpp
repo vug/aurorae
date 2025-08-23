@@ -48,40 +48,43 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
                                       .usages = {BufferUsage::Uniform},
                                       .memoryUsage = MemoryUsage::CpuToGpu};
     matParamsUbo_ = renderer_->createBuffer(createInfo, "MatParam Uniform Buffer");
+    matParamsUboData_ = static_cast<std::byte*>(matParamsUbo_.map());
   }
 
   {
     const DescriptorSetCreateInfo createInfo{.layout =
                                                  graphicsProgramHandle_->getDescriptorSetLayoutRefs()[1]};
     matParamsDescriptorSet_ = renderer_->createDescriptorSet(createInfo, "MatParam DescriptorSet");
+
+    // TODO(vug): iterate over members, create a map from param name to BufferInfo
+    DescriptorBufferInfo bufferInfo{
+        .buffer = &matParamsUbo_,
+        .offset = 0,
+        .range = matParamsUbo_.getCreateInfo().sizeBytes,
+    };
+
+    const WriteDescriptorSet write{
+        .dstSet = &matParamsDescriptorSet_,
+        .binding = kMatParamBinding,
+        .descriptorCnt = 1,
+        .descriptorType = DescriptorType::UniformBuffer,
+        .bufferInfo = &bufferInfo,
+    };
+    matParamsDescriptorSet_.update({write});
   }
 }
+Material::~Material() {
+  matParamsUbo_.unmap();
+}
+
 void Material::setParam(std::string_view name, std::span<const std::byte> data) const {
   for (const asset::ShaderBlockMember& member : matParamUboSchema_.members) {
     if (member.name == name) {
+      // TODO(vug): introduce more & better checks
       if (data.size_bytes() != member.sizeBytes)
         log().fatal("incorrect size of data for material parameter '{}'", name);
 
-      std::byte* dst = (std::byte*)matParamsUbo_.map();
-      memcpy(dst + member.offset, data.data(), data.size_bytes());
-      matParamsUbo_.unmap();
-
-      // TODO(vug): iterate over members, create a map from param name to BufferInfo
-      DescriptorBufferInfo bufferInfo{
-          .buffer = &matParamsUbo_,
-          .offset = member.offset,
-          .range = member.sizeBytes,
-      };
-
-      const WriteDescriptorSet write{
-          .dstSet = &matParamsDescriptorSet_,
-          .binding = 0,
-          .descriptorCnt = 1,
-          .descriptorType = DescriptorType::UniformBuffer,
-          .bufferInfo = &bufferInfo,
-      };
-      matParamsDescriptorSet_.update({write});
-
+      memcpy(matParamsUboData_ + member.offset, data.data(), data.size_bytes());
       return;
     }
   }
