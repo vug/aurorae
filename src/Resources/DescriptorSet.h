@@ -22,7 +22,6 @@ struct DescriptorBufferInfo {
 // } VkDescriptorImageInfo;
 
 struct WriteDescriptorSet {
-  const DescriptorSet* dstSet{};
   u32 binding{};
   u32 descriptorCnt{};
   DescriptorType descriptorType{};

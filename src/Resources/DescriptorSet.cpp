@@ -37,9 +37,6 @@ void DescriptorSet::destroyImpl() const {
 }
 
 void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) const {
-  // A temporary vector to ensure `dstSet` points to *this* descriptor set.
-  // It's a common pattern to ensure the caller doesn't accidentally
-  // provide writes for a different set.
   std::vector<VkDescriptorBufferInfo> vkBufferInfos;
   std::vector<VkWriteDescriptorSet> vkWrites;
   for (const auto& write : writes) {
@@ -48,7 +45,7 @@ void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) const 
         {.buffer = bufferInfo.buffer->getHandle(), .offset = bufferInfo.offset, .range = bufferInfo.range});
     vkWrites.push_back({
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = write.dstSet->getHandle(),
+        .dstSet = getHandle(),
         .dstBinding = write.binding,
         .descriptorCount = write.descriptorCnt,
         .descriptorType = static_cast<VkDescriptorType>(write.descriptorType),

@@ -62,7 +62,6 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
     };
 
     const WriteDescriptorSet write{
-        .dstSet = &matParamsDescriptorSet_,
         .binding = kUniformParamsBinding,
         .descriptorCnt = 1,
         .descriptorType = DescriptorType::UniformBuffer,

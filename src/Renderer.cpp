@@ -235,7 +235,6 @@ void Renderer::createPerFrameDataResources() {
       .range = sizeof(PerFrameData),
   };
   const WriteDescriptorSet write{
-      .dstSet = &perFrameDescriptorSet_,
       .binding = 0,
       .descriptorCnt = 1,
       .descriptorType = DescriptorType::UniformBuffer,
@@ -291,8 +290,8 @@ bool Renderer::beginFrame() {
 
   // TODO(vug): introduce a scopedMap -> when it goes out of scope, it unmaps automatically.
   {
-    std::byte* data = perFrameUniformBuffer_.map();
-    memcpy(data, &perFrameData, sizeof(perFrameData));
+    perFrameUniformBuffer_.map();
+    memcpy(perFrameUniformBuffer_.getMapPtr(), &perFrameData, sizeof(perFrameData));
     perFrameUniformBuffer_.unmap();
   }
 
