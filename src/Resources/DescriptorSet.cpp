@@ -45,8 +45,7 @@ void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) const 
                   binding.index, write.binding);
     if (binding.type != write.descriptorType)
       log().fatal("Binding type {} does not match write descriptor type {} in DescriptorSet::update().",
-                  glz::write<glz::opts{.raw = true}>(binding.type).value_or("ERROR"),
-                  glz::write<glz::opts{.raw = true}>(write.binding).value_or("ERROR"));
+                  glzToString(binding.type), glzToString(write.binding));
   }
 
   std::vector<VkDescriptorBufferInfo> vkBufferInfos;

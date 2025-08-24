@@ -219,7 +219,7 @@ constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableType mnemonic
 
 std::string ShaderVariableTypeInfo::toString() const {
   const std::string signPrefix = (signedness == ShaderVariableTypeInfo::Signedness::Unsigned) ? "u" : "";
-  const std::string typeName = glz::write<glz::opts{.raw = true}>(baseType).value_or("ERROR") | toLowerCase;
+  const std::string typeName = glzToString(baseType) | toLowerCase;
   const u8 bitCount = componentBytes * 8;
   const std::string matrixSuffix = columnCnt > 1 ? std::format("x{}", columnCnt) : "";
   return std::format("{}{}{}_t{}{}", signPrefix, typeName, bitCount, vectorSize, matrixSuffix);

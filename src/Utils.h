@@ -59,7 +59,12 @@ const char* vkResultToString(i32 result);
     }                                                                                                        \
   } while (0)
 
-inline auto toLowerCase =
+constexpr inline auto toLowerCase =
     std::views::transform([](char c) { return std::tolower(c); }) | std::ranges::to<std::string>();
+
+template <typename T>
+constexpr std::string glzToString(T obj) {
+  return glz::write<glz::opts{.raw = true}>(obj).value_or("GLZ-WRITE-ERROR");
+}
 
 } // namespace aur
