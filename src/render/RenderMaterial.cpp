@@ -40,7 +40,10 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
 
   const auto& bindings = itSet->second;
   const auto itBinding = bindings.find(kUniformParamsBinding);
-  if (const bool hasUniformParams = itBinding != bindings.end(); hasUniformParams) {
+  if (const bool hasUniformParams = itBinding != bindings.end(); !hasUniformParams)
+    return;
+
+  {
     matParamUboSchema_ = itBinding->second;
     const BufferCreateInfo createInfo{.sizeBytes = matParamUboSchema_.sizeBytes,
                                       .usages = {BufferUsage::Uniform},
@@ -49,11 +52,16 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
     matUniformsUbo_.map();
   }
 
+  // Will create other resources here
+
   {
     const DescriptorSetCreateInfo createInfo{.layout =
                                                  graphicsProgramHandle_->getDescriptorSetLayoutRefs()[1]};
     matParamsDescriptorSet_ = renderer_->createDescriptorSet(createInfo, "MatParams DescriptorSet");
+  }
 
+  // Set / Update all created resources to this descriptor set
+  {
     // TODO(vug): iterate over members, create a map from param name to BufferInfo
     DescriptorBufferInfo bufferInfo{
         .buffer = &matUniformsUbo_,

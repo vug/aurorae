@@ -1,10 +1,9 @@
 /*
-TODO(vug): DescriptorSet::updateResource(s) -> to static or something. it does not use "this"
-TODO(vug): getItResourceSchema
-TODO(vug): Do buffer uploads (full or partial) when changing material "constant" parameters (uniform
-           buffers...)
-TODO(vug): bind DescriptorSets only when necessary -> if material has not changed, don't bind its material
-           params desc set again. (consider this with other frequencies too)
+TODO(vug): Utility function: glz::write<glz::opts{.raw = true}>(binding.type).value_or("ERROR")
+TODO(vug): think more about Material::setParam: rename to setUniform.
+           Always full upload, or allow partial uploads? (probably latter)
+           Only set root variables, or more complex expression to set any subtree.
+           labelling mechanism for subtrees / children: myUniform.third.seventh[2].first etc
 TODO(vug): See how arrays work for ShaderValue https://gemini.google.com/app/89f21c98b1f8813a
 TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
            arrays are expanded, substructs are flattened...
@@ -35,6 +34,9 @@ TODO(vug): CommandBuffer abstraction: takes "oneShot" bool parameter. Has `begin
 TODO(vug): generate layouts from shader reflection
 TODO(vug): basic geometry assets: quad
 TODO(vug): headless vulkan for image based testing.
+TODO(vug): bind DescriptorSets only when necessary -> if material has not changed, don't bind its material
+           params desc set again. (consider this with other frequencies too) (sort objects by shader id,
+material id)
 .
 TODO(vug): processOnlyNeedingAssets
 TODO(vug): bring Open Image IO (does not have to support all formats/backends. One HDR, one lossless, and one

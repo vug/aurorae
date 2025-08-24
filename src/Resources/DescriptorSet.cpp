@@ -37,6 +37,18 @@ void DescriptorSet::destroyImpl() const {
 }
 
 void DescriptorSet::update(const std::vector<WriteDescriptorSet>& writes) const {
+  const std::vector<DescriptorSetLayoutBinding>& setLayoutBindings =
+      getCreateInfo().layout->getCreateInfo().bindings;
+  for (const auto& [binding, write] : std::ranges::views::zip(setLayoutBindings, writes)) {
+    if (binding.index != write.binding)
+      log().fatal("Binding index {} does not match write binding no {} in DescriptorSet::update().",
+                  binding.index, write.binding);
+    if (binding.type != write.descriptorType)
+      log().fatal("Binding type {} does not match write descriptor type {} in DescriptorSet::update().",
+                  glz::write<glz::opts{.raw = true}>(binding.type).value_or("ERROR"),
+                  glz::write<glz::opts{.raw = true}>(write.binding).value_or("ERROR"));
+  }
+
   std::vector<VkDescriptorBufferInfo> vkBufferInfos;
   std::vector<VkWriteDescriptorSet> vkWrites;
   for (const auto& write : writes) {
