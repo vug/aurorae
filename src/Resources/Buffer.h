@@ -25,7 +25,7 @@ public:
   Buffer(Buffer&& other) noexcept;
   Buffer& operator=(Buffer&& other) noexcept;
 
-  [[nodiscard]] std::byte* map() const;
+  void map();
   [[nodiscard]] std::byte* getMapPtr() const;
   void unmap() const;
 

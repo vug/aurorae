@@ -46,7 +46,7 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
                                       .usages = {BufferUsage::Uniform},
                                       .memoryUsage = MemoryUsage::CpuToGpu};
     matUniformsUbo_ = renderer_->createBuffer(createInfo, "Material Uniforms Buffer");
-    std::ignore = matUniformsUbo_.map();
+    matUniformsUbo_.map();
   }
 
   {

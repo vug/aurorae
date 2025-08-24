@@ -56,10 +56,10 @@ void Buffer::destroyImpl() {
   }
 }
 
-std::byte* Buffer::map() const {
+void Buffer::map() {
   void* mappedMemory = nullptr;
   VK(vmaMapMemory(std::get<VmaAllocator>(context_), allocation_, &mappedMemory));
-  return static_cast<std::byte*>(mappedMemory);
+  mapPtr_ = static_cast<std::byte*>(mappedMemory);
 }
 
 std::byte* Buffer::getMapPtr() const {

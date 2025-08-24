@@ -152,8 +152,8 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
       },
       std::string{debugName} + " Staging");
 
-  std::byte* mappedData = stagingBuffer.map();
-  memcpy(mappedData, data, size);
+  stagingBuffer.map();
+  memcpy(stagingBuffer.getMapPtr(), data, size);
   stagingBuffer.unmap();
 
   // Create the device-local buffer (optimal for GPU access)
