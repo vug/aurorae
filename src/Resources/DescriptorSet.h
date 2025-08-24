@@ -11,8 +11,8 @@ class Buffer;
 
 struct DescriptorBufferInfo {
   const Buffer* buffer{};
-  u64 offset;
-  u64 range;
+  u64 offset{};
+  u64 range{};
 };
 
 // typedef struct VkDescriptorImageInfo {

@@ -33,39 +33,37 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
   const std::map<asset::SetNo, std::map<asset::BindingNo, asset::ShaderResource>>& ubos =
       assetHandle_->getGraphicsProgramHandle()->getCombinedSchema().uniformsBuffers;
   constexpr u32 kMatParamSet = 1;
-  constexpr u32 kMatParamBinding = 0;
   const auto itSet = ubos.find(kMatParamSet);
   if (itSet == ubos.end())
+    // This material has no parameters
     return;
-  const auto& bindings = itSet->second;
-  const auto itBinding = bindings.find(kMatParamBinding);
-  if (itBinding == bindings.end())
-    return;
-  matParamUboSchema_ = itBinding->second;
 
-  {
+  const auto& bindings = itSet->second;
+  const auto itBinding = bindings.find(kUniformParamsBinding);
+  if (const bool hasUniformParams = itBinding != bindings.end(); hasUniformParams) {
+    matParamUboSchema_ = itBinding->second;
     const BufferCreateInfo createInfo{.sizeBytes = matParamUboSchema_.sizeBytes,
                                       .usages = {BufferUsage::Uniform},
                                       .memoryUsage = MemoryUsage::CpuToGpu};
-    matParamsUbo_ = renderer_->createBuffer(createInfo, "MatParam Uniform Buffer");
-    matParamsUboData_ = static_cast<std::byte*>(matParamsUbo_.map());
+    matUniformsUbo_ = renderer_->createBuffer(createInfo, "Material Uniforms Buffer");
+    std::ignore = matUniformsUbo_.map();
   }
 
   {
     const DescriptorSetCreateInfo createInfo{.layout =
                                                  graphicsProgramHandle_->getDescriptorSetLayoutRefs()[1]};
-    matParamsDescriptorSet_ = renderer_->createDescriptorSet(createInfo, "MatParam DescriptorSet");
+    matParamsDescriptorSet_ = renderer_->createDescriptorSet(createInfo, "MatParams DescriptorSet");
 
     // TODO(vug): iterate over members, create a map from param name to BufferInfo
     DescriptorBufferInfo bufferInfo{
-        .buffer = &matParamsUbo_,
+        .buffer = &matUniformsUbo_,
         .offset = 0,
-        .range = matParamsUbo_.getCreateInfo().sizeBytes,
+        .range = matUniformsUbo_.getCreateInfo().sizeBytes,
     };
 
     const WriteDescriptorSet write{
         .dstSet = &matParamsDescriptorSet_,
-        .binding = kMatParamBinding,
+        .binding = kUniformParamsBinding,
         .descriptorCnt = 1,
         .descriptorType = DescriptorType::UniformBuffer,
         .bufferInfo = &bufferInfo,
@@ -73,8 +71,9 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
     matParamsDescriptorSet_.update({write});
   }
 }
+
 Material::~Material() {
-  matParamsUbo_.unmap();
+  matUniformsUbo_.unmap();
 }
 
 void Material::setParam(std::string_view name, std::span<const std::byte> data) const {
@@ -84,7 +83,7 @@ void Material::setParam(std::string_view name, std::span<const std::byte> data) 
       if (data.size_bytes() != member.sizeBytes)
         log().fatal("incorrect size of data for material parameter '{}'", name);
 
-      memcpy(matParamsUboData_ + member.offset, data.data(), data.size_bytes());
+      memcpy(matUniformsUbo_.getMapPtr() + member.offset, data.data(), data.size_bytes());
       return;
     }
   }

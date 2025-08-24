@@ -41,6 +41,8 @@ public:
     return matParamsDescriptorSet_;
   }
 
+  static constexpr u32 kUniformParamsBinding = 0;
+
 private:
   Renderer* renderer_{};
   Handle<asset::Material> assetHandle_;
@@ -48,8 +50,7 @@ private:
   PipelineCreateInfo pipelineCreateInfo_;
   const Pipeline* pipeline_{};
   asset::ShaderResource matParamUboSchema_;
-  Buffer matParamsUbo_;
-  std::byte* matParamsUboData_{};
+  Buffer matUniformsUbo_;
   DescriptorSet matParamsDescriptorSet_;
 
   static PipelineColorBlendStateCreateInfo colorBlendStateFromPreset(BlendingPreset preset);
