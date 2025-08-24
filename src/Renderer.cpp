@@ -152,7 +152,7 @@ Buffer Renderer::createBufferAndUploadData(const void* data, size_t size, Buffer
       },
       std::string{debugName} + " Staging");
 
-  void* mappedData = stagingBuffer.map();
+  std::byte* mappedData = stagingBuffer.map();
   memcpy(mappedData, data, size);
   stagingBuffer.unmap();
 
@@ -291,7 +291,7 @@ bool Renderer::beginFrame() {
 
   // TODO(vug): introduce a scopedMap -> when it goes out of scope, it unmaps automatically.
   {
-    void* data = perFrameUniformBuffer_.map();
+    std::byte* data = perFrameUniformBuffer_.map();
     memcpy(data, &perFrameData, sizeof(perFrameData));
     perFrameUniformBuffer_.unmap();
   }

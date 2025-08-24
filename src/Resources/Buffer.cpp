@@ -56,10 +56,16 @@ void Buffer::destroyImpl() {
   }
 }
 
-void* Buffer::map() const {
+std::byte* Buffer::map() const {
   void* mappedMemory = nullptr;
   VK(vmaMapMemory(std::get<VmaAllocator>(context_), allocation_, &mappedMemory));
-  return mappedMemory;
+  return static_cast<std::byte*>(mappedMemory);
+}
+
+std::byte* Buffer::getMapPtr() const {
+  if (!mapPtr_)
+    log().fatal("Buffer::mapPtr() called before map()!");
+  return mapPtr_;
 }
 
 void Buffer::unmap() const {

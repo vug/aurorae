@@ -25,7 +25,8 @@ public:
   Buffer(Buffer&& other) noexcept;
   Buffer& operator=(Buffer&& other) noexcept;
 
-  [[nodiscard]] void* map() const;
+  [[nodiscard]] std::byte* map() const;
+  [[nodiscard]] std::byte* getMapPtr() const;
   void unmap() const;
 
 private:
@@ -38,6 +39,7 @@ private:
   void destroyImpl();
 
   VmaAllocation allocation_;
+  std::byte* mapPtr_{};
 };
 
 } // namespace aur
