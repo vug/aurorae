@@ -127,6 +127,7 @@ struct CommonMemberProps {
   std::string name;
   bool isArray{};
   u32 arraySize{};
+  u32 arrayStride{};
 };
 
 // A unified structure for all resource block variables
@@ -139,6 +140,7 @@ struct ShaderBlockMember {
 
   bool isArray{};
   u32 arraySize{};
+  u32 arrayStride{};
 
   // Struct properties
   std::vector<ShaderBlockMember> members;
@@ -155,6 +157,7 @@ struct ShaderBlockMember {
     COMPARE_MEMBER(sizeBytes);
     COMPARE_MEMBER(isArray);
     COMPARE_MEMBER(arraySize);
+    COMPARE_MEMBER(arrayStride);
 #undef COMPARE_MEMBER
     if (const auto cmp = members.size() <=> other.members.size(); cmp != 0) return cmp;
     for (size_t i = 0; i < members.size(); ++i)
@@ -177,6 +180,7 @@ struct ShaderInterfaceVariable {
 
   bool isArray{};
   u32 arraySize{};
+  u32 arrayStride{};
 
   // Struct properties (the recursive part)
   std::vector<ShaderInterfaceVariable> members;
@@ -197,6 +201,7 @@ struct ShaderInterfaceVariable {
     COMPARE_MEMBER(isFlat);
     COMPARE_MEMBER(isArray);
     COMPARE_MEMBER(arraySize);
+    COMPARE_MEMBER(arrayStride);
 #undef COMPARE_MEMBER
     if (const auto cmp = members.size() <=> other.members.size(); cmp != 0) return cmp;
     for (size_t i = 0; i < members.size(); ++i)

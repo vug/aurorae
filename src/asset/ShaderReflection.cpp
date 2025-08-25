@@ -268,6 +268,9 @@ CommonMemberProps getCommonMemberProps(const spirv_cross::Compiler& reflector,
   const bool isArray = !memberType.array.empty();
   // The "base type" for an array is the type of its elements. For non-arrays, it's just the member_type.
   const auto& memberBaseType = isArray ? reflector.get_type(memberType.parent_type) : memberType;
+  const u32 arrayStride =
+      isArray ? reflector.get_member_decoration(parentStructType.self, memberIx, spv::DecorationArrayStride)
+              : 0;
 
   return {
       .memberTypeId = memberTypeId,
@@ -278,14 +281,18 @@ CommonMemberProps getCommonMemberProps(const spirv_cross::Compiler& reflector,
       .isArray = isArray,
       // We only support one-dimensional arrays at the moment, i.e., don't use array[1+]
       .arraySize = isArray ? memberType.array[0] : 0,
+      .arrayStride = arrayStride,
   };
 }
 
 ShaderBlockMember parseStructMember(const spirv_cross::Compiler& reflector,
                                     const spirv_cross::SPIRType& parentStructType, const u32 memberIx) {
   const CommonMemberProps props = getCommonMemberProps(reflector, parentStructType, memberIx);
-  ShaderBlockMember member{
-      .typeInfo{props.typeInfo}, .name{props.name}, .isArray = props.isArray, .arraySize = props.arraySize};
+  ShaderBlockMember member{.typeInfo{props.typeInfo},
+                           .name{props.name},
+                           .isArray = props.isArray,
+                           .arraySize = props.arraySize,
+                           .arrayStride = props.arrayStride};
 
   if (member.typeInfo.baseType == ShaderVariableTypeInfo::BaseType::Struct)
     for (u32 subMemberIx = 0; subMemberIx < props.memberType.member_types.size(); ++subMemberIx)
@@ -323,8 +330,11 @@ std::map<SetNo, std::map<BindingNo, ShaderResource>> reflectUniformBuffers(const
 ShaderInterfaceVariable parseIoBlockMember(const spirv_cross::Compiler& reflector,
                                            const spirv_cross::SPIRType& parentStructType, u32 memberIx) {
   const CommonMemberProps props = getCommonMemberProps(reflector, parentStructType, memberIx);
-  ShaderInterfaceVariable var{
-      .typeInfo{props.typeInfo}, .name{props.name}, .isArray = props.isArray, .arraySize = props.arraySize};
+  ShaderInterfaceVariable var{.typeInfo{props.typeInfo},
+                              .name{props.name},
+                              .isArray = props.isArray,
+                              .arraySize = props.arraySize,
+                              .arrayStride = props.arrayStride};
 
   if (var.typeInfo.baseType == ShaderVariableTypeInfo::BaseType::Struct)
     for (uint32_t i = 0; i < props.memberBaseType.member_types.size(); ++i)
