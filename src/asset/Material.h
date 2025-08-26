@@ -5,6 +5,44 @@
 #include "AssetTraits.h"
 
 namespace aur {
+// All possible leaf types
+using ShaderValue = std::variant<i32, u32, f32, glm::vec2, glm::vec3, glm::vec4, glm::mat3, glm::mat4>;
+} // namespace aur
+namespace glz {
+template <>
+struct meta<glm::vec2> {
+  using T = glm::vec2;
+  static constexpr auto value = glz::array(&T::x, &T::y);
+};
+template <>
+struct meta<glm::vec3> {
+  static constexpr auto value = glz::array(3);
+};
+template <>
+struct meta<glm::vec4> {
+  static constexpr auto value = glz::array(4);
+};
+template <>
+struct meta<glm::mat3> {
+  static constexpr auto value = glz::array(9);
+};
+template <>
+struct meta<glm::mat4> {
+  // x1, x2, y1, y2...
+  static constexpr auto value = glz::array(16);
+};
+
+template <>
+struct meta<aur::ShaderValue> {
+  static constexpr std::string_view tag = "shaderType"; // The JSON field to use as a tag
+  static constexpr auto ids =
+      std::array{"int",  "uint", "float", "vec2",
+                 "vec3", "vec4", "mat3",  "mat4"}; // The IDs corresponding to the variant types
+};
+
+} // namespace glz
+
+namespace aur {
 enum class BlendingPreset {
   NoBlend,    // Opaque
   AlphaBlend, // Transparent
@@ -17,7 +55,7 @@ enum class BlendingPreset {
   // Invert,
   // And, // Mask
 };
-}
+} // namespace aur
 template <>
 struct glz::meta<aur::BlendingPreset> {
   using enum aur::BlendingPreset;
@@ -25,7 +63,6 @@ struct glz::meta<aur::BlendingPreset> {
 };
 
 namespace aur::asset {
-
 class GraphicsProgram;
 struct Pipeline;
 
@@ -42,6 +79,9 @@ struct MaterialDefinition {
   FrontFace frontFace{FrontFace::CounterClockwise};
   f32 lineWidth{1.0f};
   BlendingPreset blendPreset{BlendingPreset::NoBlend};
+  ShaderValue testShaderValue;
+  glm::mat3 foo{1, 2, 3, 4, 5, 6, 7, 8, 9};
+  glm::mat4 bar{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored

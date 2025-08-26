@@ -3,6 +3,9 @@
       "object"
    ],
    "properties": {
+      "bar": {
+         "$ref": "#/$defs/glm::mat<4,4,float,0>"
+      },
       "blendPreset": {
          "$ref": "#/$defs/aur::BlendingPreset"
       },
@@ -15,6 +18,9 @@
       "depthWrite": {
          "$ref": "#/$defs/bool"
       },
+      "foo": {
+         "$ref": "#/$defs/glm::mat<3,3,float,0>"
+      },
       "frontFace": {
          "$ref": "#/$defs/aur::FrontFace"
       },
@@ -26,6 +32,9 @@
       },
       "polygonMode": {
          "$ref": "#/$defs/aur::PolygonMode"
+      },
+      "testShaderValue": {
+         "$ref": "#/$defs/std::variant<int,unsigned int,float,struct glm::vec<2,float,0>,struct glm::vec<3,float,0>,struct glm::vec<4,float,0>,struct glm::mat<3,3,float,0>,struct glm::mat<4,4,float,0> >"
       },
       "version": {
          "$ref": "#/$defs/uint32_t"
@@ -130,6 +139,78 @@
          ],
          "minimum": -3.4028234663852886E38,
          "maximum": 3.4028234663852886E38
+      },
+      "glm::mat<3,3,float,0>": {
+         "type": [
+            "array"
+         ]
+      },
+      "glm::mat<4,4,float,0>": {
+         "type": [
+            "array"
+         ]
+      },
+      "std::variant<int,unsigned int,float,struct glm::vec<2,float,0>,struct glm::vec<3,float,0>,struct glm::vec<4,float,0>,struct glm::mat<3,3,float,0>,struct glm::mat<4,4,float,0> >": {
+         "type": [
+            "number",
+            "array"
+         ],
+         "oneOf": [
+            {
+               "type": [
+                  "integer"
+               ],
+               "title": "int",
+               "minimum": -2147483648,
+               "maximum": 2147483647
+            },
+            {
+               "type": [
+                  "integer"
+               ],
+               "title": "uint",
+               "minimum": 0,
+               "maximum": 4294967295
+            },
+            {
+               "type": [
+                  "number"
+               ],
+               "title": "float",
+               "minimum": -3.4028234663852886E38,
+               "maximum": 3.4028234663852886E38
+            },
+            {
+               "type": [
+                  "array"
+               ],
+               "title": "vec2"
+            },
+            {
+               "type": [
+                  "array"
+               ],
+               "title": "vec3"
+            },
+            {
+               "type": [
+                  "array"
+               ],
+               "title": "vec4"
+            },
+            {
+               "type": [
+                  "array"
+               ],
+               "title": "mat3"
+            },
+            {
+               "type": [
+                  "array"
+               ],
+               "title": "mat4"
+            }
+         ]
       },
       "uint32_t": {
          "type": [
