@@ -81,6 +81,20 @@ void Application::run() {
     assetRegistry_.load();
   }
 
+  asset::MaterialDefinition myMatDef;
+  AssetRef aRef{StableId<asset::GraphicsProgram>("abidin")};
+  aRef.setRegistry(&assetRegistry_);
+  myMatDef.graphicsProgram = aRef;
+  MaterialUniformValue color;
+  color.val = glm::vec4{42, 43, 44, 45};
+  myMatDef.values.emplace("color", color);
+  MaterialUniformValue coeffs1;
+  coeffs1.val = glm::vec3{2., 3., 4.};
+  MaterialUniformValue coeffs2;
+  coeffs2.val = glm::vec3{5., 6., 7.};
+  myMatDef.values.emplace("coeffs", std::vector{coeffs1, coeffs2});
+  const std::string jsonStr = glz::write_json(myMatDef).value_or("GLZ-SERIALIZATION-ERROR");
+  log().info(jsonStr);
   // Export schemas
   if (const auto schema = glz::write_json_schema<asset::GraphicsProgramDefinition>(); schema.has_value())
     writeBinaryFile(kAssetsFolder / "shaders/graphics_program.schema.json",
