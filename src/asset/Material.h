@@ -27,17 +27,79 @@ template <>
 struct meta<glm::vec4> {
   using T = glm::vec4;
   static constexpr auto value = object(&T::x, &T::y, &T::z, &T::w);
-  // static constexpr auto value = glz::array(&T::x, &T::y, &T::z, &T::w);
+};
+
+template <uint32_t Format, auto Opts>
+static void mat3serialize(const glm::mat3& mat, auto&&... args) noexcept {
+  std::map<std::string, glm::vec3> values{
+      {"col0", mat[0]},
+      {"col1", mat[1]},
+      {"col2", mat[2]},
+  };
+  serialize<Format>::template op<Opts>(values, args...);
+}
+template <uint32_t Format, auto Opts>
+static void mat3parse(glm::mat3& mat, auto&&... args) {
+  std::map<std::string, glm::vec3> values;
+  parse<Format>::template op<Opts>(values, args...);
+
+  mat = glm::mat3(values["col0"], values["col1"], values["col2"]);
+}
+template <>
+struct to<JSON, glm::mat3> {
+  template <auto Opts>
+  static void op(const glm::mat3& mat, auto&&... args) noexcept {
+    mat3serialize<JSON, Opts>(mat, args...);
+  };
 };
 template <>
-struct meta<glm::mat3> {
-  using T = glm::mat3;
-  static constexpr auto value = array(1, 2, 3, 4, 5, 6, 7, 8, 9);
+struct from<JSON, glm::mat3> {
+  template <auto Opts>
+  static void op(glm::mat3& mat, auto&&... args) {
+    mat3parse<JSON, Opts>(mat, args...);
+  }
+};
+// template <>
+// struct meta<glm::mat3> {
+//   using T = glm::mat3;
+//   static constexpr auto value = array(1, 2, 3, 4, 5, 6, 7, 8, 9);
+// };
+
+template <uint32_t Format, auto Opts>
+static void mat4serialize(const glm::mat4& mat, auto&&... args) noexcept {
+  std::map<std::string, glm::vec4> values{
+      {"col0", mat[0]},
+      {"col1", mat[1]},
+      {"col2", mat[2]},
+      {"col3", mat[3]},
+  };
+  serialize<Format>::template op<Opts>(values, args...);
+}
+template <uint32_t Format, auto Opts>
+static void mat4parse(glm::mat4& mat, auto&&... args) {
+  std::map<std::string, glm::vec4> values;
+  parse<Format>::template op<Opts>(values, args...);
+
+  mat = glm::mat4(values["col0"], values["col1"], values["col2"], values["col3"]);
+}
+template <>
+struct to<JSON, glm::mat4> {
+  template <auto Opts>
+  static void op(const glm::mat4& mat, auto&&... args) noexcept {
+    mat4serialize<JSON, Opts>(mat, args...);
+  };
 };
 template <>
-struct meta<glm::mat4> {
-  static constexpr auto value = glz::array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+struct from<JSON, glm::mat4> {
+  template <auto Opts>
+  static void op(glm::mat4& mat, auto&&... args) {
+    mat4parse<JSON, Opts>(mat, args...);
+  }
 };
+// template <>
+// struct meta<glm::mat4> {
+//   static constexpr auto value = glz::array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+// };
 
 template <>
 struct from<JSON, aur::MaterialUniformValue> {

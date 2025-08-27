@@ -93,6 +93,9 @@ void Application::run() {
   MaterialUniformValue coeffs2;
   coeffs2.val = glm::vec3{5., 6., 7.};
   myMatDef.values.emplace("coeffs", std::vector{coeffs1, coeffs2});
+  MaterialUniformValue myMat;
+  myMat.val = glm::mat4(7);
+  myMatDef.values.emplace("myMat", myMat);
   const std::string jsonStr = glz::write_json(myMatDef).value_or("GLZ-SERIALIZATION-ERROR");
   log().info(jsonStr);
   // Export schemas

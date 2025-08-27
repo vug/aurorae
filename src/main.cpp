@@ -3,7 +3,6 @@ TODO(vug): think more about Material::setParam: rename to setUniform.
            Always full upload, or allow partial uploads? (probably latter)
            Only set root variables, or more complex expression to set any subtree.
            labelling mechanism for subtrees / children: myUniform.third.seventh[2].first etc
-TODO(vug): See how arrays work for ShaderValue https://gemini.google.com/app/89f21c98b1f8813a
 TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
            arrays are expanded, substructs are flattened...
 TODO(vug): asset::Material takes the schemas and compare them with its parameters.

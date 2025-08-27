@@ -82,6 +82,25 @@ private:
 namespace glz {
 
 template <>
+struct from<BEVE, glm::mat3> {
+  template <auto Opts>
+  static void op(glm::mat3& mat, auto&&... args) {
+    std::array<float, 9> matElements;
+    parse<BEVE>::op<Opts>(matElements, args...);
+    std::memcpy(glm::value_ptr(mat), matElements.data(), sizeof(float) * 9);
+  }
+};
+
+template <>
+struct to<BEVE, glm::mat3> {
+  template <auto Opts>
+  static void op(const glm::mat3& mat, auto&&... args) noexcept {
+    std::span matSpan(glm::value_ptr(mat), 9);
+    serialize<BEVE>::op<Opts>(matSpan, args...);
+  }
+};
+
+template <>
 struct from<BEVE, glm::mat4> {
   template <auto Opts>
   static void op(glm::mat4& mat, auto&&... args) {
