@@ -6,9 +6,9 @@
 
 namespace aur {
 struct MaterialUniformValue {
-  std::variant<i32, u32, f32, glm::vec2, glm::vec3, glm::vec4, glm::mat3, glm::mat4,
-               std::map<std::string, MaterialUniformValue, std::less<>>, std::vector<MaterialUniformValue>>
-      val{};
+  using Array = std::vector<MaterialUniformValue>;
+  using Struct = std::map<std::string, MaterialUniformValue, std::less<>>;
+  std::variant<i32, u32, f32, glm::vec2, glm::vec3, glm::vec4, glm::mat3, glm::mat4, Struct, Array> val{};
 };
 
 } // namespace aur
@@ -135,8 +135,7 @@ struct to<BEVE, aur::MaterialUniformValue> {
 
 template <>
 struct meta<std::variant<aur::i32, aur::u32, aur::f32, glm::vec2, glm::vec3, glm::vec4, glm::mat3, glm::mat4,
-                         std::map<std::string, aur::MaterialUniformValue, std::less<>>,
-                         std::vector<aur::MaterialUniformValue>>> {
+                         aur::MaterialUniformValue::Struct, aur::MaterialUniformValue::Array>> {
   static constexpr std::string_view tag = "valueType";
   static constexpr auto ids =
       std::array{"int", "uint", "float", "vec2", "vec3", "vec4", "mat3", "mat4", "struct", "array"};

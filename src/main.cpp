@@ -1,4 +1,5 @@
 /*
+TODO(vug): create a shader with some complex uniforms to test render::Material::buildDefaultValues()
 TODO(vug): think more about Material::setParam: rename to setUniform.
            Always full upload, or allow partial uploads? (probably latter)
            Only set root variables, or more complex expression to set any subtree.

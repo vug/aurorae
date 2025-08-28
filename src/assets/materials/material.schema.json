@@ -109,7 +109,7 @@
          ],
          "properties": {
             "val": {
-               "$ref": "#/$defs/std::variant<class std::variant<int,unsigned int,float,struct glm::vec<2,float,0>,struct glm::vec<3,float,0>,struct glm::vec<4,float,0>,struct glm::mat<3,3,float,0>,struct glm::mat<4,4,float,0> >,class std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >,class std::vector<struct aur::MaterialUniformValue,class std::allocator<struct aur::MaterialUniformValue> > >"
+               "$ref": "#/$defs/std::variant<int,unsigned int,float,struct glm::vec<2,float,0>,struct glm::vec<3,float,0>,struct glm::vec<4,float,0>,struct glm::mat<3,3,float,0>,struct glm::mat<4,4,float,0>,class std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >,class std::vector<struct aur::MaterialUniformValue,class std::allocator<struct aur::MaterialUniformValue> > >"
             }
          },
          "additionalProperties": false
@@ -153,129 +153,130 @@
             "$ref": "#/$defs/aur::MaterialUniformValue"
          }
       },
-      "std::variant<class std::variant<int,unsigned int,float,struct glm::vec<2,float,0>,struct glm::vec<3,float,0>,struct glm::vec<4,float,0>,struct glm::mat<3,3,float,0>,struct glm::mat<4,4,float,0> >,class std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >,class std::vector<struct aur::MaterialUniformValue,class std::allocator<struct aur::MaterialUniformValue> > >": {
+      "std::variant<int,unsigned int,float,struct glm::vec<2,float,0>,struct glm::vec<3,float,0>,struct glm::vec<4,float,0>,struct glm::mat<3,3,float,0>,struct glm::mat<4,4,float,0>,class std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >,class std::vector<struct aur::MaterialUniformValue,class std::allocator<struct aur::MaterialUniformValue> > >": {
          "type": [
+            "number",
             "object",
             "array"
          ],
          "oneOf": [
             {
                "type": [
-                  "number",
-                  "object",
-                  "array"
+                  "integer"
                ],
-               "oneOf": [
-                  {
-                     "type": [
-                        "integer"
-                     ],
-                     "title": "int",
-                     "minimum": -2147483648,
-                     "maximum": 2147483647
+               "title": "int",
+               "minimum": -2147483648,
+               "maximum": 2147483647
+            },
+            {
+               "type": [
+                  "integer"
+               ],
+               "title": "uint",
+               "minimum": 0,
+               "maximum": 4294967295
+            },
+            {
+               "type": [
+                  "number"
+               ],
+               "title": "float",
+               "minimum": -3.4028234663852886E38,
+               "maximum": 3.4028234663852886E38
+            },
+            {
+               "type": [
+                  "object"
+               ],
+               "properties": {
+                  "valueType": {
+                     "const": "vec2"
                   },
-                  {
-                     "type": [
-                        "integer"
-                     ],
-                     "title": "uint",
-                     "minimum": 0,
-                     "maximum": 4294967295
+                  "x": {
+                     "$ref": "#/$defs/float"
                   },
-                  {
-                     "type": [
-                        "number"
-                     ],
-                     "title": "float",
-                     "minimum": -3.4028234663852886E38,
-                     "maximum": 3.4028234663852886E38
-                  },
-                  {
-                     "type": [
-                        "object"
-                     ],
-                     "properties": {
-                        "shaderType": {
-                           "const": "vec2"
-                        },
-                        "x": {
-                           "$ref": "#/$defs/float"
-                        },
-                        "y": {
-                           "$ref": "#/$defs/float"
-                        }
-                     },
-                     "additionalProperties": false,
-                     "required": [
-                        "shaderType"
-                     ],
-                     "title": "vec2"
-                  },
-                  {
-                     "type": [
-                        "object"
-                     ],
-                     "properties": {
-                        "shaderType": {
-                           "const": "vec3"
-                        },
-                        "x": {
-                           "$ref": "#/$defs/float"
-                        },
-                        "y": {
-                           "$ref": "#/$defs/float"
-                        },
-                        "z": {
-                           "$ref": "#/$defs/float"
-                        }
-                     },
-                     "additionalProperties": false,
-                     "required": [
-                        "shaderType"
-                     ],
-                     "title": "vec3"
-                  },
-                  {
-                     "type": [
-                        "object"
-                     ],
-                     "properties": {
-                        "shaderType": {
-                           "const": "vec4"
-                        },
-                        "w": {
-                           "$ref": "#/$defs/float"
-                        },
-                        "x": {
-                           "$ref": "#/$defs/float"
-                        },
-                        "y": {
-                           "$ref": "#/$defs/float"
-                        },
-                        "z": {
-                           "$ref": "#/$defs/float"
-                        }
-                     },
-                     "additionalProperties": false,
-                     "required": [
-                        "shaderType"
-                     ],
-                     "title": "vec4"
-                  },
-                  {
-                     "type": [
-                        "array"
-                     ],
-                     "title": "mat3"
-                  },
-                  {
-                     "type": [
-                        "array"
-                     ],
-                     "title": "mat4"
+                  "y": {
+                     "$ref": "#/$defs/float"
                   }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "valueType"
                ],
-               "title": "shaderVal"
+               "title": "vec2"
+            },
+            {
+               "type": [
+                  "object"
+               ],
+               "properties": {
+                  "valueType": {
+                     "const": "vec3"
+                  },
+                  "x": {
+                     "$ref": "#/$defs/float"
+                  },
+                  "y": {
+                     "$ref": "#/$defs/float"
+                  },
+                  "z": {
+                     "$ref": "#/$defs/float"
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "valueType"
+               ],
+               "title": "vec3"
+            },
+            {
+               "type": [
+                  "object"
+               ],
+               "properties": {
+                  "valueType": {
+                     "const": "vec4"
+                  },
+                  "w": {
+                     "$ref": "#/$defs/float"
+                  },
+                  "x": {
+                     "$ref": "#/$defs/float"
+                  },
+                  "y": {
+                     "$ref": "#/$defs/float"
+                  },
+                  "z": {
+                     "$ref": "#/$defs/float"
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "valueType"
+               ],
+               "title": "vec4"
+            },
+            {
+               "type": [
+                  "number",
+                  "string",
+                  "boolean",
+                  "object",
+                  "array",
+                  "null"
+               ],
+               "title": "mat3"
+            },
+            {
+               "type": [
+                  "number",
+                  "string",
+                  "boolean",
+                  "object",
+                  "array",
+                  "null"
+               ],
+               "title": "mat4"
             },
             {
                "type": [

@@ -98,6 +98,7 @@ void Application::run() {
   myMatDef.values.emplace("myMat", myMat);
   const std::string jsonStr = glz::write_json(myMatDef).value_or("GLZ-SERIALIZATION-ERROR");
   log().info(jsonStr);
+  // render::Material::buildDefaultValues();
   // Export schemas
   if (const auto schema = glz::write_json_schema<asset::GraphicsProgramDefinition>(); schema.has_value())
     writeBinaryFile(kAssetsFolder / "shaders/graphics_program.schema.json",
