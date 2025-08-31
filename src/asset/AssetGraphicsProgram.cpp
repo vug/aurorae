@@ -4,14 +4,11 @@
 
 namespace aur::asset {
 
-GraphicsProgram GraphicsProgram::create(Handle<ShaderStage> vertStage, Handle<ShaderStage> fragStage) {
-  GraphicsProgram program;
-  program.vert_ = vertStage;
-  program.frag_ = fragStage;
-
-  program.combinedSchema_ = vertStage->getSchema();
-  auto& ubos = program.combinedSchema_.uniformsBuffers;
-  const auto& fragUbos = fragStage->getSchema().uniformsBuffers;
+ShaderStageSchema GraphicsProgramDefinition::combineSchemas(const ShaderStageSchema& vertSchema,
+                                                            const ShaderStageSchema& fragSchema) {
+  ShaderStageSchema combined = vertSchema;
+  auto& ubos = combined.uniformsBuffers;
+  const auto& fragUbos = fragSchema.uniformsBuffers;
   for (const auto& [setNo, bindings] : fragUbos) {
     for (const auto& [bindingNo, fragResource] : bindings) {
       // Create the slot for that set in combined UBOs if it doesn't exist
@@ -30,8 +27,18 @@ GraphicsProgram GraphicsProgram::create(Handle<ShaderStage> vertStage, Handle<Sh
     }
   }
 
-  if (vertStage->getSchema().outputs != fragStage->getSchema().inputs)
+  if (vertSchema.outputs != fragSchema.inputs)
     log().fatal("Vertex shader outputs don't match fragment shader inputs");
+
+  return combined;
+}
+
+GraphicsProgram GraphicsProgram::create(GraphicsProgramDefinition&& graphicsProgramDef,
+                                        Handle<ShaderStage> vertStage, Handle<ShaderStage> fragStage) {
+  GraphicsProgram program;
+  program.vert_ = vertStage;
+  program.frag_ = fragStage;
+  program.combinedSchema_ = std::move(graphicsProgramDef.combinedSchema);
 
   return program;
 }

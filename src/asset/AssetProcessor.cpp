@@ -286,12 +286,12 @@ AssetProcessor::processGraphicsProgram(const std::filesystem::path& srcPath) {
     return std::nullopt;
   }
 
-  // Create a Material Template
-  asset::MaterialDefinition matDef;
-  // TODO(vug): makeStableId(const std::filesystem::path& srcPath)
-  const auto srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
-  matDef.graphicsProgram = StableId<asset::GraphicsProgram>{srcPath.generic_string()};
-
+  const AssetUuid vertUuid = registry_->getUuid(def.vert).value();
+  const AssetUuid fragUuid = registry_->getUuid(def.frag).value();
+  const auto vertDef = registry_->getDefinition<asset::ShaderStageDefinition>(vertUuid);
+  const auto fragDef = registry_->getDefinition<asset::ShaderStageDefinition>(fragUuid);
+  def.combinedSchema = asset::GraphicsProgramDefinition::combineSchemas(vertDef->schema, fragDef->schema);
+  
   return def;
 }
 

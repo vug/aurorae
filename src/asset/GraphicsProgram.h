@@ -15,13 +15,18 @@ struct GraphicsProgramDefinition {
 
   AssetRef vert;
   AssetRef frag;
+  ShaderStageSchema combinedSchema;
+
+  static ShaderStageSchema combineSchemas(const ShaderStageSchema& vertSchema,
+                                          const ShaderStageSchema& fragSchema);
 };
 
 class GraphicsProgram
     : public AssetTypeMixin<GraphicsProgram, GraphicsProgramDefinition, AssetType::GraphicsProgram,
                             "GraphicsProgram", "019870da-2c87-7f9e-aece-9484ce47cac9"> {
 public:
-  static GraphicsProgram create(Handle<ShaderStage> vertStage, Handle<ShaderStage> fragStage);
+  static GraphicsProgram create(GraphicsProgramDefinition&& graphicsProgramDef, Handle<ShaderStage> vertStage,
+                                Handle<ShaderStage> fragStage);
 
   ~GraphicsProgram() = default;
   GraphicsProgram(const GraphicsProgram& other) = delete;

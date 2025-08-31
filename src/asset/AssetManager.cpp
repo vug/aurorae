@@ -116,7 +116,8 @@ AssetManager::loadGraphicsProgramFromDefinition(asset::GraphicsProgramDefinition
   const Handle frag{load<asset::ShaderStage>(graphicsProgramDef.frag.getUuid())};
   if (!frag.isValid())
     return {};
-  asset::GraphicsProgram graphicsProgram = asset::GraphicsProgram::create(vert, frag);
+  asset::GraphicsProgram graphicsProgram =
+      asset::GraphicsProgram::create(std::move(graphicsProgramDef), vert, frag);
   graphicsPrograms_.push_back(std::move(graphicsProgram));
   return Handle<asset::GraphicsProgram>{static_cast<u32>(graphicsPrograms_.size() - 1)};
 }

@@ -33,8 +33,8 @@ public:
   };
   [[nodiscard]] std::optional<asset::ShaderStageDefinition>
   processShaderStage(const std::filesystem::path& srcPath, ShaderBuildMode buildMode) const;
-  std::optional<asset::GraphicsProgramDefinition> static processGraphicsProgram(
-      const std::filesystem::path& srcPath);
+  std::optional<asset::GraphicsProgramDefinition>
+  processGraphicsProgram(const std::filesystem::path& srcPath);
   std::optional<asset::MaterialDefinition> static processMaterial(const std::filesystem::path& srcPath);
   std::optional<asset::MeshDefinition> static processMeshes(const std::filesystem::path& modelPath);
 

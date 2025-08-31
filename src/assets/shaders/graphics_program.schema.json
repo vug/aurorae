@@ -3,6 +3,9 @@
       "object"
    ],
    "properties": {
+      "combinedSchema": {
+         "$ref": "#/$defs/aur::asset::ShaderStageSchema"
+      },
       "frag": {
          "$ref": "#/$defs/aur::AssetRef"
       },
@@ -25,12 +28,249 @@
             "null"
          ]
       },
+      "aur::asset::ShaderBlockMember": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "arraySize": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "arrayStride": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "isArray": {
+               "$ref": "#/$defs/bool"
+            },
+            "members": {
+               "$ref": "#/$defs/std::vector<aur::asset::ShaderBlockMember>"
+            },
+            "name": {
+               "$ref": "#/$defs/std::string"
+            },
+            "offset": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "sizeBytes": {
+               "$ref": "#/$defs/uint64_t"
+            },
+            "typeInfo": {
+               "$ref": "#/$defs/aur::asset::ShaderVariableTypeInfo"
+            }
+         },
+         "additionalProperties": false
+      },
+      "aur::asset::ShaderInterfaceVariable": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "arraySize": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "arrayStride": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "isArray": {
+               "$ref": "#/$defs/bool"
+            },
+            "isFlat": {
+               "$ref": "#/$defs/bool"
+            },
+            "location": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "members": {
+               "$ref": "#/$defs/std::vector<aur::asset::ShaderInterfaceVariable>"
+            },
+            "name": {
+               "$ref": "#/$defs/std::string"
+            },
+            "typeInfo": {
+               "$ref": "#/$defs/aur::asset::ShaderVariableTypeInfo"
+            }
+         },
+         "additionalProperties": false
+      },
+      "aur::asset::ShaderResource": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "binding": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "members": {
+               "$ref": "#/$defs/std::vector<aur::asset::ShaderBlockMember>"
+            },
+            "name": {
+               "$ref": "#/$defs/std::string"
+            },
+            "set": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "sizeBytes": {
+               "$ref": "#/$defs/uint64_t"
+            }
+         },
+         "additionalProperties": false
+      },
+      "aur::asset::ShaderStageSchema": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "inputs": {
+               "$ref": "#/$defs/std::map<uint32_t,aur::asset::ShaderInterfaceVariable>"
+            },
+            "outputs": {
+               "$ref": "#/$defs/std::map<uint32_t,aur::asset::ShaderInterfaceVariable>"
+            },
+            "uniformsBuffers": {
+               "$ref": "#/$defs/std::map<uint32_t,std::map<uint32_t,aur::asset::ShaderResource>>"
+            }
+         },
+         "additionalProperties": false
+      },
+      "aur::asset::ShaderVariableTypeInfo": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "baseType": {
+               "$ref": "#/$defs/aur::asset::ShaderVariableTypeInfo::BaseType"
+            },
+            "columnCnt": {
+               "$ref": "#/$defs/uint32_t"
+            },
+            "componentBytes": {
+               "$ref": "#/$defs/uint8_t"
+            },
+            "signedness": {
+               "$ref": "#/$defs/aur::asset::ShaderVariableTypeInfo::Signedness"
+            },
+            "vectorSize": {
+               "$ref": "#/$defs/uint32_t"
+            }
+         },
+         "additionalProperties": false
+      },
+      "aur::asset::ShaderVariableTypeInfo::BaseType": {
+         "type": [
+            "string"
+         ],
+         "oneOf": [
+            {
+               "title": "Unknown",
+               "const": "Unknown"
+            },
+            {
+               "title": "Struct",
+               "const": "Struct"
+            },
+            {
+               "title": "Bool",
+               "const": "Bool"
+            },
+            {
+               "title": "Int",
+               "const": "Int"
+            },
+            {
+               "title": "Float",
+               "const": "Float"
+            }
+         ]
+      },
+      "aur::asset::ShaderVariableTypeInfo::Signedness": {
+         "type": [
+            "string"
+         ],
+         "oneOf": [
+            {
+               "title": "NotApplicable",
+               "const": "NotApplicable"
+            },
+            {
+               "title": "Unsigned",
+               "const": "Unsigned"
+            },
+            {
+               "title": "Signed",
+               "const": "Signed"
+            }
+         ]
+      },
+      "bool": {
+         "type": [
+            "boolean"
+         ]
+      },
+      "std::map<uint32_t,aur::asset::ShaderInterfaceVariable>": {
+         "type": [
+            "object"
+         ],
+         "additionalProperties": {
+            "$ref": "#/$defs/aur::asset::ShaderInterfaceVariable"
+         }
+      },
+      "std::map<uint32_t,aur::asset::ShaderResource>": {
+         "type": [
+            "object"
+         ],
+         "additionalProperties": {
+            "$ref": "#/$defs/aur::asset::ShaderResource"
+         }
+      },
+      "std::map<uint32_t,std::map<uint32_t,aur::asset::ShaderResource>>": {
+         "type": [
+            "object"
+         ],
+         "additionalProperties": {
+            "$ref": "#/$defs/std::map<uint32_t,aur::asset::ShaderResource>"
+         }
+      },
+      "std::string": {
+         "type": [
+            "string"
+         ]
+      },
+      "std::vector<aur::asset::ShaderBlockMember>": {
+         "type": [
+            "array"
+         ],
+         "items": {
+            "$ref": "#/$defs/aur::asset::ShaderBlockMember"
+         }
+      },
+      "std::vector<aur::asset::ShaderInterfaceVariable>": {
+         "type": [
+            "array"
+         ],
+         "items": {
+            "$ref": "#/$defs/aur::asset::ShaderInterfaceVariable"
+         }
+      },
       "uint32_t": {
          "type": [
             "integer"
          ],
          "minimum": 0,
          "maximum": 4294967295
+      },
+      "uint64_t": {
+         "type": [
+            "integer"
+         ],
+         "minimum": 0,
+         "maximum": 18446744073709551615
+      },
+      "uint8_t": {
+         "type": [
+            "integer"
+         ],
+         "minimum": 0,
+         "maximum": 255
       }
    }
 }
