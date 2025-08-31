@@ -2,6 +2,7 @@
 
 #include <modern-uuid/uuid.h>
 
+#include "../Utils.h"
 #include "AssetConcepts.h"
 
 namespace aur {
@@ -39,6 +40,11 @@ public:
       : std::string(s) {}
   StableId(std::string_view s)
       : std::string(s) {}
+
+  static StableId<TAsset> fromSourcePath(const std::filesystem::path& srcPath) {
+    const auto srcRelPath = std::filesystem::relative(srcPath, kAssetsFolder);
+    return StableId<asset::GraphicsProgram>{srcRelPath.generic_string()};
+  }
 };
 
 class AssetRegistry;
