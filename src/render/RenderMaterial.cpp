@@ -3,6 +3,7 @@
 #include "../Logger.h"
 #include "../Pipeline.h"
 #include "../Renderer.h"
+#include "../asset/Material.h"
 
 namespace aur::render {
 
@@ -70,7 +71,7 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
     };
 
     const WriteDescriptorSet write{
-        .binding = kUniformParamsBinding,
+        .binding = asset::Material::kUniformParamsBinding,
         .descriptorCnt = 1,
         .descriptorType = DescriptorType::UniformBuffer,
         .bufferInfo = &bufferInfo,

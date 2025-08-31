@@ -41,8 +41,6 @@ public:
     return matParamsDescriptorSet_;
   }
 
-  static constexpr u32 kUniformParamsBinding = 0;
-
 private:
   Renderer* renderer_{};
   Handle<asset::Material> assetHandle_;

@@ -1,6 +1,7 @@
 #include "ShaderReflection.h"
 
 #include "../Logger.h"
+#include "Material.h"
 #include "ShaderStage.h"
 
 namespace aur::asset {

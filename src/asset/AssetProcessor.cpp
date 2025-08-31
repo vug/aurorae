@@ -289,7 +289,7 @@ AssetProcessor::processGraphicsProgram(const std::filesystem::path& srcPath) {
   const auto vertDef = registry_->getDefinition<asset::ShaderStageDefinition>(vertUuid);
   const auto fragDef = registry_->getDefinition<asset::ShaderStageDefinition>(fragUuid);
   def.combinedSchema = asset::GraphicsProgramDefinition::combineSchemas(vertDef->schema, fragDef->schema);
-  
+
   return def;
 }
 

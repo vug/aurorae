@@ -3,6 +3,7 @@
 #include "../Handle.h"
 #include "../VulkanWrappers.h"
 #include "AssetTraits.h"
+#include "ShaderReflection.h"
 
 namespace aur {
 struct MaterialUniformValue {
@@ -205,6 +206,9 @@ public:
     return graphicsProgram_;
   }
   [[nodiscard]] inline const MaterialDefinition& getDefinition() const { return materialDef_; }
+
+  static constexpr u32 kUniformParamsBinding{0};
+  static constexpr u32 kMaterialParamsSet{1};
 
 private:
   Material() = default;
