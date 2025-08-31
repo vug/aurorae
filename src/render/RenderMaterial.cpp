@@ -31,21 +31,14 @@ Material::Material(Renderer& renderer, Handle<asset::Material> asset)
                               .colorBlendState = colorBlendStateFromPreset(matDef.blendPreset)};
       return info;
     }()} {
-  const std::map<asset::SetNo, std::map<asset::BindingNo, asset::ShaderResource>>& ubos =
-      assetHandle_->getGraphicsProgramHandle()->getCombinedSchema().uniformsBuffers;
-  constexpr u32 kMatParamSet = 1;
-  const auto itSet = ubos.find(kMatParamSet);
-  if (itSet == ubos.end())
-    // This material has no parameters
-    return;
+  std::optional<asset::ShaderResource> uniformsSchema =
+      assetHandle_->getGraphicsProgramHandle()->getCombinedSchema().getMaterialUniformBufferSchema();
 
-  const auto& bindings = itSet->second;
-  const auto itBinding = bindings.find(kUniformParamsBinding);
-  if (const bool hasUniformParams = itBinding != bindings.end(); !hasUniformParams)
+  if (!uniformsSchema)
     return;
 
   {
-    matParamUboSchema_ = itBinding->second;
+    matParamUboSchema_ = uniformsSchema.value();
     const BufferCreateInfo createInfo{.sizeBytes = matParamUboSchema_.sizeBytes,
                                       .usages = {BufferUsage::Uniform},
                                       .memoryUsage = MemoryUsage::CpuToGpu};

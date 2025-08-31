@@ -387,4 +387,21 @@ ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV) {
   return schema;
 }
 
+std::optional<ShaderResource> ShaderStageSchema::getMaterialUniformBufferSchema() const {
+
+  const auto itSet = uniformsBuffers.find(asset::Material::kMaterialParamsSet);
+  if (itSet == uniformsBuffers.end())
+    // This material has no parameters
+    return std::nullopt;
+
+  const auto& bindings = itSet->second;
+  const auto itBinding = bindings.find(asset::Material::kUniformParamsBinding);
+  if (const bool hasUniformParams = itBinding != bindings.end(); !hasUniformParams)
+    // This material has no uniforms
+    return std::nullopt;
+
+  const ShaderResource& uniformsSchema = itBinding->second;
+  return uniformsSchema;
+}
+
 } // namespace aur::asset

@@ -238,6 +238,8 @@ struct ShaderStageSchema {
   // std::map<DescriptorKey, Sampler> samplers;
   // std::map<DescriptorKey, AccelerationStructure> accelerationStructures;
   std::map<LocationNo, ShaderInterfaceVariable> outputs;
+
+  [[nodiscard]] std::optional<ShaderResource> getMaterialUniformBufferSchema() const;
 };
 
 using SpirV = std::vector<u32>;
