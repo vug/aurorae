@@ -180,7 +180,7 @@ struct MaterialDefinition {
   FrontFace frontFace{FrontFace::CounterClockwise};
   f32 lineWidth{1.0f};
   BlendingPreset blendPreset{BlendingPreset::NoBlend};
-  std::map<std::string, MaterialUniformValue> values;
+  MaterialUniformValue::Struct values;
   // MaterialMetadata using which we can create the PipelineCreateInfo
   // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
   // values. Then, Renderer::getOrCreateMaterial() takes this create info and creates a

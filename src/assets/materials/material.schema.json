@@ -28,7 +28,7 @@
          "$ref": "#/$defs/aur::PolygonMode"
       },
       "values": {
-         "$ref": "#/$defs/std::map<std::string,aur::MaterialUniformValue>"
+         "$ref": "#/$defs/std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >"
       },
       "version": {
          "$ref": "#/$defs/uint32_t"
@@ -145,7 +145,7 @@
          "minimum": -3.4028234663852886E38,
          "maximum": 3.4028234663852886E38
       },
-      "std::map<std::string,aur::MaterialUniformValue>": {
+      "std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >": {
          "type": [
             "object"
          ],

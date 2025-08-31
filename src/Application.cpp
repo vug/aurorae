@@ -81,24 +81,23 @@ void Application::run() {
     assetRegistry_.load();
   }
 
-  asset::MaterialDefinition myMatDef;
-  AssetRef aRef{StableId<asset::GraphicsProgram>("abidin")};
-  aRef.setRegistry(&assetRegistry_);
-  myMatDef.graphicsProgram = aRef;
-  MaterialUniformValue color;
-  color.val = glm::vec4{42, 43, 44, 45};
-  myMatDef.values.emplace("color", color);
-  MaterialUniformValue coeffs1;
-  coeffs1.val = glm::vec3{2., 3., 4.};
-  MaterialUniformValue coeffs2;
-  coeffs2.val = glm::vec3{5., 6., 7.};
-  myMatDef.values.emplace("coeffs", std::vector{coeffs1, coeffs2});
-  MaterialUniformValue myMat;
-  myMat.val = glm::mat4(7);
-  myMatDef.values.emplace("myMat", myMat);
-  const std::string jsonStr = glz::write_json(myMatDef).value_or("GLZ-SERIALIZATION-ERROR");
-  log().info(jsonStr);
-  // render::Material::buildDefaultValues();
+  // const Handle<asset::ShaderStage> myStage =
+  //     assetManager_.load(StableId<asset::ShaderStage>{"shaders/debug.frag"});
+  // // log().info(glz::prettify_json(glz::write_json(myStage->getSchema()).value_or("error")));
+  // auto printShaderResource = [](const asset::ShaderResource& resource) {
+  //   log().info("layout(set = {}, binding = {}) uniform {} {{", resource.set, resource.binding,
+  //   resource.name); for (const auto& member : resource.members)
+  //     log().info("  {} {};", member.typeInfo.toMnemonicString(), member.name);
+  //   log().info("}}\n", resource.set, resource.binding, resource.name);
+  // };
+  // printShaderResource(myStage->getSchema().uniformsBuffers.at(0).at(0));
+  // printShaderResource(myStage->getSchema().uniformsBuffers.at(1).at(0));
+
+  const Handle<asset::ShaderStage> uboStudyFragStage =
+      assetManager_.load(StableId<asset::ShaderStage>{"shaders/ubo_study.frag"});
+  log().info(glz::prettify_json(glz::write_json(uboStudyFragStage->getSchema()).value_or("error")));
+  asset::MaterialDefinition uboStudyMatDef;
+
   // Export schemas
   if (const auto schema = glz::write_json_schema<asset::GraphicsProgramDefinition>(); schema.has_value())
     writeBinaryFile(kAssetsFolder / "shaders/graphics_program.schema.json",
@@ -107,17 +106,6 @@ void Application::run() {
     writeBinaryFile(kAssetsFolder / "materials/material.schema.json", glz::prettify_json(schema.value()));
 
   // "Asset Library"
-  const Handle<asset::ShaderStage> myStage =
-      assetManager_.load(StableId<asset::ShaderStage>{"shaders/debug.frag"});
-  log().info(glz::prettify_json(glz::write_json(myStage->getSchema()).value_or("error")));
-  auto printShaderResource = [](const asset::ShaderResource& resource) {
-    log().info("layout(set = {}, binding = {}) uniform {} {{", resource.set, resource.binding, resource.name);
-    for (const auto& member : resource.members)
-      log().info("  {} {};", member.typeInfo.toMnemonicString(), member.name);
-    log().info("}}\n", resource.set, resource.binding, resource.name);
-  };
-  printShaderResource(myStage->getSchema().uniformsBuffers.at(0).at(0));
-  printShaderResource(myStage->getSchema().uniformsBuffers.at(1).at(0));
   const StableId<asset::Mesh> kBoxMeshId{
       "models/glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf"};
   const Handle<asset::Mesh> aBoxMesh = assetManager_.load(kBoxMeshId);
