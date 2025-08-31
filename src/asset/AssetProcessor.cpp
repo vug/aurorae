@@ -195,13 +195,20 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
     log().info("      Processed and saved to {}", dstRelPath.generic_string());
   }
 
-  // TODO(vug): this should be more general. asset::ShaderStage is wrong for other asset types!
-  const StableId<asset::ShaderStage> stableSourceIdentifier = srcRelPath.generic_string();
-  const muuid::uuid assetId = makeUuid(stableSourceIdentifier);
+  const DefinitionVariant defVar = result.definitions.cbegin()->second;
+  const auto [assetUuid, alias] = std::visit(
+      [&srcPath](const auto& def) {
+        using DefType = std::decay_t<decltype(def)>;
+        using TAsset = AssetTypeFor<DefType>::type;
+        const auto stableId = StableId<TAsset>::fromSourcePath(srcPath);
+        return std::tuple(makeUuid(stableId), static_cast<std::string>(stableId));
+      },
+      defVar);
+
   return AssetEntry{
       .type = defType,
-      .uuid = assetId,
-      .alias = std::move(stableSourceIdentifier),
+      .uuid = assetUuid,
+      .alias = std::move(alias),
       .srcRelPath = srcRelPath.generic_string(),
       .dstVariantRelPaths = std::move(dstVariantRelPaths),
       .dependencies = [&result]() -> std::optional<std::vector<AssetUuid>> {
