@@ -81,23 +81,6 @@ void Application::run() {
     assetRegistry_.load();
   }
 
-  // const Handle<asset::ShaderStage> myStage =
-  //     assetManager_.load(StableId<asset::ShaderStage>{"shaders/debug.frag"});
-  // // log().info(glz::prettify_json(glz::write_json(myStage->getSchema()).value_or("error")));
-  // auto printShaderResource = [](const asset::ShaderResource& resource) {
-  //   log().info("layout(set = {}, binding = {}) uniform {} {{", resource.set, resource.binding,
-  //   resource.name); for (const auto& member : resource.members)
-  //     log().info("  {} {};", member.typeInfo.toMnemonicString(), member.name);
-  //   log().info("}}\n", resource.set, resource.binding, resource.name);
-  // };
-  // printShaderResource(myStage->getSchema().uniformsBuffers.at(0).at(0));
-  // printShaderResource(myStage->getSchema().uniformsBuffers.at(1).at(0));
-
-  const Handle<asset::ShaderStage> uboStudyFragStage =
-      assetManager_.load(StableId<asset::ShaderStage>{"shaders/ubo_study.frag"});
-  log().info(glz::prettify_json(glz::write_json(uboStudyFragStage->getSchema()).value_or("error")));
-  asset::MaterialDefinition uboStudyMatDef;
-
   // Export schemas
   if (const auto schema = glz::write_json_schema<asset::GraphicsProgramDefinition>(); schema.has_value())
     writeBinaryFile(kAssetsFolder / "shaders/graphics_program.schema.json",

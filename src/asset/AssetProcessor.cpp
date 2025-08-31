@@ -117,20 +117,51 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
                               .extension = "shaderStageDef"};
     }
     case AssetType::GraphicsProgram: {
-      return processGraphicsProgram(srcPath)
-          .transform([this](asset::GraphicsProgramDefinition def) -> ProcessingResult {
-            def.vert.setRegistry(registry_);
-            def.frag.setRegistry(registry_);
-            const AssetUuid vertUuid = def.vert;
-            const AssetUuid fragUuid = def.frag;
+      std::optional<asset::GraphicsProgramDefinition> def = processGraphicsProgram(srcPath);
+      if (!def)
+        return ProcessingResult{};
+      ProcessingResult result =
 
-            return {
-                .definitions = {{AssetBuildMode::Any, std::move(def)}},
-                .dependencies = {vertUuid, fragUuid},
-                .extension = "graphicsProgramDef",
-            };
-          })
-          .value_or(ProcessingResult{});
+          def.transform([this](asset::GraphicsProgramDefinition def) -> ProcessingResult {
+               def.vert.setRegistry(registry_);
+               def.frag.setRegistry(registry_);
+               const AssetUuid vertUuid = def.vert;
+               const AssetUuid fragUuid = def.frag;
+
+               return {
+                   .definitions = {{AssetBuildMode::Any, std::move(def)}},
+                   .dependencies = {vertUuid, fragUuid},
+                   .extension = "graphicsProgramDef",
+               };
+             })
+              .value_or(ProcessingResult{});
+
+      // Create and store a Material Template using the graphics program
+      const MaterialUniformValue::Struct defaultValues =
+          def->combinedSchema.getMaterialUniformBufferSchema()
+              .and_then([](const auto& schema) { return std::optional{schema.members}; })
+              .and_then([](const auto& members) {
+                return std::optional{asset::MaterialDefinition::buildDefaultValues(members)};
+              })
+              .value_or({});
+      const asset::MaterialDefinition matDef{
+          .graphicsProgram = StableId<asset::GraphicsProgram>::fromSourcePath(srcPath),
+          .values = defaultValues,
+      };
+
+      const std::filesystem::path dstPath =
+          (kAssetsFolder / "materials" / "templates" / srcPath.stem()).concat(".mat.template");
+      if (const auto& folder = dstPath.parent_path(); !std::filesystem::exists(folder))
+        std::filesystem::create_directories(folder);
+      if (const glz::error_ctx ec = glz::write_file_json<glz::opts{.prettify = true}>(
+              matDef, dstPath.generic_string(), std::string{});
+          ec)
+        log().fatal("Failed to write material template to file: {}. Error: {}", dstPath.generic_string(),
+                    ec.custom_error_message);
+      else
+        log().info("Wrote a material template to file: {}", dstPath.generic_string());
+
+      return result;
     }
     case AssetType::Material: {
       return processMaterial(srcPath)
