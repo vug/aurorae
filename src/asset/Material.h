@@ -9,7 +9,9 @@ namespace aur {
 struct MaterialUniformValue {
   using Array = std::vector<MaterialUniformValue>;
   using Struct = std::map<std::string, MaterialUniformValue, std::less<>>;
-  std::variant<i32, u32, f32, glm::vec2, glm::vec3, glm::vec4, glm::mat3, glm::mat4, Struct, Array> val{};
+  using Variant =
+      std::variant<i32, u32, f32, glm::vec2, glm::vec3, glm::vec4, glm::mat3, glm::mat4, Struct, Array>;
+  Variant val{};
 };
 
 } // namespace aur

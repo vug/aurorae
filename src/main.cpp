@@ -1,17 +1,14 @@
 /*
-TODO(vug): create a shader with some complex uniforms to test render::Material::buildDefaultValues()
-TODO(vug): think more about Material::setParam: rename to setUniform.
-           Always full upload, or allow partial uploads? (probably latter)
-           Only set root variables, or more complex expression to set any subtree.
-           labelling mechanism for subtrees / children: myUniform.third.seventh[2].first etc
-TODO(vug): Consider flattening the block schema: each parameter has a name, offset, size, type.
-           arrays are expanded, substructs are flattened...
+TODO(vug): GraphicsProgram compares all (set, binding) pairs of every shader stage, and ensure that for
+           common pairs resources match <- done? check
+TODO(vug): rename Material::setParam to setUniform.
+TODO(vug): For render::Material flattening the block schema: each parameter has a name, offset, size, type.
+           arrays are expanded, substructs are flattened... (buildParameterIndex from
+           "storing_and_serializing_material_uniform_parameters.md"
 TODO(vug): asset::Material takes the schemas and compare them with its parameters.
            (give ignored parameters default values)
 TODO(vug): Schema generation only works in Debug mode :-(
 .
-TODO(vug): GraphicsProgram compares all (set, binding) pairs of every shader stage, and ensure that for
-           common pairs resources match
 TODO(vug): bring integer matrices to ShaderReflection
 .
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
