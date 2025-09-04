@@ -73,6 +73,13 @@ struct ShaderType {
 };
 
 void Application::run() {
+  // Export schemas
+  if (const auto schema = glz::write_json_schema<asset::GraphicsProgramDefinition>(); schema.has_value())
+    writeBinaryFile(kAssetsFolder / "shaders/graphics_program.schema.json",
+                    glz::prettify_json(schema.value()));
+  if (const auto schema = glz::write_json_schema<asset::MaterialDefinition>(); schema.has_value())
+    writeBinaryFile(kAssetsFolder / "materials/material.schema.json", glz::prettify_json(schema.value()));
+
   const bool shouldClear = true;
   if (shouldClear) {
     assetRegistry_.clear();
@@ -81,12 +88,11 @@ void Application::run() {
     assetRegistry_.load();
   }
 
-  // Export schemas
-  if (const auto schema = glz::write_json_schema<asset::GraphicsProgramDefinition>(); schema.has_value())
-    writeBinaryFile(kAssetsFolder / "shaders/graphics_program.schema.json",
-                    glz::prettify_json(schema.value()));
-  if (const auto schema = glz::write_json_schema<asset::MaterialDefinition>(); schema.has_value())
-    writeBinaryFile(kAssetsFolder / "materials/material.schema.json", glz::prettify_json(schema.value()));
+  // Handle<asset::Material> uboStudyAMat =
+  //     assetManager_.load(StableId<asset::Material>{"materials/ubo_study.mat"});
+  // if (!uboStudyAMat.isValid())
+  //   log().fatal("Failed to load ubo_study.mat");
+  // Handle<render::Material> uboStudyRMat = renderer_.uploadOrGet(uboStudyAMat);
 
   // "Asset Library"
   const StableId<asset::Mesh> kBoxMeshId{

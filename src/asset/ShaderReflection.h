@@ -135,12 +135,12 @@ struct ShaderBlockMember {
   ShaderVariableTypeInfo typeInfo{};
   std::string name;
 
-  u32 offset{};
+  u64 offset{};
   u64 sizeBytes{};
 
   bool isArray{};
-  u32 arraySize{};
-  u32 arrayStride{};
+  u64 arraySize{};
+  u64 arrayStride{};
 
   // Struct properties
   std::vector<ShaderBlockMember> members;

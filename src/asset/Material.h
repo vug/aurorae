@@ -191,6 +191,11 @@ struct MaterialDefinition {
   static MaterialUniformValue::Variant createDefaultValue(const asset::ShaderVariableTypeInfo& typeInfo);
 };
 
+struct UniformInfo {
+  u64 offset{};
+  u64 sizeBytes{};
+};
+
 class Material : public AssetTypeMixin<Material, MaterialDefinition, AssetType::Material, "Material",
                                        "019870da-2c87-7f9e-aece-9484ce47cac9"> {
 public:
@@ -210,12 +215,16 @@ public:
   static constexpr u32 kUniformParamsBinding{0};
   static constexpr u32 kMaterialParamsSet{1};
 
+  static std::unordered_map<std::string, UniformInfo>
+  buildUniformInfos(const std::vector<ShaderBlockMember>& members);
+
 private:
   Material() = default;
   std::string debugName_;
 
   Handle<GraphicsProgram> graphicsProgram_;
   MaterialDefinition materialDef_;
+  std::unordered_map<std::string, UniformInfo> uniformInfos_;
 };
 
 } // namespace aur::asset

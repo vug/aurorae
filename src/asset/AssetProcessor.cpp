@@ -69,7 +69,7 @@ void AssetProcessor::processAllAssets() {
                             r::to<std::unordered_multimap<AssetType, std::filesystem::path>>();
 
   for (const AssetType defType : kAssetOrder) {
-    log().info("Processing assets of type: {}...", glz::write_json(defType).value_or("unknown"));
+    log().info("Processing assets of type: {}...", glzToString(defType));
     const auto range = assetsByType.equal_range(defType);
     const std::vector<std::filesystem::path> srcPaths =
         r::subrange(range.first, range.second) | rv::transform([](const auto& pair) { return pair.second; }) |
@@ -315,11 +315,10 @@ AssetProcessor::processGraphicsProgram(const std::filesystem::path& srcPath) {
   const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
   asset::GraphicsProgramDefinition def;
   if (const glz::error_ctx err = glz::read_json(def, bytes)) {
-    log().warn("Failed to parse '{}' Definition from file: {}. error code: {}, msg: {}. Try "
-               "editing the file to fit to correct schema.",
-               asset::GraphicsProgram::label, srcPath.generic_string(), std::to_underlying(err.ec),
-               err.custom_error_message);
-    return std::nullopt;
+    log().fatal("Failed to parse '{}' Definition from file: {}. error code: {}, msg: {}. Try "
+                "editing the file to fit to correct schema.",
+                asset::GraphicsProgram::label, srcPath.generic_string(), std::to_underlying(err.ec),
+                err.custom_error_message);
   }
 
   const AssetUuid vertUuid = registry_->getUuid(def.vert).value();
@@ -339,11 +338,10 @@ AssetProcessor::processMaterial(const std::filesystem::path& srcPath) {
   const std::vector<std::byte> bytes = readBinaryFileBytes(srcPath);
   asset::MaterialDefinition def;
   if (const glz::error_ctx err = glz::read_json(def, bytes)) {
-    log().warn("Failed to parse '{}' Definition from file: {}. error code: {}, msg: {}. Try "
-               "editing the file to fit to correct schema.",
-               asset::Material::label, srcPath.generic_string(), std::to_underlying(err.ec),
-               err.custom_error_message);
-    return std::nullopt;
+    log().fatal("Failed to parse '{}' Definition from file: {}. error code: {}, msg: {}. Try "
+                "editing the file to fit to correct schema.",
+                asset::Material::label, srcPath.generic_string(), std::to_underlying(err.ec),
+                err.custom_error_message);
   }
 
   return def;
