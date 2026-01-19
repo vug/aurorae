@@ -1,5 +1,8 @@
 #include "VulkanWrappers.h"
 
+#include <VulkanMemoryAllocator/vk_mem_alloc.h>
+#include <vulkan/vulkan.h>
+
 namespace aur {
 template <typename TEnum>
 u32 toVkFlags(const std::vector<TEnum>& enums) {

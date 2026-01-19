@@ -4,6 +4,7 @@
 #include "../VulkanWrappers.h"
 #include "AssetTraits.h"
 #include "ShaderReflection.h"
+#include <glm/glm.hpp>
 
 namespace aur {
 struct MaterialUniformValue {

@@ -1,6 +1,6 @@
 #include "Application.h"
 
-#include <glaze/glaze/json/schema.hpp>
+#include <glaze/json/schema.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -10,7 +10,7 @@
 #include "asset/AssetManager.h"
 #include "asset/Mesh.h"
 
-#include <glaze/glaze/glaze.hpp>
+#include <glaze/glaze.hpp>
 
 namespace aur {
 

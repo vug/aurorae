@@ -7,7 +7,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <glaze/glaze/glaze.hpp>
+#include <glaze/glaze.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <shaderc/shaderc.hpp>
 
@@ -270,10 +270,15 @@ AssetProcessor::processShaderStage(const std::filesystem::path& srcPath, ShaderB
 
   shaderc::CompileOptions options;
   options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+
+  // Always generate debug info to preserve member names for shader reflection
+  // (used during offline asset processing to extract uniform struct members).
+  // This does not affect runtime performance as SPIR-V debug info is separate.
+  options.SetGenerateDebugInfo();
+
   switch (buildMode) {
   case ShaderBuildMode::Debug:
     options.SetOptimizationLevel(shaderc_optimization_level_zero);
-    options.SetGenerateDebugInfo();
     break;
   case ShaderBuildMode::Release:
     options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -325,6 +330,8 @@ AssetProcessor::processGraphicsProgram(const std::filesystem::path& srcPath) {
   const AssetUuid fragUuid = registry_->getUuid(def.frag).value();
   const auto vertDef = registry_->getDefinition<asset::ShaderStageDefinition>(vertUuid);
   const auto fragDef = registry_->getDefinition<asset::ShaderStageDefinition>(fragUuid);
+  log().debug("    Loaded vertex shader '{}', fragment shader '{}'", std::string(def.vert),
+              std::string(def.frag));
   def.combinedSchema = asset::GraphicsProgramDefinition::combineSchemas(vertDef->schema, fragDef->schema);
 
   return def;

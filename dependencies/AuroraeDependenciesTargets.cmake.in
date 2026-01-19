@@ -1,0 +1,64 @@
+find_package(Vulkan REQUIRED)
+# TODO(vug): is threads needed?
+find_package(Threads REQUIRED)
+
+# First, recreate the dependency targets as IMPORTED so we can extract their library paths
+# These targets were built in the dependencies subdirectories
+
+# Create imported targets for the actual library files in lib/
+set(_AURORAE_LIBS_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
+
+# Helper function to create an imported static library target
+function(_create_imported_lib target_name lib_name)
+    if(NOT TARGET ${target_name})
+        add_library(${target_name} STATIC IMPORTED)
+        set_target_properties(${target_name} PROPERTIES
+            IMPORTED_LOCATION "${_AURORAE_LIBS_DIR}/${lib_name}"
+        )
+    endif()
+endfunction()
+
+# Create imported targets for each library file found
+# These will be discovered and linked automatically
+
+#_create_imported_lib(glfw glfw3.lib)
+#_create_imported_lib(modern-uuid-static modern-uuid-static.lib)
+#_create_imported_lib(spdlog spdlog.lib)
+#_create_imported_lib(assimp assimp-vc143-mt.lib)
+#_create_imported_lib(volk volk.lib)
+#_create_imported_lib(zlibstatic zlibstatic.lib)
+#_create_imported_lib(vk-bootstrap vk-bootstrap.lib)
+
+_create_imported_lib(glfw glfw3d.lib)
+_create_imported_lib(modern-uuid-static modern-uuid-staticd.lib)
+_create_imported_lib(spdlog spdlogd.lib)
+_create_imported_lib(assimp assimp-vc143-mtd.lib)
+_create_imported_lib(volk volkd.lib)
+_create_imported_lib(zlibstatic zlibstaticd.lib)
+_create_imported_lib(vk-bootstrap vk-bootstrapd.lib)
+
+# Create the facade library that links everything
+add_library(AuroraeDependencies UNKNOWN IMPORTED)
+
+set_target_properties(AuroraeDependencies PROPERTIES
+    IMPORTED_LOCATION "@PACKAGE_CMAKE_INSTALL_LIBDIR@/AuroraeDependenciesd.lib"
+    INTERFACE_INCLUDE_DIRECTORIES "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@;${Vulkan_INCLUDE_DIRS}"
+)
+
+# Link all transitive dependencies through the facade
+target_link_libraries(AuroraeDependencies INTERFACE
+    glfw
+    modern-uuid-static
+    spdlog
+    assimp
+    volk
+    vk-bootstrap
+    zlibstatic
+    Vulkan::Vulkan
+    Threads::Threads
+)
+
+# Optional: Add shaderc_combined if available in the Vulkan SDK
+if(TARGET Vulkan::shaderc_combined)
+    target_link_libraries(AuroraeDependencies INTERFACE Vulkan::shaderc_combined)
+endif()

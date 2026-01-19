@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 
-#include <glaze/glaze/glaze.hpp>
+#include <glaze/glaze.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
 
 #include "../Handle.h"
