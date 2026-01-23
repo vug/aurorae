@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.15)
-project(Aurorae LANGUAGES CXX)
-
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 message(STATUS "Generator is multi-config: ${is_multi_config}")
 
@@ -84,10 +81,9 @@ add_executable(Aurorae
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
-message(STATUS "EXTERNAL: ${PROJECT_SOURCE_DIR}/../superbuild")
 target_compile_options(Aurorae PRIVATE
         /W4 # get lots of warnings
-        /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0 # ignore warnings from dependencies
+        /external:I${PROJECT_SOURCE_DIR}/../install /external:W0 # ignore warnings from dependencies
         /EHsc # something related to exceptions
         /MP # enable parallel builds
         #/Bt+      # Show time for each compilation phase
