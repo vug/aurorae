@@ -3,6 +3,13 @@
 #include <map>
 
 #include <glaze/glaze.hpp>
+#include <glm/vec2.hpp>
+
+template <class... Ts>
+struct overloaded : Ts...
+{
+    using Ts::operator()...;
+};
 
 using i32 = int32_t;
 using f32 = float;
@@ -31,13 +38,20 @@ struct glz::meta<FloatValue>
     static constexpr auto value = glz::object(&T::val);
 };
 
-using SimpleValue = std::variant<IntValue, FloatValue>;
+template <>
+struct glz::meta<glm::vec2>
+{
+    using T = glm::vec2;
+    static constexpr auto value = object(&T::x, &T::y);
+};
+
+using SimpleValue = std::variant<IntValue, FloatValue, glm::vec2>;
 
 template <>
 struct glz::meta<SimpleValue>
 {
     static constexpr std::string_view tag = "type";
-    static constexpr auto ids = std::array{"int", "float"};
+    static constexpr auto ids = std::array{"int", "float", "vec2"};
 };
 
 using MaterialUniformValues = std::map<std::string, SimpleValue>;
@@ -50,6 +64,7 @@ int main()
         MaterialUniformValues valMap;
         valMap["myInt"] = IntValue{42};
         valMap["myFloat"] = FloatValue{3.14f};
+        valMap["myVec2"] = glm::vec2{2, 3};
 
         std::string buffer = glz::write_json(valMap).value_or("error");
         std::print("Serialized MaterialUniformValues:\n{}\n", buffer);
@@ -63,8 +78,15 @@ int main()
         MaterialUniformValues &deserValMap = expected.value();
         for (const auto &[key, var] : deserValMap)
         {
-            std::visit([&key](const auto &var)
-                       { std::println("{}: {}", key, var.val); }, var);
+            std::visit(overloaded{
+                           [&key](const IntValue &var)
+                           { std::println("{}: {}", key, var.val); },
+                           [&key](const FloatValue &var)
+                           { std::println("{}: {}", key, var.val); },
+                           [&key](const glm::vec2 &var)
+                           { std::println("{}: ({},{})", key, var.x, var.y); },
+                       },
+                       var);
         }
     }
     return 0;
