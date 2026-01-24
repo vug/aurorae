@@ -44,27 +44,27 @@ using MaterialUniformValues = std::map<std::string, SimpleValue>;
 
 int main()
 {
-    std::print("Glaze study testbed");
+    std::println("Glaze study testbed");
 
     {
-        MaterialUniformValues vals;
-        vals["myInt"] = IntValue{42};
-        vals["myFloat"] = FloatValue{3.14f};
+        MaterialUniformValues valMap;
+        valMap["myInt"] = IntValue{42};
+        valMap["myFloat"] = FloatValue{3.14f};
 
-        std::string buffer = glz::write_json(vals).value_or("error");
+        std::string buffer = glz::write_json(valMap).value_or("error");
         std::print("Serialized MaterialUniformValues:\n{}\n", buffer);
 
         auto expected = glz::read_json<MaterialUniformValues>(buffer);
-        if (expected)
+        if (!expected)
         {
-            MaterialUniformValues &deserializedVals = expected.value();
-            std::print("Deserialized MaterialUniformValues:\nmyInt: {}, myFloat: {}\n",
-                       std::get<IntValue>(deserializedVals["myInt"]).val,
-                       std::get<FloatValue>(deserializedVals["myFloat"]).val);
+            std::println("Deserialization failed");
+            return 1;
         }
-        else
+        MaterialUniformValues &deserValMap = expected.value();
+        for (const auto &[key, var] : deserValMap)
         {
-            std::print("Deserialization failed\n");
+            std::visit([&key](const auto &var)
+                       { std::println("{}: {}", key, var.val); }, var);
         }
     }
     return 0;
