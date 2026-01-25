@@ -59,8 +59,6 @@ struct glz::meta<SimpleValue>
 
 using SimpleArrayValue = std::vector<SimpleValue>;
 
-using StructValue = std::map<std::string, SimpleValue>;
-
 struct ScalarValue
 {
     SimpleValue value;
@@ -85,25 +83,13 @@ struct glz::meta<ArrayValue>
     static constexpr auto value = glz::object(&T::value);
 };
 
-struct MapValue
-{
-    StructValue value;
-};
-
-template <>
-struct glz::meta<MapValue>
-{
-    using T = MapValue;
-    static constexpr auto value = glz::object(&T::value);
-};
-
-using MaterialUniformValue = std::variant<ScalarValue, ArrayValue, MapValue>;
+using MaterialUniformValue = std::variant<ScalarValue, ArrayValue>;
 
 template <>
 struct glz::meta<MaterialUniformValue>
 {
     static constexpr std::string_view tag = "kind";
-    static constexpr auto ids = std::array{"scalar", "array", "map"};
+    static constexpr auto ids = std::array{"scalar", "array"};
 };
 
 using MaterialUniformValues = std::map<std::string, MaterialUniformValue>;
@@ -118,7 +104,6 @@ int main()
         valMap["myFloat"] = ScalarValue{FloatValue{3.14f}};
         valMap["myVec2"] = ScalarValue{glm::vec2{2, 3}};
         valMap["myArray"] = ArrayValue{std::vector<SimpleValue>{IntValue{1}, FloatValue{2.5f}, glm::vec2{3, 4}}};
-        valMap["myMap"] = MapValue{StructValue{{"field1", IntValue{7}}, {"field2", glm::vec2{5, 6}}}};
 
         std::string buffer = glz::write_json(valMap).value_or("error");
         std::print("Serialized MaterialUniformValues:\n{}\n", buffer);
@@ -130,26 +115,18 @@ int main()
             return 1;
         }
         MaterialUniformValues &deserValMap = expected.value();
-
         for (const auto &[key, var] : deserValMap)
         {
-            if (std::holds_alternative<ScalarValue>(var))
-            {
-                const ScalarValue &v = std::get<ScalarValue>(var);
-                std::visit(overloaded{
-                               [&key](const IntValue &var)
-                               { std::println("{}: {}", key, var.val); },
-                               [&key](const FloatValue &var)
-                               { std::println("{}: {}", key, var.val); },
-                               [&key](const glm::vec2 &var)
-                               { std::println("{}: ({},{})", key, var.x, var.y); },
-                           },
-                           v.value);
-            }
-            else
-            {
-                std::println("non-scalar key {}", key);
-            }
+            std::println("key {}", key);
+            // std::visit(overloaded{
+            //                [&key](const IntValue &var)
+            //                { std::println("{}: {}", key, var.val); },
+            //                [&key](const FloatValue &var)
+            //                { std::println("{}: {}", key, var.val); },
+            //                [&key](const glm::vec2 &var)
+            //                { std::println("{}: ({},{})", key, var.x, var.y); },
+            //            },
+            //            var);
         }
     }
     return 0;
