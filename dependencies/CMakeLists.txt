@@ -136,6 +136,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/vk-bootstrap/src/VkBootstrapFeatureCha
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/include/vk_mem_alloc.h DESTINATION include/VulkanMemoryAllocator)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glm/glm DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/assimp/include/assimp DESTINATION include)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/assimp/include/assimp/config.h DESTINATION include/assimp)
 
 # Generate and install config files for find_package
 include(CMakePackageConfigHelpers)
