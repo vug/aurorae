@@ -5,6 +5,7 @@
 #include "Handle.h"
 #include "Resources/PipelineLayout.h"
 #include "VulkanWrappers.h"
+#include <vulkan/vulkan.h>
 
 // boost::hash_combine
 inline void hashCombine(size_t& seed, size_t hash) {

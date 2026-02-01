@@ -70,7 +70,7 @@ bool DescriptorSetLayout::isCompatible(const DescriptorSetLayout& other) const {
       return false;
 
     // Stage flags can be still compatible even if different as long as other bindings stages is a superset
-    if (!rng::includes(otherBinding->stages, thisBinding->stages))
+    if (!rng::includes(thisBinding->stages, otherBinding->stages))
       return false;
   }
 

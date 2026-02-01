@@ -1,0 +1,5 @@
+add_executable(GlazeStudy glaze_study.cpp)
+target_compile_features(GlazeStudy PRIVATE cxx_std_23)
+target_compile_options(GlazeStudy PRIVATE /W4 /EHsc /MP /Zc:enumTypes)
+target_link_libraries(GlazeStudy PRIVATE AuroraeDependencies)
+target_link_options(GlazeStudy PRIVATE "/ignore:4099")

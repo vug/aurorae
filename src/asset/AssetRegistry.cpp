@@ -1,6 +1,6 @@
 #include "AssetRegistry.h"
 
-#include <glaze/glaze/glaze.hpp>
+#include <glaze/glaze.hpp>
 
 #include "../FileIO.h"
 #include "../Logger.h"

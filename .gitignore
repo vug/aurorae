@@ -1,3 +1,6 @@
 build/
-.idea/
+build-deps/
+build-app/
+install/
 _deps/
+.idea/

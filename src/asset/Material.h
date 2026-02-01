@@ -4,6 +4,7 @@
 #include "../VulkanWrappers.h"
 #include "AssetTraits.h"
 #include "ShaderReflection.h"
+#include <glm/glm.hpp>
 
 namespace aur {
 struct MaterialUniformValue {
@@ -184,13 +185,16 @@ struct MaterialDefinition {
   f32 lineWidth{1.0f};
   BlendingPreset blendPreset{BlendingPreset::NoBlend};
   MaterialUniformValue::Struct values;
-  // MaterialMetadata using which we can create the PipelineCreateInfo
-  // Schema of material parameters, their types (options, ranges, texture, numbers, vec2s etc) and stored
-  // values. Then, Renderer::getOrCreateMaterial() takes this create info and creates a
-  // renderer::GraphicsProgram, a Pipeline object, and corresponding buffers and images
 
   static MaterialUniformValue::Struct
   buildDefaultValues(const std::vector<asset::ShaderBlockMember>& members);
+
+  static MaterialUniformValue::Variant createDefaultValue(const asset::ShaderVariableTypeInfo& typeInfo);
+};
+
+struct UniformInfo {
+  u64 offset{};
+  u64 sizeBytes{};
 };
 
 class Material : public AssetTypeMixin<Material, MaterialDefinition, AssetType::Material, "Material",
@@ -212,12 +216,16 @@ public:
   static constexpr u32 kUniformParamsBinding{0};
   static constexpr u32 kMaterialParamsSet{1};
 
+  static std::unordered_map<std::string, UniformInfo>
+  buildUniformInfos(const std::vector<ShaderBlockMember>& members);
+
 private:
   Material() = default;
   std::string debugName_;
 
   Handle<GraphicsProgram> graphicsProgram_;
   MaterialDefinition materialDef_;
+  std::unordered_map<std::string, UniformInfo> uniformInfos_;
 };
 
 } // namespace aur::asset

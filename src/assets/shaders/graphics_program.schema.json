@@ -34,10 +34,10 @@
          ],
          "properties": {
             "arraySize": {
-               "$ref": "#/$defs/uint32_t"
+               "$ref": "#/$defs/uint64_t"
             },
             "arrayStride": {
-               "$ref": "#/$defs/uint32_t"
+               "$ref": "#/$defs/uint64_t"
             },
             "isArray": {
                "$ref": "#/$defs/bool"
@@ -49,7 +49,7 @@
                "$ref": "#/$defs/std::string"
             },
             "offset": {
-               "$ref": "#/$defs/uint32_t"
+               "$ref": "#/$defs/uint64_t"
             },
             "sizeBytes": {
                "$ref": "#/$defs/uint64_t"

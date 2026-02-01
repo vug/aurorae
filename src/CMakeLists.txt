@@ -1,61 +1,14 @@
-cmake_minimum_required(VERSION 3.15)
-project(Aurorae LANGUAGES CXX)
-
-
-# --- Dependency Location ---
-# This variable should point to the root directory where your superbuild
-# installed the dependencies. For example: "C:/Users/veliu/repos/aurorae/build/dependencies-install"
-# You can set this when configuring CMake:
-# cmake -S . -B build -DAURORAE_DEPENDENCIES_DIR:PATH=/path/to/your/dependencies-install
-set(AURORAE_DEPENDENCIES_DIR "" CACHE PATH "Root directory of prebuilt Aurorae dependencies")
-
-if (NOT AURORAE_DEPENDENCIES_DIR)
-    message(FATAL_ERROR "AURORAE_DEPENDENCIES_DIR is not set. "
-            "Please specify the path to the prebuilt dependencies installation directory "
-            "(e.g., -DAURORAE_DEPENDENCIES_DIR:PATH=/path/to/aurorae/build/dependencies-install).")
-endif ()
-
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 message(STATUS "Generator is multi-config: ${is_multi_config}")
-
-# The superbuild installs dependencies into configuration-specific subdirectories
-# (e.g., ${AURORAE_DEPENDENCIES_DIR}/Debug, ${AURORAE_DEPENDENCIES_DIR}/Release).
-# The *Config.cmake files (like VolkConfig.cmake) are located within these subdirectories.
-# CMAKE_BUILD_TYPE is set by our CMakePresets.json (and passed on the command line, as seen in your log)
-# for both Debug and Release configurations, and is available during this configure step.
-
-if (NOT CMAKE_BUILD_TYPE)
-    # This check is a fallback. Presets should ensure CMAKE_BUILD_TYPE is set.
-    # If it's not set, we cannot reliably find dependencies installed in config-specific dirs.
-    message(FATAL_ERROR "CMAKE_BUILD_TYPE is not set."
-            "Please ensure your CMake preset or command line sets CMAKE_BUILD_TYPE "
-            "(e.g., -DCMAKE_BUILD_TYPE=Debug).")
-endif ()
-
-if (NOT SUBFOLDER)
-    message(FATAL_ERROR "SUBFOLDER is not set. It is required to locate dependencies "
-            "in configuration-specific subdirectories (e.g., Debug, DebugAsan, Release). "
-            "Please ensure your CMake Preset or CMake CLI command sets SUBFOLDER, e.g. -DSUBFOLDER=DebugAsan")
-endif ()
-
-# Add the path to the specific configuration's installation directory.
-# For example, if AURORAE_DEPENDENCIES_DIR is ".../dependencies-install" and SUBFOLDER is "Debug",
-# this adds ".../dependencies-install/Debug" to CMAKE_PREFIX_PATH.
-# find_package(Volk) will then search in paths like ".../dependencies-install/Debug/lib/cmake/volk".
-list(APPEND CMAKE_PREFIX_PATH "${AURORAE_DEPENDENCIES_DIR}/${SUBFOLDER}")
-message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 # --- Find Dependencies ---
 # Find Vulkan (usually provided by the SDK)
 find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
 
-# The cmake config files for SPIRV-Cross library that comes with VulkanSDK are broken
-# Here we'll define a static library for each lib file.
-# Note that they all use the same header directory
+# Define SPIRV-Cross libraries from Vulkan SDK
 set(VULKAN_SDK_ROOT "$ENV{VULKAN_SDK}")
-set(SPIRV_CROSS_INCLUDE_DIR "${VULKAN_SDK_ROOT}/Include/spirv_cross")
-set(SPIRV_CROSS_LIB_DIR "${VULKAN_SDK_ROOT}/Lib/lib")
-set(SPIRV_CROSS_LIBS_RELEASE
+set(SPIRV_CROSS_LIB_DIR "${VULKAN_SDK_ROOT}/Lib")
+set(SPIRV_CROSS_LIBS
         spirv-cross-core
         spirv-cross-glsl
         spirv-cross-hlsl
@@ -64,53 +17,21 @@ set(SPIRV_CROSS_LIBS_RELEASE
         spirv-cross-cpp
         spirv-cross-c
 )
-set(SPIRV_CROSS_LIBS_DEBUG
-        spirv-cross-cored
-        spirv-cross-glsld
-        spirv-cross-hlsld
-        spirv-cross-msld
-        spirv-cross-reflectd
-        spirv-cross-cppd
-        spirv-cross-cd
-)
 
-# Select the libs based on build type
-if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-    set(SPIRV_CROSS_LIBS ${SPIRV_CROSS_LIBS_RELEASE})
-elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(SPIRV_CROSS_LIBS ${SPIRV_CROSS_LIBS_DEBUG})
-else ()
-    message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
-endif ()
-foreach (lib IN LISTS SPIRV_CROSS_LIBS)
-    add_library(${lib} STATIC IMPORTED)
-    set_target_properties(${lib} PROPERTIES
-            IMPORTED_LOCATION "${SPIRV_CROSS_LIB_DIR}/${lib}.lib"
-            INTERFACE_INCLUDE_DIRECTORIES "${SPIRV_CROSS_INCLUDE_DIR}"
-    )
-endforeach ()
+# TODO(vug): do I need to do this spirv library here too? I think we do the same in dependencies too.
+foreach(lib IN LISTS SPIRV_CROSS_LIBS)
+    if(NOT TARGET ${lib})
+        add_library(${lib} STATIC IMPORTED)
+        set_target_properties(${lib} PROPERTIES
+                IMPORTED_LOCATION "${SPIRV_CROSS_LIB_DIR}/${lib}d.lib"
+        )
+    endif()
+endforeach()
 
 #message(STATUS "Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
 #message(STATUS "Found Vulkan: ${Vulkan_LIBRARIES}")
 #get_target_property(VULKAN_LIBRARY Vulkan::Vulkan LOCATION)
 #message(STATUS "Vulkan target location: ${VULKAN_LIBRARY}")
-
-find_package(Volk REQUIRED)
-get_target_property(VOLK_LIBRARY volk::volk LOCATION)
-message(STATUS "Volk target location: ${VOLK_LIBRARY}")
-get_target_property(VOLK_INCLUDE_DIR volk::volk INTERFACE_INCLUDE_DIRECTORIES)
-message(STATUS "Volk include dirs: ${VOLK_INCLUDE_DIR}")
-message(STATUS "Vulkan include dirs: ${Vulkan_INCLUDE_DIRS}")
-
-
-find_package(vk-bootstrap REQUIRED)
-find_package(spdlog REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(glm REQUIRED)
-find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-find_package(assimp REQUIRED)
-find_package(glaze REQUIRED)
-find_package(modern-uuid REQUIRED)
 
 # TODO(vug): add a function that takes package name and target name.
 # target name can be found in the *Config.cmake file.
@@ -160,10 +81,9 @@ add_executable(Aurorae
 )
 
 target_compile_features(Aurorae PRIVATE cxx_std_23)
-message(STATUS "EXTERNAL: ${PROJECT_SOURCE_DIR}/../superbuild")
 target_compile_options(Aurorae PRIVATE
         /W4 # get lots of warnings
-        /external:I${PROJECT_SOURCE_DIR}/../superbuild /external:W0 # ignore warnings from dependencies
+        /external:I${PROJECT_SOURCE_DIR}/../install /external:W0 # ignore warnings from dependencies
         /EHsc # something related to exceptions
         /MP # enable parallel builds
         #/Bt+      # Show time for each compilation phase
@@ -192,17 +112,17 @@ target_precompile_headers(Aurorae PRIVATE
         <unordered_map>
         <utility>
         <vector>
-        # Dependencies
-        ## Assimp and GLFW files are only included in single CPP files
-        <glaze/glaze/glaze.hpp>
-        <modern-uuid/uuid.h>
-        <glm/gtc/type_ptr.hpp>
-        <glm/mat4x4.hpp>
-        <vk-bootstrap/VkBootstrap.h>
-        <volk/volk.h>
-        <VulkanMemoryAllocator/vk_mem_alloc.h>
-        <vulkan/vulkan_core.h>
-        <vulkan/vulkan.h>
+        # # Dependencies
+        # ## Assimp and GLFW files are only included in single CPP files
+        # <glaze/glaze/glaze.hpp>
+        # <modern-uuid/uuid.h>
+        # <glm/gtc/type_ptr.hpp>
+        # <glm/mat4x4.hpp>
+        # <vk-bootstrap/VkBootstrap.h>
+        # <volk/volk.h>
+        # <VulkanMemoryAllocator/vk_mem_alloc.h>
+        # <vulkan/vulkan_core.h>
+        # <vulkan/vulkan.h>
 )
 
 
@@ -213,34 +133,31 @@ target_compile_definitions(Aurorae PRIVATE
 )
 
 target_link_libraries(Aurorae PRIVATE
+        AuroraeDependencies
         Vulkan::Vulkan
-        volk::volk
-        vk-bootstrap::vk-bootstrap
-        spdlog::spdlog
-        # spdlog$<$<CONFIG:Debug>:d> # alternative
-        glfw
-        GPUOpen::VulkanMemoryAllocator
-        glm::glm
-        assimp::assimp
         Vulkan::shaderc_combined
-        ${SPIRV_CROSS_LIBS}
-        glaze::glaze
-        modern-uuid::modern-uuid
+        spirv-cross-core
+        spirv-cross-glsl
+        spirv-cross-hlsl
+        spirv-cross-msl
+        spirv-cross-reflect
+        spirv-cross-cpp
+        spirv-cross-c
 )
 # shaderc_combined does not come with PDB files, causing warnings at linking in debug mode
 target_link_options(Aurorae PRIVATE "/ignore:4099")
 
 
-if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    target_compile_definitions(Aurorae PRIVATE REL_WITH_DEBUG_INFO_BUILD)
-elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(Aurorae PRIVATE RELEASE_BUILD)
-elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(Aurorae PRIVATE DEBUG_BUILD)
-else ()
-    message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}. "
-            "Add macro for this build type  .")
-endif ()
+# if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+#     target_compile_definitions(Aurorae PRIVATE REL_WITH_DEBUG_INFO_BUILD)
+# elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+#     target_compile_definitions(Aurorae PRIVATE RELEASE_BUILD)
+# elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+#     target_compile_definitions(Aurorae PRIVATE DEBUG_BUILD)
+# else ()
+#     message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}. "
+#             "Add macro for this build type  .")
+# endif ()
 
 if (SUBFOLDER STREQUAL "DebugAsan")
     message(STATUS "AddressSanitizer is enabled, configuring post-build step to copy runtime DLL.")

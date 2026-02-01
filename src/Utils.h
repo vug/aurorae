@@ -3,6 +3,9 @@
 #include <filesystem>
 #include <string>
 
+// TODO(vug): Better not include this big header library here in Utils.h
+#include <glaze/glaze.hpp>
+
 namespace aur {
 
 // Signed integers

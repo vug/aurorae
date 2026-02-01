@@ -5,5 +5,5 @@
   "depthTest": true,
   "depthWrite": false,
   "cullMode": "Back",
-  "blendPreset": "AlphaBlend"
+  "blendPreset": "AlphaBlend" 
 }

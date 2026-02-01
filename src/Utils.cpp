@@ -1,5 +1,7 @@
 #include "Utils.h"
 
+#include <vulkan/vulkan.h>
+
 namespace aur {
 
 //----------------------------------------------------------------
