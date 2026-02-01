@@ -183,4 +183,4 @@ if (SUBFOLDER STREQUAL "DebugAsan")
 
 endif ()
 
-target_compile_definitions(Aurorae PRIVATE ASSETS_FOLDER="${PROJECT_SOURCE_DIR}/assets")
+target_compile_definitions(Aurorae PRIVATE ASSETS_FOLDER="${PROJECT_SOURCE_DIR}/src/assets")
