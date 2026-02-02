@@ -24,11 +24,11 @@
       "lineWidth": {
          "$ref": "#/$defs/float"
       },
+      "matParams": {
+         "$ref": "#/$defs/aur::asset::MaterialParameters"
+      },
       "polygonMode": {
          "$ref": "#/$defs/aur::PolygonMode"
-      },
-      "values": {
-         "$ref": "#/$defs/std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >"
       },
       "version": {
          "$ref": "#/$defs/uint32_t"
@@ -103,17 +103,6 @@
             }
          ]
       },
-      "aur::MaterialUniformValue": {
-         "type": [
-            "object"
-         ],
-         "properties": {
-            "val": {
-               "$ref": "#/$defs/std::variant<int,unsigned int,float,struct glm::vec<2,float,0>,struct glm::vec<3,float,0>,struct glm::vec<4,float,0>,struct glm::mat<3,3,float,0>,struct glm::mat<4,4,float,0>,class std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >,class std::vector<struct aur::MaterialUniformValue,class std::allocator<struct aur::MaterialUniformValue> > >"
-            }
-         },
-         "additionalProperties": false
-      },
       "aur::PolygonMode": {
          "type": [
             "string"
@@ -133,6 +122,35 @@
             }
          ]
       },
+      "aur::asset::MaterialParameters": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "floats": {
+               "$ref": "#/$defs/std::unordered_map<std::string,float>"
+            },
+            "integers": {
+               "$ref": "#/$defs/std::unordered_map<std::string,int32_t>"
+            },
+            "matrix3s": {
+               "$ref": "#/$defs/std::unordered_map<std::string,glm::mat<3,3,float,0>>"
+            },
+            "matrix4s": {
+               "$ref": "#/$defs/std::unordered_map<std::string,glm::mat<4,4,float,0>>"
+            },
+            "vector2s": {
+               "$ref": "#/$defs/std::unordered_map<std::string,glm::vec<2,float,0>>"
+            },
+            "vector3s": {
+               "$ref": "#/$defs/std::unordered_map<std::string,glm::vec<3,float,0>>"
+            },
+            "vector4s": {
+               "$ref": "#/$defs/std::unordered_map<std::string,glm::vec<4,float,0>>"
+            }
+         },
+         "additionalProperties": false
+      },
       "bool": {
          "type": [
             "boolean"
@@ -145,158 +163,139 @@
          "minimum": -3.4028234663852886E38,
          "maximum": 3.4028234663852886E38
       },
-      "std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >": {
+      "glm::mat<3,3,float,0>": {
+         "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+         ]
+      },
+      "glm::mat<4,4,float,0>": {
+         "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+         ]
+      },
+      "glm::vec<2,float,0>": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "x": {
+               "$ref": "#/$defs/float"
+            },
+            "y": {
+               "$ref": "#/$defs/float"
+            }
+         },
+         "additionalProperties": false
+      },
+      "glm::vec<3,float,0>": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "x": {
+               "$ref": "#/$defs/float"
+            },
+            "y": {
+               "$ref": "#/$defs/float"
+            },
+            "z": {
+               "$ref": "#/$defs/float"
+            }
+         },
+         "additionalProperties": false
+      },
+      "glm::vec<4,float,0>": {
+         "type": [
+            "object"
+         ],
+         "properties": {
+            "w": {
+               "$ref": "#/$defs/float"
+            },
+            "x": {
+               "$ref": "#/$defs/float"
+            },
+            "y": {
+               "$ref": "#/$defs/float"
+            },
+            "z": {
+               "$ref": "#/$defs/float"
+            }
+         },
+         "additionalProperties": false
+      },
+      "int32_t": {
+         "type": [
+            "integer"
+         ],
+         "minimum": -2147483648,
+         "maximum": 2147483647
+      },
+      "std::unordered_map<std::string,float>": {
          "type": [
             "object"
          ],
          "additionalProperties": {
-            "$ref": "#/$defs/aur::MaterialUniformValue"
+            "$ref": "#/$defs/float"
          }
       },
-      "std::variant<int,unsigned int,float,struct glm::vec<2,float,0>,struct glm::vec<3,float,0>,struct glm::vec<4,float,0>,struct glm::mat<3,3,float,0>,struct glm::mat<4,4,float,0>,class std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct aur::MaterialUniformValue,struct std::less<void>,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct aur::MaterialUniformValue> > >,class std::vector<struct aur::MaterialUniformValue,class std::allocator<struct aur::MaterialUniformValue> > >": {
+      "std::unordered_map<std::string,glm::mat<3,3,float,0>>": {
          "type": [
-            "number",
-            "object",
-            "array"
+            "object"
          ],
-         "oneOf": [
-            {
-               "type": [
-                  "integer"
-               ],
-               "title": "int",
-               "minimum": -2147483648,
-               "maximum": 2147483647
-            },
-            {
-               "type": [
-                  "integer"
-               ],
-               "title": "uint",
-               "minimum": 0,
-               "maximum": 4294967295
-            },
-            {
-               "type": [
-                  "number"
-               ],
-               "title": "float",
-               "minimum": -3.4028234663852886E38,
-               "maximum": 3.4028234663852886E38
-            },
-            {
-               "type": [
-                  "object"
-               ],
-               "properties": {
-                  "valueType": {
-                     "const": "vec2"
-                  },
-                  "x": {
-                     "$ref": "#/$defs/float"
-                  },
-                  "y": {
-                     "$ref": "#/$defs/float"
-                  }
-               },
-               "additionalProperties": false,
-               "required": [
-                  "valueType"
-               ],
-               "title": "vec2"
-            },
-            {
-               "type": [
-                  "object"
-               ],
-               "properties": {
-                  "valueType": {
-                     "const": "vec3"
-                  },
-                  "x": {
-                     "$ref": "#/$defs/float"
-                  },
-                  "y": {
-                     "$ref": "#/$defs/float"
-                  },
-                  "z": {
-                     "$ref": "#/$defs/float"
-                  }
-               },
-               "additionalProperties": false,
-               "required": [
-                  "valueType"
-               ],
-               "title": "vec3"
-            },
-            {
-               "type": [
-                  "object"
-               ],
-               "properties": {
-                  "valueType": {
-                     "const": "vec4"
-                  },
-                  "w": {
-                     "$ref": "#/$defs/float"
-                  },
-                  "x": {
-                     "$ref": "#/$defs/float"
-                  },
-                  "y": {
-                     "$ref": "#/$defs/float"
-                  },
-                  "z": {
-                     "$ref": "#/$defs/float"
-                  }
-               },
-               "additionalProperties": false,
-               "required": [
-                  "valueType"
-               ],
-               "title": "vec4"
-            },
-            {
-               "type": [
-                  "number",
-                  "string",
-                  "boolean",
-                  "object",
-                  "array",
-                  "null"
-               ],
-               "title": "mat3"
-            },
-            {
-               "type": [
-                  "number",
-                  "string",
-                  "boolean",
-                  "object",
-                  "array",
-                  "null"
-               ],
-               "title": "mat4"
-            },
-            {
-               "type": [
-                  "object"
-               ],
-               "additionalProperties": {
-                  "$ref": "#/$defs/aur::MaterialUniformValue"
-               },
-               "title": "struct"
-            },
-            {
-               "type": [
-                  "array"
-               ],
-               "items": {
-                  "$ref": "#/$defs/aur::MaterialUniformValue"
-               },
-               "title": "array"
-            }
-         ]
+         "additionalProperties": {
+            "$ref": "#/$defs/glm::mat<3,3,float,0>"
+         }
+      },
+      "std::unordered_map<std::string,glm::mat<4,4,float,0>>": {
+         "type": [
+            "object"
+         ],
+         "additionalProperties": {
+            "$ref": "#/$defs/glm::mat<4,4,float,0>"
+         }
+      },
+      "std::unordered_map<std::string,glm::vec<2,float,0>>": {
+         "type": [
+            "object"
+         ],
+         "additionalProperties": {
+            "$ref": "#/$defs/glm::vec<2,float,0>"
+         }
+      },
+      "std::unordered_map<std::string,glm::vec<3,float,0>>": {
+         "type": [
+            "object"
+         ],
+         "additionalProperties": {
+            "$ref": "#/$defs/glm::vec<3,float,0>"
+         }
+      },
+      "std::unordered_map<std::string,glm::vec<4,float,0>>": {
+         "type": [
+            "object"
+         ],
+         "additionalProperties": {
+            "$ref": "#/$defs/glm::vec<4,float,0>"
+         }
+      },
+      "std::unordered_map<std::string,int32_t>": {
+         "type": [
+            "object"
+         ],
+         "additionalProperties": {
+            "$ref": "#/$defs/int32_t"
+         }
       },
       "uint32_t": {
          "type": [

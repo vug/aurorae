@@ -137,16 +137,24 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
               .value_or(ProcessingResult{});
 
       // Create and store a Material Template using the graphics program
-      const MaterialUniformValue::Struct defaultValues =
-          def->combinedSchema.getMaterialUniformBufferSchema()
-              .and_then([](const auto& schema) { return std::optional{schema.members}; })
-              .and_then([](const auto& members) {
-                return std::optional{asset::MaterialDefinition::buildDefaultValues(members)};
-              })
-              .value_or({});
+      def->combinedSchema.getMaterialUniformBufferSchema()
+        .and_then([](const asset::ShaderResource& schema){ return std::optional{schema.members}; })
+        .and_then([](const std::vector<asset::ShaderBlockMember>& members) {
+          asset::MaterialParameters matParams;
+          for (const asset::ShaderBlockMember& member : members) {
+            if (member.isArray)
+              log().fatal("Arrays in uniform buffers are not supported");
+            const asset::ShaderVariableTypeInfo& typeInfo = member.typeInfo;
+            if (typeInfo.baseType != asset::ShaderVariableTypeInfo::BaseType::Int || typeInfo.baseType != asset::ShaderVariableTypeInfo::BaseType::Float)
+              log().fatal("Only int and float base types are supported uniform buffers. struct, bool etc. are not");
+            if (typeInfo.signedness != asset::ShaderVariableTypeInfo::Signedness::Signed)
+              log().fatal("Only signed types are supported uniform buffers. unsigned are not");
+
+          }
+          return std::optional{matParams};
+        });
       const asset::MaterialDefinition matDef{
           .graphicsProgram = StableId<asset::GraphicsProgram>::fromSourcePath(srcPath),
-          .values = defaultValues,
       };
 
       const std::filesystem::path dstPath =
