@@ -25,31 +25,25 @@ layout (set = 0, binding = 0, scalar) uniform perFrameData {
     uint64_t frameNo;
 } perFrame;
 
-struct PointLight {
-    vec3 position;
-    vec4 color;
-    float intensity;
-};
-
-struct Struct2 {
-    int var1;
-};
-
-struct Struct1 {
-    int var1;
-    int var2;
-    Struct2[2] var3;
-};
-
 layout (set = 1, binding = 0, scalar) uniform MaterialParams {
-    vec3[5] positions;
-    int pointLightCnt;
-    PointLight[10] pointLights;
-    Struct1 s1;
+    int cnt1;
+    int cnt2;
+    float num1;
+    float num2;
+    vec2 dir1;
+    vec2 dir2;
+    vec3 pos1;
+    vec3 pos2;
+    vec4 col1;
+    vec4 col2;
+    mat3 rot1;
+    mat3 rot2;
+    mat4 xform1;
+    mat4 xform2;
 } matParams;
 
 layout (location = 0) out vec4 outColor;
 
 void main() {
-    outColor = vec4(1, 0, 0, 1);
+    outColor = vec4(v.objectPosition.x, ids.meshId, matParams.num1, 1);
 }
