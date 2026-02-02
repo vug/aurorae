@@ -137,7 +137,7 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
               .value_or(ProcessingResult{});
 
       // Create and store a Material Template using the graphics program
-      def->combinedSchema.getMaterialUniformBufferSchema()
+      const std::optional<asset::MaterialParameters> matParams = def->combinedSchema.getMaterialUniformBufferSchema()
         .and_then([](const asset::ShaderResource& schema){ return std::optional{schema.members}; })
         .and_then([](const std::vector<asset::ShaderBlockMember>& members) {
           asset::MaterialParameters matParams;
@@ -145,16 +145,48 @@ std::optional<AssetEntry> AssetProcessor::processAssetMakeEntry(const std::files
             if (member.isArray)
               log().fatal("Arrays in uniform buffers are not supported");
             const asset::ShaderVariableTypeInfo& typeInfo = member.typeInfo;
-            if (typeInfo.baseType != asset::ShaderVariableTypeInfo::BaseType::Int || typeInfo.baseType != asset::ShaderVariableTypeInfo::BaseType::Float)
+            if (!(typeInfo.baseType == asset::ShaderVariableTypeInfo::BaseType::Int || typeInfo.baseType == asset::ShaderVariableTypeInfo::BaseType::Float))
               log().fatal("Only int and float base types are supported uniform buffers. struct, bool etc. are not");
             if (typeInfo.signedness != asset::ShaderVariableTypeInfo::Signedness::Signed)
               log().fatal("Only signed types are supported uniform buffers. unsigned are not");
-
+            switch (const asset::ShaderVariableType shaderVarType = asset::getShaderVariableType(typeInfo); shaderVarType) {
+              case asset::ShaderVariableType::int32_t1: {
+                matParams.integers[member.name] = {};
+              }
+              break;
+              case asset::ShaderVariableType::float32_t1: {
+                matParams.floats[member.name] = {};
+              }
+              break;
+              case asset::ShaderVariableType::float32_t2: {
+                matParams.vector2s[member.name] = {};
+              }
+              break;
+              case asset::ShaderVariableType::float32_t3: {
+                matParams.vector3s[member.name] = {};
+              }
+              break;
+              case asset::ShaderVariableType::float32_t4: {
+                matParams.vector4s[member.name] = {};
+              }
+              break;
+              case asset::ShaderVariableType::float32_t3x3: {
+                matParams.matrix3s[member.name] = {};
+              }
+              break;
+              case asset::ShaderVariableType::float32_t4x4: {
+                matParams.matrix4s[member.name] = {};
+              }
+              break;
+            default:
+              log().fatal("Unsupported shader variable type");
+            }
           }
           return std::optional{matParams};
         });
       const asset::MaterialDefinition matDef{
-          .graphicsProgram = StableId<asset::GraphicsProgram>::fromSourcePath(srcPath),
+        .graphicsProgram = StableId<asset::GraphicsProgram>::fromSourcePath(srcPath),
+        .matParams = matParams.value_or({}),
       };
 
       const std::filesystem::path dstPath =

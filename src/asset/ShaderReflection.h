@@ -246,4 +246,209 @@ struct ShaderStageSchema {
 using SpirV = std::vector<u32>;
 [[nodiscard]] ShaderStageSchema reflectShaderStageSchema(const SpirV& spirV);
 
+// ----
+
+// clang-format off
+// Constexpr converter from the factored representation to the mnemonic.
+constexpr ShaderVariableType getShaderVariableType(const ShaderVariableTypeInfo& typeInfo) {
+  using BaseType = ShaderVariableTypeInfo::BaseType;
+  using Signedness = ShaderVariableTypeInfo::Signedness;
+
+  // Handle special cases first
+  if (typeInfo.baseType == BaseType::Unknown)
+    return ShaderVariableType::Unknown;
+  if (typeInfo.baseType == BaseType::Struct)
+    return ShaderVariableType::Struct;
+
+  // Handle booleans (always 4 bytes in interface blocks)
+  if (typeInfo.baseType == BaseType::Bool && typeInfo.componentBytes == 4 && typeInfo.columnCnt == 1) {
+    switch (typeInfo.vectorSize) {
+    case 1: return ShaderVariableType::bool1;
+    case 2: return ShaderVariableType::bool2;
+    case 3: return ShaderVariableType::bool3;
+    case 4: return ShaderVariableType::bool4;
+    }
+  }
+
+  // Handle integers (scalars and vectors only)
+  if (typeInfo.baseType == BaseType::Int && typeInfo.columnCnt == 1) {
+    if (typeInfo.signedness == Signedness::Signed) {
+      switch (typeInfo.componentBytes) {
+      case 1:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::int8_t1;
+        case 2: return ShaderVariableType::int8_t2;
+        case 3: return ShaderVariableType::int8_t3;
+        case 4: return ShaderVariableType::int8_t4;
+        }
+        break;
+      case 2:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::int16_t1;
+        case 2: return ShaderVariableType::int16_t2;
+        case 3: return ShaderVariableType::int16_t3;
+        case 4: return ShaderVariableType::int16_t4;
+        }
+        break;
+      case 4:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::int32_t1;
+        case 2: return ShaderVariableType::int32_t2;
+        case 3: return ShaderVariableType::int32_t3;
+        case 4: return ShaderVariableType::int32_t4;
+        }
+        break;
+      case 8:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::int64_t1;
+        case 2: return ShaderVariableType::int64_t2;
+        case 3: return ShaderVariableType::int64_t3;
+        case 4: return ShaderVariableType::int64_t4;
+        }
+        break;
+      }
+    } else if (typeInfo.signedness == Signedness::Unsigned) {
+      switch (typeInfo.componentBytes) {
+      case 1:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::uint8_t1;
+        case 2: return ShaderVariableType::uint8_t2;
+        case 3: return ShaderVariableType::uint8_t3;
+        case 4: return ShaderVariableType::uint8_t4;
+        }
+        break;
+      case 2:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::uint16_t1;
+        case 2: return ShaderVariableType::uint16_t2;
+        case 3: return ShaderVariableType::uint16_t3;
+        case 4: return ShaderVariableType::uint16_t4;
+        }
+        break;
+      case 4:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::uint32_t1;
+        case 2: return ShaderVariableType::uint32_t2;
+        case 3: return ShaderVariableType::uint32_t3;
+        case 4: return ShaderVariableType::uint32_t4;
+        }
+        break;
+      case 8:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::uint64_t1;
+        case 2: return ShaderVariableType::uint64_t2;
+        case 3: return ShaderVariableType::uint64_t3;
+        case 4: return ShaderVariableType::uint64_t4;
+        }
+        break;
+      }
+    }
+  }
+
+  // Handle floats (scalars, vectors, and matrices)
+  if (typeInfo.baseType == BaseType::Float && typeInfo.signedness == Signedness::Signed) {
+    // Scalar and vector floats (columnCnt == 1)
+    if (typeInfo.columnCnt == 1) {
+      switch (typeInfo.componentBytes) {
+      case 2:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::float16_t1;
+        case 2: return ShaderVariableType::float16_t2;
+        case 3: return ShaderVariableType::float16_t3;
+        case 4: return ShaderVariableType::float16_t4;
+        }
+        break;
+      case 4:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::float32_t1;
+        case 2: return ShaderVariableType::float32_t2;
+        case 3: return ShaderVariableType::float32_t3;
+        case 4: return ShaderVariableType::float32_t4;
+        }
+        break;
+      case 8:
+        switch (typeInfo.vectorSize) {
+        case 1: return ShaderVariableType::float64_t1;
+        case 2: return ShaderVariableType::float64_t2;
+        case 3: return ShaderVariableType::float64_t3;
+        case 4: return ShaderVariableType::float64_t4;
+        }
+        break;
+      }
+    }
+    // Matrix floats (columnCnt > 1)
+    else {
+      switch (typeInfo.componentBytes) {
+      case 2:
+        if (typeInfo.columnCnt == 2) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float16_t2x2;
+          case 3: return ShaderVariableType::float16_t2x3;
+          case 4: return ShaderVariableType::float16_t2x4;
+          }
+        } else if (typeInfo.columnCnt == 3) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float16_t3x2;
+          case 3: return ShaderVariableType::float16_t3x3;
+          case 4: return ShaderVariableType::float16_t3x4;
+          }
+        } else if (typeInfo.columnCnt == 4) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float16_t4x2;
+          case 3: return ShaderVariableType::float16_t4x3;
+          case 4: return ShaderVariableType::float16_t4x4;
+          }
+        }
+        break;
+      case 4:
+        if (typeInfo.columnCnt == 2) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float32_t2x2;
+          case 3: return ShaderVariableType::float32_t2x3;
+          case 4: return ShaderVariableType::float32_t2x4;
+          }
+        } else if (typeInfo.columnCnt == 3) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float32_t3x2;
+          case 3: return ShaderVariableType::float32_t3x3;
+          case 4: return ShaderVariableType::float32_t3x4;
+          }
+        } else if (typeInfo.columnCnt == 4) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float32_t4x2;
+          case 3: return ShaderVariableType::float32_t4x3;
+          case 4: return ShaderVariableType::float32_t4x4;
+          }
+        }
+        break;
+      case 8:
+        if (typeInfo.columnCnt == 2) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float64_t2x2;
+          case 3: return ShaderVariableType::float64_t2x3;
+          case 4: return ShaderVariableType::float64_t2x4;
+          }
+        } else if (typeInfo.columnCnt == 3) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float64_t3x2;
+          case 3: return ShaderVariableType::float64_t3x3;
+          case 4: return ShaderVariableType::float64_t3x4;
+          }
+        } else if (typeInfo.columnCnt == 4) {
+          switch (typeInfo.vectorSize) {
+          case 2: return ShaderVariableType::float64_t4x2;
+          case 3: return ShaderVariableType::float64_t4x3;
+          case 4: return ShaderVariableType::float64_t4x4;
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  // If we reach here, the type info doesn't match any known type
+  return ShaderVariableType::Unknown;
+}
+// clang-format on
+
 } // namespace aur::asset

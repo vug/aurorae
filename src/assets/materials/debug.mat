@@ -1,9 +1,22 @@
 {
   "version": 1,
   "graphicsProgram": "shaders/debug.shader",
-  "polygonMode": "Fill",
   "depthTest": true,
-  "depthWrite": false,
+  "depthWrite": true,
+  "polygonMode": "Fill",
   "cullMode": "Back",
-  "blendPreset": "AlphaBlend" 
+  "frontFace": "CounterClockwise",
+  "lineWidth": 1,
+  "blendPreset": "NoBlend",
+  "matParams": {
+    "integers": {
+      "vizMode": 0
+    },
+    "floats": {},
+    "vector2s": {},
+    "vector3s": {},
+    "vector4s": {},
+    "matrix3s": {},
+    "matrix4s": {}
+  }
 }
