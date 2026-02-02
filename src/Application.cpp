@@ -88,12 +88,6 @@ void Application::run() {
     assetRegistry_.load();
   }
 
-  // Handle<asset::Material> uboStudyAMat =
-  //     assetManager_.load(StableId<asset::Material>{"materials/ubo_study.mat"});
-  // if (!uboStudyAMat.isValid())
-  //   log().fatal("Failed to load ubo_study.mat");
-  // Handle<render::Material> uboStudyRMat = renderer_.uploadOrGet(uboStudyAMat);
-
   // "Asset Library"
   const StableId<asset::Mesh> kBoxMeshId{
       "models/glTF-Sample-Assets/BoxVertexColors/glTF/BoxVertexColors.gltf"};
@@ -101,8 +95,15 @@ void Application::run() {
   const Handle<render::Mesh> rBoxMesh = renderer_.uploadOrGet(aBoxMesh);
   const StableId<asset::Mesh> kDuckMeshId{"models/glTF-Sample-Assets/Duck/glTF/Duck.gltf"};
   const Handle<asset::Mesh> aDuckMesh = assetManager_.load(kDuckMeshId);
-  const Handle<render::Mesh> rDuckMesh = renderer_.uploadOrGet(aDuckMesh);
+  Handle<render::Mesh> rDuckMesh = renderer_.uploadOrGet(aDuckMesh);
   log().trace("Created assets...");
+
+  const Handle<asset::Material> debugAMat =
+      assetManager_.load(StableId<asset::Material>{"materials/debug.mat"});
+  if (!debugAMat.isValid())
+    log().fatal("Failed to load debug.mat");
+  // const Handle<render::Material> debugRMat = renderer_.uploadOrGet(debugAMat);
+  // rDuckMesh->setMaterial(0, debugAMat);
 
   log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
@@ -151,7 +152,7 @@ void Application::run() {
       Handle<render::Mesh> rMeshHnd;
     };
 
-    std::vector<Renderable> renderables = {
+    const std::vector<Renderable> renderables = {
         {
             .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f)),
             .rMeshHnd = rDuckMesh,
@@ -162,11 +163,10 @@ void Application::run() {
         }};
     for (const render::DrawSpan& span : rDuckMesh->getDrawSpans()) {
       i32 vizMode{2};
-      std::span<int> spn = std::span(&vizMode, 1);
-      std::span<const std::byte> bytes = std::as_bytes(spn);
+      const std::span<int> spn = std::span(&vizMode, 1);
+      const std::span<const std::byte> bytes = std::as_bytes(spn);
       span.material->setParam("vizMode", bytes);
     }
-    // Can I make renderable const?
     for (const auto& renderable : renderables)
       renderable.rMeshHnd->draw(renderable.worldFromObject, renderable.rMeshHnd.id);
 

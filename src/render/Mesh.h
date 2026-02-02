@@ -38,6 +38,7 @@ public:
 
   void draw(const glm::mat4& worldFromObject, i32 meshId = 0) const;
   void drawSpan(u32 spanIx, const PushConstant& pc) const;
+  void setMaterial(u32 spanIx, Handle<asset::Material> material);
 
   [[nodiscard]] const Handle<asset::Mesh>& getAssetHandle() const { return assetHandle_; }
   [[nodiscard]] const Buffer& getVertexBuffer() const { return vertexBuffer_; }
