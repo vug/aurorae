@@ -117,6 +117,7 @@ struct glz::meta<aur::asset::ShaderVariableTypeInfo::Signedness> {
 
 namespace aur::asset {
 constexpr ShaderVariableTypeInfo getFactoredTypeInfo(ShaderVariableType mnemonic);
+constexpr ShaderVariableType getShaderVariableType(const ShaderVariableTypeInfo& typeInfo);
 
 struct CommonMemberProps {
   spirv_cross::TypeID memberTypeId;
