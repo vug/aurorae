@@ -1,0 +1,27 @@
+{
+   "version": 1,
+   "graphicsProgram": "shaders/unlit_solid.shader",
+   "depthTest": true,
+   "depthWrite": true,
+   "polygonMode": "Fill",
+   "cullMode": "Back",
+   "frontFace": "CounterClockwise",
+   "lineWidth": 1,
+   "blendPreset": "NoBlend",
+   "matParams": {
+      "integers": {},
+      "floats": {},
+      "vector2s": {},
+      "vector3s": {},
+      "vector4s": {
+         "color": {
+            "x": 0.5,
+            "y": 0.5,
+            "z": 0.0,
+            "w": 1.0
+         }
+      },
+      "matrix3s": {},
+      "matrix4s": {}
+   }
+}
