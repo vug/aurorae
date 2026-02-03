@@ -41,6 +41,10 @@ public:
     return matParamsDescriptorSet_;
   }
 
+  [[nodiscard]] inline const Handle<asset::Material>& getAssetHandle() const {
+    return assetHandle_;
+  }
+
 private:
   Renderer* renderer_{};
   Handle<asset::Material> assetHandle_;
