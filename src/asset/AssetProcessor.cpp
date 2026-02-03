@@ -366,8 +366,18 @@ AssetProcessor::processGraphicsProgram(const std::filesystem::path& srcPath) {
                 err.custom_error_message);
   }
 
-  const AssetUuid vertUuid = registry_->getUuid(def.vert).value();
-  const AssetUuid fragUuid = registry_->getUuid(def.frag).value();
+  const auto checkVal = [&def, &srcPath](const std::optional<AssetUuid>& uuid, const std::string_view stage) {
+    if (!uuid.has_value()) {
+      const std::string& stableId = def.vert;
+      log().fatal("{} shader UUID not found for {} graphics program at: {}", stage, stableId, srcPath.generic_string());
+    }
+  };
+  const std::optional<AssetUuid> vertUuidOpt = registry_->getUuid(def.vert);
+  checkVal(vertUuidOpt, "Vertex");
+  const AssetUuid vertUuid = vertUuidOpt.value();
+  const std::optional<AssetUuid> fragUuidOpt = registry_->getUuid(def.frag);
+  checkVal(fragUuidOpt, "Fragment");
+  const AssetUuid fragUuid = fragUuidOpt.value();
   const auto vertDef = registry_->getDefinition<asset::ShaderStageDefinition>(vertUuid);
   const auto fragDef = registry_->getDefinition<asset::ShaderStageDefinition>(fragUuid);
   log().debug("    Loaded vertex shader '{}', fragment shader '{}'", std::string(def.vert),
