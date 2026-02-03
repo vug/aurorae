@@ -98,13 +98,11 @@ void Application::run() {
   Handle<render::Mesh> rDuckMesh = renderer_.uploadOrGet(aDuckMesh);
   log().trace("Created assets...");
 
-  // Note that currently this is a no-op because debug material has already been loaded, and mesh uses it
-  // TODO(vug): create a new material and set Duck's material to it
-  // const Handle<asset::Material> debugAMat =
-  //     assetManager_.load(StableId<asset::Material>{"materials/debug.mat"});
-  // if (!debugAMat.isValid())
-  //   log().fatal("Failed to load debug.mat");
-  // rDuckMesh->setMaterial(0, debugAMat);
+  const Handle<asset::Material> unlitSolidAMat =
+      assetManager_.load(StableId<asset::Material>{"materials/unlit_solid.mat"});
+  if (!unlitSolidAMat.isValid())
+    log().fatal("Failed to load materials/unlit_solid.mat");
+  rDuckMesh->setMaterial(0, unlitSolidAMat);
 
   log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
@@ -162,13 +160,14 @@ void Application::run() {
             .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
             .rMeshHnd = rBoxMesh,
         }};
+
     // TODO(vug): if multiple spans have same material this loop will have redundancy
-    // for (const render::DrawSpan& span : rDuckMesh->getDrawSpans()) {
-    //   i32 vizMode{2};
-    //   const std::span<int> spn = std::span(&vizMode, 1);
-    //   const std::span<const std::byte> bytes = std::as_bytes(spn);
-    //   span.material->setParam("vizMode", bytes);
-    // }
+    for (const render::DrawSpan& span : rDuckMesh->getDrawSpans()) {
+      glm::vec4 color{std::sinf(static_cast<f32>(frameNo) / 1000.f) * 0.5f + 0.5f, 0.0f, 0.0f, 1.0f};
+      const std::span<glm::vec4> spn = std::span(&color, 1);
+      const std::span<const std::byte> bytes = std::as_bytes(spn);
+      span.material->setParam("color", bytes);
+    }
     for (const auto& renderable : renderables)
       renderable.rMeshHnd->draw(renderable.worldFromObject, renderable.rMeshHnd.id);
 
