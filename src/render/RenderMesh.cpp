@@ -64,11 +64,10 @@ void Mesh::drawSpan(u32 spanIx, const PushConstant& pc) const {
   renderer_->drawIndexed(*pipeline, vertexBuffer_, indexBuffer_, &pcInfo);
 }
 
-void Mesh::setMaterial(u32 spanIx, Handle<asset::Material> material) {
+void Mesh::setMaterial(u32 spanIx, Handle<Material> material) {
   if (spanIx >= drawSpans_.size())
     log().fatal("spanIx {} not in range [0, {}].", spanIx, drawSpans_.size() - 1);
 
-  const auto renderMatHandle = renderer_->uploadOrGet(material);
-  drawSpans_[spanIx].material = renderMatHandle;
+  drawSpans_[spanIx].material = material;
 }
 } // namespace aur::render
