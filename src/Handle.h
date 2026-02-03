@@ -31,6 +31,10 @@ struct Handle {
   const THandleable* operator->() const { return &get(); }
   const THandleable& operator*() const { return get(); }
 
+  THandleable& get();
+  THandleable* operator->() { return &get(); }
+  THandleable& operator*() { return get(); }
+
   bool operator==(const Handle<THandleable>& other) const { return id == other.id; }
   // for using as a key in maps
   bool operator<(const Handle<THandleable>& other) const { return id < other.id; }

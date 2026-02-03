@@ -140,6 +140,15 @@ public:
   [[nodiscard]] inline const render::Mesh* get(Handle<render::Mesh> handle) const {
     return &meshes_.at(handle);
   }
+  [[nodiscard]] inline render::GraphicsProgram* get(Handle<render::GraphicsProgram> handle) {
+    return &graphicsPrograms_.at(handle);
+  }
+  [[nodiscard]] inline render::Material* get(Handle<render::Material> handle) {
+    return &materials_.at(handle);
+  }
+  [[nodiscard]] inline render::Mesh* get(Handle<render::Mesh> handle) {
+    return &meshes_.at(handle);
+  }
 
   void onGraphicsProgramAssetUpdated(Handle<asset::GraphicsProgram> assetHnd);
 

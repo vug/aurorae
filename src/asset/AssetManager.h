@@ -49,6 +49,19 @@ public:
     return &meshes_.at(handle);
   };
 
+  [[nodiscard]] inline asset::ShaderStage* get(Handle<asset::ShaderStage> handle) {
+    return &shaderStages_.at(handle);
+  }
+  [[nodiscard]] inline asset::GraphicsProgram* get(Handle<asset::GraphicsProgram> handle) {
+    return &graphicsPrograms_.at(handle);
+  }
+  [[nodiscard]] inline asset::Material* get(Handle<asset::Material> handle) {
+    return &materials_.at(handle);
+  }
+  [[nodiscard]] inline asset::Mesh* get(Handle<asset::Mesh> handle) {
+    return &meshes_.at(handle);
+  };
+
   void addGraphicsProgramUpdateListener(asset::GraphicsProgramUpdateCallback callback);
 
 private:
