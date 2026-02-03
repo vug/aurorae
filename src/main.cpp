@@ -1,16 +1,4 @@
 /*
-TODO(vug): GraphicsProgram compares all (set, binding) pairs of every shader stage, and ensure that for
-           common pairs resources match <- done? check
-TODO(vug): rename Material::setParam to setUniform.
-TODO(vug): For render::Material flattening the block schema: each parameter has a name, offset, size, type.
-           arrays are expanded, substructs are flattened... (buildParameterIndex from
-           "storing_and_serializing_material_uniform_parameters.md"
-TODO(vug): asset::Material takes the schemas and compare them with its parameters.
-           (give ignored parameters default values)
-TODO(vug): Schema generation only works in Debug mode :-(
-.
-TODO(vug): bring integer matrices to ShaderReflection
-.
 TODO(vug): Introduce a phong material with a distant light embedded in the shader
 TODO(vug): introduce Tracy for frame profiling. Get CPU and GPU work separately.
 TODO(vug): move distant light to scene
@@ -34,6 +22,12 @@ TODO(vug): bind DescriptorSets only when necessary -> if material has not change
            params desc set again. (consider this with other frequencies too) (sort objects by shader id,
 material id)
 .
+TODO(vug): GraphicsProgram compares all (set, binding) pairs of every shader stage, and ensure that for
+           common pairs resources match <- done? check
+TODO(vug): rename Material::setParam to setUniform.
+TODO(vug): asset::Material takes the schemas and compare them with its parameters.
+           (give ignored parameters default values)
+TODO(vug): Schema generation only works in Debug mode :-(
 TODO(vug): processOnlyNeedingAssets
 TODO(vug): bring Open Image IO (does not have to support all formats/backends. One HDR, one lossless, and one
            compressed is enough)

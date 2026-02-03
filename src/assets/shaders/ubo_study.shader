@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "vert": "shaders/debug.vert",
+  "vert": "shaders/default.vert",
   "frag": "shaders/ubo_study.frag"
 }
