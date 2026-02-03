@@ -98,12 +98,13 @@ void Application::run() {
   Handle<render::Mesh> rDuckMesh = renderer_.uploadOrGet(aDuckMesh);
   log().trace("Created assets...");
 
-  // Note that this is a no-op because debug material has already been loaded, and mesh uses it
-  const Handle<asset::Material> debugAMat =
-      assetManager_.load(StableId<asset::Material>{"materials/debug.mat"});
-  if (!debugAMat.isValid())
-    log().fatal("Failed to load debug.mat");
-  rDuckMesh->setMaterial(0, debugAMat);
+  // Note that currently this is a no-op because debug material has already been loaded, and mesh uses it
+  // TODO(vug): create a new material and set Duck's material to it
+  // const Handle<asset::Material> debugAMat =
+  //     assetManager_.load(StableId<asset::Material>{"materials/debug.mat"});
+  // if (!debugAMat.isValid())
+  //   log().fatal("Failed to load debug.mat");
+  // rDuckMesh->setMaterial(0, debugAMat);
 
   log().debug("Starting main loop...");
   while (!window_.shouldClose()) {
@@ -161,21 +162,13 @@ void Application::run() {
             .worldFromObject = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
             .rMeshHnd = rBoxMesh,
         }};
+    // TODO(vug): if multiple spans have same material this loop will have redundancy
     // for (const render::DrawSpan& span : rDuckMesh->getDrawSpans()) {
     //   i32 vizMode{2};
     //   const std::span<int> spn = std::span(&vizMode, 1);
     //   const std::span<const std::byte> bytes = std::as_bytes(spn);
     //   span.material->setParam("vizMode", bytes);
     // }
-    for (const render::DrawSpan& span : rDuckMesh->getDrawSpans()) {
-      const Handle<asset::Material> aMaterial = span.material->getAssetHandle();
-      for (const auto& [name, val] : aMaterial->getDefinition().matParams.integers) {
-        i32 intVal = val;
-        const std::span<i32> spn = std::span(&intVal, 1);
-        const std::span<const std::byte> bytes = std::as_bytes(spn);
-        span.material->setParam(name, bytes);
-      }
-    }
     for (const auto& renderable : renderables)
       renderable.rMeshHnd->draw(renderable.worldFromObject, renderable.rMeshHnd.id);
 

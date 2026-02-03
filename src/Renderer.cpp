@@ -646,6 +646,35 @@ Handle<render::Material> Renderer::uploadOrGet(Handle<asset::Material> materialH
   if (materials_.size() == materials_.capacity())
     log().fatal("Asset storage capacity exceeded! Consider increasing reverse size.");
   materialAssetToRenderHandleMap_.emplace(materialHnd, renderHandle);
+
+  const asset::MaterialParameters& matParams = materialHnd->getDefinition().matParams;
+  auto upload = [&renderHandle]<typename TVal>(const std::string_view name, TVal val) {
+    const std::span<TVal> spn = std::span(&val, 1);
+    const std::span<const std::byte> bytes = std::as_bytes(spn);
+    renderHandle->setParam(name, bytes);
+  };
+  for (const auto& [name, val] : matParams.integers) {
+    upload(name, val);
+  }
+  for (const auto& [name, val] : matParams.floats) {
+    upload(name, val);
+  }
+  for (const auto& [name, val] : matParams.vector2s) {
+    upload(name, val);
+  }
+  for (const auto& [name, val] : matParams.vector3s) {
+    upload(name, val);
+  }
+  for (const auto& [name, val] : matParams.vector4s) {
+    upload(name, val);
+  }
+  for (const auto& [name, val] : matParams.matrix3s) {
+    upload(name, val);
+  }
+  for (const auto& [name, val] : matParams.matrix4s) {
+    upload(name, val);
+  }
+
   return renderHandle;
 }
 
