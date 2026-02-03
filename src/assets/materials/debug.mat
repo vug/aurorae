@@ -10,7 +10,7 @@
   "blendPreset": "NoBlend",
   "matParams": {
     "integers": {
-      "vizMode": 5
+      "vizMode": 1
     },
     "floats": {},
     "vector2s": {},
