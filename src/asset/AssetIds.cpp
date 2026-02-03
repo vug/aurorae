@@ -43,9 +43,8 @@ const AssetUuid& AssetRef::getUuid() const {
   return uuid_;
 }
 
-template <AssetConcept TAsset>
-const StableId<TAsset>& AssetRef::getStableId() const {
-  if (stableId_ == StableId<TAsset>{})
+const std::string& AssetRef::getStableIdStr() const {
+  if (stableId_.empty())
     log().fatal("AssetRef has invalid StableId");
   return stableId_;
 }

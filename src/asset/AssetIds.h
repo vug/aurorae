@@ -75,8 +75,7 @@ public:
 
   // Getters
   const AssetUuid& getUuid() const;
-  template <AssetConcept TAsset>
-  const StableId<TAsset>& getStableId() const;
+  const std::string& getStableIdStr() const;
 
   // Context injection for registry access
   void setRegistry(const AssetRegistry* registry) { registry_ = registry; }
