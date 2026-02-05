@@ -16,6 +16,7 @@ layout (location = 0) in VertexOutput v;
 layout (set = 0, binding = 0, scalar) uniform perFrameData {
     mat4 viewFromModel;
     mat4 projectionFromView;
+    vec3 camPos;
     uint64_t frameNo;
 } perFrame;
 
@@ -42,20 +43,20 @@ vec3 rgb2lin(vec3 rgb) { // sRGB to linear approximation
 }
 
 vec3 phongBRDF(vec3 lightDir, vec3 viewDir, vec3 normal,
-               vec3 phongDiffuseCol, vec3 phongSpecularCol, float phongShininess) {
-    vec3 color = phongDiffuseCol;
+               vec3 diffuseCol, vec3 specularCol, float shininess) {
+    vec3 color = diffuseCol;
     vec3 reflectDir = reflect(-lightDir, normal);
     float specDot = max(dot(reflectDir, viewDir), 0.0);
-    color += pow(specDot, phongShininess) * phongSpecularCol;
+    color += pow(specDot, shininess) * specularCol;
     return color;
 }
 
 vec3 blinnPhongBRDF(vec3 lightDir, vec3 viewDir, vec3 normal,
-                    vec3 phongDiffuseCol, vec3 phongSpecularCol, float phongShininess) {
-    vec3 color = phongDiffuseCol;
+                    vec3 diffuseCol, vec3 specularCol, float shininess) {
+    vec3 color = diffuseCol;
     vec3 halfDir = normalize(viewDir + lightDir);
     float specDot = max(dot(halfDir, normal), 0.0);
-    color += pow(specDot, phongShininess) * phongSpecularCol;
+    color += pow(specDot, shininess) * specularCol;
     return color;
 }
 
@@ -64,7 +65,7 @@ void main() {
     vec3 lightDir = lightPos - v.worldPosition;
     const float r = length(lightDir);
     lightDir = normalize(lightDir);
-    const vec3 viewDir = normalize(vec3(0.0) - v.worldPosition); // bring cam pos
+    const vec3 viewDir = normalize(perFrame.camPos - v.worldPosition);
     const vec3 n = normalize(v.worldNormal);
 
     vec3 radiance = rgb2lin(matParams.diffuseColor.rgb) * rgb2lin(matParams.ambientLight.rgb);

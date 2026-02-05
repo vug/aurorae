@@ -23,6 +23,7 @@ layout (push_constant) uniform PushConstants {
 layout (set = 0, binding = 0, scalar) uniform perFrameData {
     mat4 viewFromModel;
     mat4 projectionFromView;
+    vec3 camPos;
     uint64_t frameNo;
 } perFrame;
 

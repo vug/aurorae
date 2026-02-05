@@ -22,6 +22,7 @@ layout (location = 6) flat in VertexIds ids;
 layout (set = 0, binding = 0, scalar) uniform perFrameData {
     mat4 viewFromModel;
     mat4 projectionFromView;
+    vec3 camPos;
     uint64_t frameNo;
 } perFrame;
 
