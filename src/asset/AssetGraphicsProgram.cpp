@@ -27,15 +27,17 @@ ShaderStageSchema GraphicsProgramDefinition::combineSchemas(const ShaderStageSch
     }
   }
 
-  if (vertSchema.outputs != fragSchema.inputs) {
-    log().warn("VS outputs {}, FS inputs {}", vertSchema.outputs.size(), fragSchema.inputs.size());
-    for (const auto& [loc, var] : vertSchema.outputs) {
-      log().warn("  VS Out[{}]: {} {}", loc, var.name, var.location);
+  // Check that fragment shader inputs are a subset of vertex shader outputs
+  for (const auto& [loc, fragInput] : fragSchema.inputs) {
+    const auto vertOutputIt = vertSchema.outputs.find(loc);
+    if (vertOutputIt == vertSchema.outputs.end()) {
+      log().fatal("Fragment shader input at location {} ('{}') has no corresponding vertex shader output",
+                  loc, fragInput.name);
     }
-    for (const auto& [loc, var] : fragSchema.inputs) {
-      log().warn("  FS In[{}]: {} {}", loc, var.name, var.location);
+    if (vertOutputIt->second != fragInput) {
+      log().fatal("Vertex/Fragment shader interface mismatch at location {}: vertex output '{}' vs fragment input '{}'",
+                  loc, vertOutputIt->second.name, fragInput.name);
     }
-    log().fatal("Vertex shader outputs don't match fragment shader inputs");
   }
 
   return combined;
