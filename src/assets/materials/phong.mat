@@ -11,8 +11,8 @@
    "matParams": {
       "integers": {},
       "floats": {
-         "radiantFlux": 1,
-         "shininess": 1
+         "radiantFlux": 500,
+         "shininess": 4
       },
       "vector2s": {},
       "vector3s": {},

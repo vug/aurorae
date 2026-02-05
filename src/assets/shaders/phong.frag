@@ -60,6 +60,21 @@ vec3 blinnPhongBRDF(vec3 lightDir, vec3 viewDir, vec3 normal,
     return color;
 }
 
+vec3 energyConservingBlinnPhongBRDF(vec3 lightDir, vec3 viewDir, vec3 normal, vec3 diffuseCol, vec3 specularCol, float shininess) {
+    vec3 color = diffuseCol / PI;
+
+    // Blinn-Phong part: use the Half-Vector
+    vec3 halfDir = normalize(lightDir + viewDir);
+    float specDot = max(dot(halfDir, normal), 0.0);
+
+    // Modified Phong part: Energy normalization factor
+    // Note: Blinn-Phong shininess usually needs to be ~4x higher to match Phong
+    float normalization = (shininess + 2.0) / (2.0 * PI);
+
+    color += pow(specDot, shininess) * normalization * specularCol;
+    return color;
+}
+
 void main() {
     const vec3 lightPos = vec3(5);
     vec3 lightDir = lightPos - v.worldPosition;
@@ -70,12 +85,10 @@ void main() {
 
     vec3 radiance = rgb2lin(matParams.diffuseColor.rgb) * rgb2lin(matParams.ambientLight.rgb);
     const float irradiance = max(dot(lightDir, n), 0.0) * matParams.radiantFlux / (4.0 * PI * r * r);
-    const vec3 brdf = blinnPhongBRDF(lightDir, viewDir, n, rgb2lin(matParams.diffuseColor.rgb), rgb2lin(matParams.specularColor.rgb), matParams.shininess);
+    const vec3 brdf = energyConservingBlinnPhongBRDF(lightDir, viewDir, n, rgb2lin(matParams.diffuseColor.rgb), rgb2lin(matParams.specularColor.rgb), matParams.shininess);
 
     radiance += brdf * irradiance * rgb2lin(matParams.lightColor.rgb);
 
     outColor.rgb = lin2rgb(radiance);
-
-    outColor.rgb = matParams.lightColor.rgb * max(dot(lightDir, n), 0.0);
     outColor.a = 1.0;
 }
