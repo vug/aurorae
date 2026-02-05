@@ -39,9 +39,13 @@ VertexOutput fillVertexOutput(mat4 worldFromObject, mat4 transposeInverseTransfo
                               vec4 color) {
     VertexOutput v;
     v.objectPosition = position;
+    // worldFromObject is affine, i.e. bottom row is [0, 0, 0, 1]
     v.worldPosition = vec3(worldFromObject * vec4(position, 1));
+    // worldFromObject is not affine (e.g. contains some perspective/projection)
+    // // const vec4 worldPos4 = worldFromObject * vec4(position, 1);
+    // // v.worldPosition = vec3(worldPos4) / worldPos4.w;
     v.objectNormal = normal;
-    v.worldNormal = normalize(vec3(transposeInverseTransform * vec4(normal, 1)));
+    v.worldNormal = normalize(vec3(transposeInverseTransform * vec4(normal, 0)));
     v.texCoord0 = texCoord0;
     v.color = color;
     return v;
