@@ -1,0 +1,48 @@
+{
+   "version": 1,
+   "graphicsProgram": "shaders/phong.shader",
+   "depthTest": true,
+   "depthWrite": true,
+   "polygonMode": "Fill",
+   "cullMode": "Back",
+   "frontFace": "CounterClockwise",
+   "lineWidth": 1,
+   "blendPreset": "NoBlend",
+   "matParams": {
+      "integers": {},
+      "floats": {
+         "radiantFlux": 1,
+         "shininess": 1
+      },
+      "vector2s": {},
+      "vector3s": {},
+      "vector4s": {
+         "ambientLight": {
+            "x": 1,
+            "y": 1,
+            "z": 1,
+            "w": 1
+         },
+         "diffuseColor": {
+            "x": 0.5,
+            "y": 0.75,
+            "z": 0.35,
+            "w": 1
+         },
+         "specularColor": {
+            "x": 0.65,
+            "y": 0.85,
+            "z": 0.45,
+            "w": 1
+         },
+         "lightColor": {
+            "x": 1,
+            "y": 1,
+            "z": 1,
+            "w": 1
+         }
+      },
+      "matrix3s": {},
+      "matrix4s": {}
+   }
+}

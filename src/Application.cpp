@@ -97,7 +97,7 @@ void Application::run() {
   const Handle<asset::Mesh> aDuckMesh = assetManager_.load(kDuckMeshId);
   Handle<render::Mesh> rDuckMesh = renderer_.uploadOrGet(aDuckMesh);
   const Handle<asset::Material> aUnlitSolidMat =
-      assetManager_.load(StableId<asset::Material>{"materials/unlit_solid.mat"});
+      assetManager_.load(StableId<asset::Material>{"materials/phong.mat"});
   log().trace("Loaded assets...");
 
   const Handle<render::Material> rUnlitSolidMat = renderer_.uploadOrGet(aUnlitSolidMat);
@@ -160,10 +160,10 @@ void Application::run() {
             .rMeshHnd = rBoxMesh,
         }};
 
-    glm::vec4 color{std::sinf(static_cast<f32>(frameNo) / 1000.f) * 0.5f + 0.5f, 0.0f, 0.0f, 1.0f};
-    const std::span<glm::vec4> spn = std::span(&color, 1);
-    const std::span<const std::byte> bytes = std::as_bytes(spn);
-    rUnlitSolidMat->setParam("color", bytes);
+    // glm::vec4 color{std::sinf(static_cast<f32>(frameNo) / 1000.f) * 0.5f + 0.5f, 0.0f, 0.0f, 1.0f};
+    // const std::span<glm::vec4> spn = std::span(&color, 1);
+    // const std::span<const std::byte> bytes = std::as_bytes(spn);
+    // rUnlitSolidMat->setParam("color", bytes);
     for (const auto& renderable : renderables)
       renderable.rMeshHnd->draw(renderable.worldFromObject, renderable.rMeshHnd.id);
 
