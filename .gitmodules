@@ -25,3 +25,6 @@
 [submodule "dependencies/modern-uuid"]
 	path = dependencies/modern-uuid
 	url = https://github.com/gershnik/modern-uuid.git
+[submodule "dependencies/stb"]
+	path = dependencies/stb
+	url = https://github.com/nothings/stb.git

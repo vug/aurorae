@@ -11,6 +11,8 @@
 #include "asset/Mesh.h"
 
 #include <glaze/glaze.hpp>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
 
 namespace aur {
 
@@ -73,6 +75,15 @@ struct ShaderType {
 };
 
 void Application::run() {
+  {
+    i32 width{};
+    i32 height{};
+    i32 channelCnt{};
+    const auto path = kAssetsFolder / "images/mandrill.png";
+    u8* img = stbi_load(path.string().c_str(), &width, &height, &channelCnt, 0);
+    stbi_image_free(img);
+  }
+
   // Export schemas
   if (const auto schema = glz::write_json_schema<asset::GraphicsProgramDefinition>(); schema.has_value())
     writeBinaryFile(kAssetsFolder / "shaders/graphics_program.schema.json",

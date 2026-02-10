@@ -54,6 +54,14 @@ add_subdirectory(glm)
 add_subdirectory(assimp)
 add_subdirectory(glaze)
 
+# git submodule add https://github.com/nothings/stb.git
+# Add STB_X_IMPLEMENTATION AND STB_X_STATIC together for each stb component so that its header file can be included by more than one CPP file
+add_library(stb INTERFACE)
+target_include_directories(
+        stb INTERFACE
+        stb/
+)
+
 # Create static library combining all dependencies
 add_library(AuroraeDependencies STATIC dummy.cpp)
 
@@ -87,6 +95,7 @@ target_link_libraries(AuroraeDependencies PUBLIC
     Vulkan::Vulkan
     Vulkan::shaderc_combined
     ${SPIRV_CROSS_LIBS}
+    stb
 )
 
 target_include_directories(AuroraeDependencies PUBLIC
@@ -99,6 +108,7 @@ target_include_directories(AuroraeDependencies PUBLIC
     $<TARGET_PROPERTY:glm,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:assimp,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:glaze::glaze,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:stb,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 # Install the static library
@@ -137,6 +147,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/include/vk_mem_a
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glm/glm DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/assimp/include/assimp DESTINATION include)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/assimp/include/assimp/config.h DESTINATION include/assimp)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stb DESTINATION include FILES_MATCHING PATTERN "*.h")
 
 # Generate and install config files for find_package
 include(CMakePackageConfigHelpers)
